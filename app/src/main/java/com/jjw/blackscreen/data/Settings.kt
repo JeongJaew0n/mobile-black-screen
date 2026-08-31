@@ -12,6 +12,10 @@ enum class Mode {
 }
 
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
+/** 버블이 붙어 있는 화면 가장자리. 픽셀 좌표로 저장하면 회전·해상도 변경 때 화면 밖으로 나간다. */
+enum class Edge { LEFT, RIGHT }
+
+/** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
 enum class Gesture {
     LONG_PRESS,
     DOUBLE_TAP,
@@ -28,6 +32,12 @@ data class Settings(
     val textLevel: Int = 3,
     val burnInShiftEnabled: Boolean = true,
     val unlockGesture: Gesture = Gesture.LONG_PRESS,
+
+    /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
+    val bubbleEnabled: Boolean = false,
+    val bubbleEdge: Edge = Edge.RIGHT,
+    /** 화면 높이 대비 0..1. 회전·해상도가 바뀌어도 화면 안에 남는다. */
+    val bubbleYRatio: Float = 0.5f,
 ) {
     /**
      * 창 밝기를 0으로 눌러 둔 상태이므로 순백을 쓰면 어두운 방에서 지나치게 튄다.

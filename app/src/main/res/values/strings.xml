@@ -33,4 +33,12 @@
     <string name="overlay_running">차폐 중</string>
     <string name="overlay_running_desc">길게 눌러 해제하거나 아래 버튼을 누르세요</string>
     <string name="overlay_stop">해제</string>
+
+    <string name="section_bubble">버블</string>
+    <string name="bubble_enabled">화면 위 버블 표시</string>
+    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 차폐할 수 있는 작은 버튼입니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_permission_note">버블을 켜면 ‘완전 검정’ 모드에도 ‘다른 앱 위에 표시’ 권한이 필요해집니다.</string>
+    <string name="bubble_running">버블 실행 중</string>
+    <string name="bubble_running_desc">버블을 눌러 화면을 덮습니다</string>
+    <string name="bubble_stop">버블 끄기</string>
 </resources>

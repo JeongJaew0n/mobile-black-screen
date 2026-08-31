@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +31,7 @@ import com.jjw.blackscreen.blackout.BlackoutActivity
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
-import com.jjw.blackscreen.overlay.OverlayService
+import com.jjw.blackscreen.service.ScreenCoverService
 import com.jjw.blackscreen.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
@@ -65,11 +66,23 @@ class MainActivity : ComponentActivity() {
                         ActivityResultContracts.RequestPermission(),
                     ) { /* 거부해도 차폐 자체는 동작한다. 알림만 보이지 않는다. */ }
 
+                    // 서비스가 시스템에 의해 종료돼 있을 수 있다. 설정이 켜져 있으면 되살린다.
+                    // addBubble 은 이미 떠 있으면 그냥 반환하므로 반복 호출해도 안전하다.
+                    LaunchedEffect(settings.bubbleEnabled, canDrawOverlays) {
+                        if (settings.bubbleEnabled && canDrawOverlays) {
+                            ScreenCoverService.showBubble(this@MainActivity)
+                        }
+                    }
+
                     SettingsScreen(
                         settings = settings,
                         onChange = { updated ->
+                            val bubbleToggled = updated.bubbleEnabled != settings.bubbleEnabled
                             scope.launch { repository.update { updated } }
-                            if (updated.mode == Mode.OVERLAY) requestNotifications(notificationPermission::launch)
+                            if (updated.mode == Mode.OVERLAY || updated.bubbleEnabled) {
+                                requestNotifications(notificationPermission::launch)
+                            }
+                            if (bubbleToggled) toggleBubble(updated.bubbleEnabled, canDrawOverlays)
                         },
                         onStart = { start(settings.mode, canDrawOverlays) },
                         canDrawOverlays = canDrawOverlays,
@@ -85,7 +98,17 @@ class MainActivity : ComponentActivity() {
         when (mode) {
             Mode.BLACKOUT -> startActivity(Intent(this, BlackoutActivity::class.java))
             Mode.OVERLAY ->
-                if (canDrawOverlays) OverlayService.start(this) else openOverlaySettings()
+                if (canDrawOverlays) ScreenCoverService.startCover(this) else openOverlaySettings()
+        }
+    }
+
+    private fun toggleBubble(enabled: Boolean, canDrawOverlays: Boolean) {
+        when {
+            !enabled -> ScreenCoverService.stopBubble(this)
+            canDrawOverlays -> ScreenCoverService.showBubble(this)
+            // 버블은 오버레이 권한 없이는 띄울 수 없다. 설정 화면으로 보내고,
+            // 돌아오면 LaunchedEffect 가 다시 시도한다.
+            else -> openOverlaySettings()
         }
     }
 

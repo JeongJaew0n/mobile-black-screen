@@ -57,7 +57,7 @@
           (개인용 사이드로딩이므로 Play 심사 대상은 아니다.)
         -->
         <service
-            android:name=".overlay.OverlayService"
+            android:name=".service.ScreenCoverService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property

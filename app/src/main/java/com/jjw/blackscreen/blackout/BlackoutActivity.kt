@@ -5,6 +5,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -12,6 +13,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
+import com.jjw.blackscreen.service.ScreenCoverService
 import com.jjw.blackscreen.ui.BlackScreenRoot
 
 /**
@@ -37,6 +39,19 @@ class BlackoutActivity : ComponentActivity() {
             val settings by repository.settings.collectAsStateWithLifecycle(
                 initialValue = Settings(),
             )
+            // 오버레이는 Activity 보다 위에 그려지므로, 버블이 켜져 있으면 이 검은 화면
+            // 한가운데에 그대로 떠 버린다. 오버레이 창은 어떤 Activity 가 앞인지 스스로
+            // 알 수 없으므로 여기서 직접 알려준다.
+            //
+            // ⚠️ bubbleEnabled 가 false 면 보내면 안 된다. startForegroundService 는
+            //    죽어 있는 서비스를 새로 띄워 알림만 깜빡이게 만든다.
+            if (settings.bubbleEnabled) {
+                DisposableEffect(Unit) {
+                    ScreenCoverService.suppressBubble(this@BlackoutActivity)
+                    onDispose { ScreenCoverService.restoreBubble(this@BlackoutActivity) }
+                }
+            }
+
             BlackScreenRoot(settings = settings, onUnlock = ::finish)
         }
     }

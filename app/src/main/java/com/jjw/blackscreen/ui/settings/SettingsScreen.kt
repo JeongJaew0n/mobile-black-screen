@@ -151,6 +151,20 @@ fun SettingsScreen(
             onCheckedChange = { onChange(settings.copy(burnInShiftEnabled = it)) },
         )
 
+        Section(stringResource(R.string.section_bubble))
+
+        SwitchRow(
+            label = stringResource(R.string.bubble_enabled),
+            description = stringResource(R.string.bubble_enabled_desc),
+            checked = settings.bubbleEnabled,
+            onCheckedChange = { onChange(settings.copy(bubbleEnabled = it)) },
+        )
+        Text(
+            text = stringResource(R.string.bubble_permission_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
         Section(stringResource(R.string.section_unlock))
 
         Gesture.entries.forEach { gesture ->

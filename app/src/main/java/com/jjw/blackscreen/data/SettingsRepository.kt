@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -30,6 +31,9 @@ class SettingsRepository(context: Context) {
             prefs[Keys.TEXT_LEVEL] = next.textLevel
             prefs[Keys.BURN_IN_SHIFT] = next.burnInShiftEnabled
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
+            prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
+            prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
+            prefs[Keys.BUBBLE_Y_RATIO] = next.bubbleYRatio
         }
     }
 
@@ -41,6 +45,9 @@ class SettingsRepository(context: Context) {
         val TEXT_LEVEL = intPreferencesKey("text_level")
         val BURN_IN_SHIFT = booleanPreferencesKey("burn_in_shift")
         val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
+        val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
+        val BUBBLE_EDGE = stringPreferencesKey("bubble_edge")
+        val BUBBLE_Y_RATIO = floatPreferencesKey("bubble_y_ratio")
     }
 
     private fun Preferences.toSettings(): Settings {
@@ -53,6 +60,9 @@ class SettingsRepository(context: Context) {
             textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
             burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,
             unlockGesture = enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture),
+            bubbleEnabled = this[Keys.BUBBLE_ENABLED] ?: defaults.bubbleEnabled,
+            bubbleEdge = enumOrDefault(this[Keys.BUBBLE_EDGE], defaults.bubbleEdge),
+            bubbleYRatio = this[Keys.BUBBLE_Y_RATIO] ?: defaults.bubbleYRatio,
         )
     }
 
