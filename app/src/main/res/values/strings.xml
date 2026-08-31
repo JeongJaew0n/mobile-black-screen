@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">검은 화면</string>
+    <string name="tile_label">검은 화면</string>
+
+    <string name="start_blackout">차폐 시작</string>
+    <string name="section_content">표시 내용</string>
+    <string name="show_clock">시계 표시</string>
+    <string name="clock_format">시계 형식</string>
+    <string name="sentence">문장</string>
+    <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
+
+    <string name="section_appearance">화면</string>
+    <string name="text_level">글자 밝기</string>
+    <string name="burn_in_shift">번인 방지 이동</string>
+    <string name="burn_in_shift_desc">60초마다 글자 위치를 미세하게 옮깁니다</string>
+
+    <string name="section_unlock">해제</string>
+
+    <string name="gesture_long_press">1.5초 길게 누르기</string>
+    <string name="gesture_double_tap">더블 탭</string>
+    <string name="gesture_triple_tap">3회 연속 탭</string>
+
+    <string name="section_mode">차폐 방식</string>
+    <string name="mode_blackout">완전 검정</string>
+    <string name="mode_blackout_desc">상태바까지 숨깁니다. 권한이 필요 없습니다. 다른 앱의 화면 렌더링은 멈추지만 음악·다운로드 등 백그라운드 동작은 계속됩니다.</string>
+    <string name="mode_overlay">오버레이</string>
+    <string name="mode_overlay_desc">다른 앱이 계속 렌더링됩니다. 다만 상태바와 내비게이션 바는 덮을 수 없어 위아래에 그대로 남습니다.</string>
+    <string name="overlay_permission_needed">‘다른 앱 위에 표시’ 권한이 필요합니다</string>
+    <string name="grant_permission">권한 허용하기</string>
+
+    <string name="overlay_channel">차폐 상태</string>
+    <string name="overlay_running">차폐 중</string>
+    <string name="overlay_running_desc">길게 눌러 해제하거나 아래 버튼을 누르세요</string>
+    <string name="overlay_stop">해제</string>
+</resources>

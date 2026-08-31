@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Overlay 모드에서만 쓰인다. Blackout 모드는 권한이 하나도 필요 없다. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.BlackScreen">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          configChanges      : 회전으로 Activity 가 재생성되면 검은 화면이 깜빡인다.
+                               screenOrientation="nosensor" 는 Android 16 부터 무시되므로
+                               재생성 자체를 막는 쪽으로 처리한다.
+          excludeFromRecents : 최근 앱 목록에 차폐 화면이 남지 않게 한다.
+          launchMode=singleTask : 타일을 연타해도 인스턴스가 쌓이지 않게 한다.
+        -->
+        <activity
+            android:name=".blackout.BlackoutActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Blackout"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask" />
+
+        <!--
+          퀵 설정 타일에서 오버레이를 켤 때 거치는 중계 Activity.
+          포그라운드 서비스를 백그라운드에서 시작하면 Android 15+ 에서
+          ForegroundServiceStartNotAllowedException 이 날 수 있으므로,
+          Activity 가 앞에 있는 상태에서 시작해 그 경로를 피한다.
+        -->
+        <activity
+            android:name=".overlay.OverlayLauncherActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Transparent"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask" />
+
+        <!--
+          용도가 기존 FGS 타입 어디에도 맞지 않아 specialUse 를 쓴다.
+          (개인용 사이드로딩이므로 Play 심사 대상은 아니다.)
+        -->
+        <service
+            android:name=".overlay.OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Full-screen black overlay that visually blanks the display while other apps keep running." />
+        </service>
+
+        <service
+            android:name=".tile.BlackScreenTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>

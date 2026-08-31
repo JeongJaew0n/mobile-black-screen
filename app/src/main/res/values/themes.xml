@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.BlackScreen" parent="android:Theme.Material.NoActionBar" />
+
+    <!--
+      차폐 화면 전용 테마.
+      windowBackground 을 검정으로 고정해 Activity 전환 순간의 흰 깜빡임을 없앤다.
+    -->
+    <style name="Theme.Blackout" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <!-- 오버레이 서비스를 띄우고 즉시 사라지는 중계 Activity 용. -->
+    <style name="Theme.Transparent" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

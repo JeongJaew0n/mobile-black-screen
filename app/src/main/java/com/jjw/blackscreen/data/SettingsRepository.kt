@@ -1,0 +1,62 @@
+package com.jjw.blackscreen.data
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+class SettingsRepository(context: Context) {
+
+    // Service 와 Activity 양쪽에서 쓰이므로 applicationContext 로 고정해 누수를 막는다.
+    private val store = context.applicationContext.dataStore
+
+    val settings: Flow<Settings> = store.data.map { it.toSettings() }
+
+    suspend fun update(transform: (Settings) -> Settings) {
+        store.edit { prefs ->
+            val next = transform(prefs.toSettings())
+            prefs[Keys.MODE] = next.mode.name
+            prefs[Keys.SHOW_CLOCK] = next.showClock
+            prefs[Keys.CLOCK_FORMAT] = next.clockFormat
+            prefs[Keys.SENTENCE] = next.sentence
+            prefs[Keys.TEXT_LEVEL] = next.textLevel
+            prefs[Keys.BURN_IN_SHIFT] = next.burnInShiftEnabled
+            prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
+        }
+    }
+
+    private object Keys {
+        val MODE = stringPreferencesKey("mode")
+        val SHOW_CLOCK = booleanPreferencesKey("show_clock")
+        val CLOCK_FORMAT = stringPreferencesKey("clock_format")
+        val SENTENCE = stringPreferencesKey("sentence")
+        val TEXT_LEVEL = intPreferencesKey("text_level")
+        val BURN_IN_SHIFT = booleanPreferencesKey("burn_in_shift")
+        val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
+    }
+
+    private fun Preferences.toSettings(): Settings {
+        val defaults = Settings()
+        return Settings(
+            mode = enumOrDefault(this[Keys.MODE], defaults.mode),
+            showClock = this[Keys.SHOW_CLOCK] ?: defaults.showClock,
+            clockFormat = this[Keys.CLOCK_FORMAT] ?: defaults.clockFormat,
+            sentence = this[Keys.SENTENCE] ?: defaults.sentence,
+            textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
+            burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,
+            unlockGesture = enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture),
+        )
+    }
+
+    /** 저장된 이름이 사라진 enum 상수를 가리키면(다운그레이드·이름 변경) 기본값으로 되돌린다. */
+    private inline fun <reified T : Enum<T>> enumOrDefault(name: String?, default: T): T =
+        name?.let { runCatching { enumValueOf<T>(it) }.getOrNull() } ?: default
+}
