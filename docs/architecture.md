@@ -77,10 +77,15 @@ app/src/main/java/.../blackscreen/
 ├─ MainActivity.kt              설정 화면 (진입점)
 ├─ blackout/
 │   └─ BlackoutActivity.kt      Blackout 모드 — 풀스크린 + 몰입
+├─ service/
+│   └─ ScreenCoverService.kt    ★ 차폐 창 + 버블 창을 함께 소유하는 상태 기계
 ├─ overlay/
-│   ├─ OverlayService.kt        LifecycleService + FGS(specialUse)
-│   ├─ OverlayWindow.kt         WindowManager.LayoutParams 구성
-│   └─ OverlayLauncherActivity.kt  투명 중계 Activity (§4.7)
+│   ├─ OverlayWindow.kt         차폐 창 LayoutParams
+│   └─ OverlayLauncherActivity.kt  투명 중계 Activity (§4.2b)
+├─ bubble/
+│   ├─ BubbleWindow.kt          버블 창 LayoutParams + 가장자리 좌표 계산
+│   ├─ BubbleContent.kt         원형 버블 (탭/드래그/유휴 페이드)
+│   └─ RemoveTarget.kt          드래그 중 뜨는 ✕ 타겟
 ├─ ui/
 │   ├─ BlackScreenContent.kt    ★ 두 모드 공유 Composable
 │   ├─ Clock.kt                 분 경계 정렬 시계

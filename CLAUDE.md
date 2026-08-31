@@ -45,13 +45,21 @@ adb shell settings put system screen_off_timeout 15000
 adb shell settings put system screen_off_timeout 600000
 ```
 
-**함정 두 가지.**
+**함정들.** 아래는 전부 실제로 한 번씩 속았던 것들이다.
 
 - `BlackoutActivity` 는 `exported="false"` 라 `am start` 로 직접 띄울 수 없다
   (`SecurityException`). `MainActivity` 를 띄우고 버튼을 탭하거나 타일을 써야 한다.
 - `cmd statusbar click-tile` 만으로는 `onStartListening` 이 돌지 않아 TileService 가
   바인딩되지 않는다. `cmd statusbar expand-settings` 를 먼저 호출해야 한다.
   앱 버그가 아니라 adb 아티팩트다.
+- **테스트 탭이 설정을 조용히 바꾼다.** 화면이 잠긴 줄 모르고 보낸 탭이 해제 제스처를
+  바꿔 놓아 "롱프레스 회귀"로 오진한 적이 있다. 제스처를 검증하기 전에
+  `unlock_gesture` 저장값부터 확인할 것.
+- **DataStore 의 boolean 은 `strings` 로 true/false 를 구분할 수 없다.** 키 이름만 보인다.
+  동작으로 검증할 것.
+- **설정 화면 스크롤 위치가 매번 달라진다.** 스크롤 후 스크린샷으로 좌표를 다시 잡을 것.
+- **미세한 시각 변화를 평균 밝기로 재지 말 것.** 버블 페이드는 뒤 배경이 어두우면
+  평균이 안 움직인다. 고대비 지점(흰 막대)의 픽셀값을 봐야 한다.
 
 ## 구조의 핵심
 
@@ -59,12 +67,27 @@ adb shell settings put system screen_off_timeout 600000
 `BlackScreenRoot`)로 공유한다.** 차이는 "어떤 창에 올리는가"뿐이다.
 
 - **Blackout** (`blackout/BlackoutActivity.kt`) — 풀스크린 Activity. 시스템 바를
-  완전히 숨긴다. 권한 0개.
-- **Overlay** (`overlay/OverlayService.kt`) — `TYPE_APPLICATION_OVERLAY` 창 +
-  `specialUse` 포그라운드 서비스. 아래 앱이 계속 렌더링된다.
+  완전히 숨긴다. 버블을 쓰지 않으면 권한 0개.
+- **Overlay** — `TYPE_APPLICATION_OVERLAY` 창. 아래 앱이 계속 렌더링된다.
 
 표시 내용을 고칠 때는 `BlackScreenRoot` 한 곳만 만지면 두 모드에 함께 반영된다.
 모드별로 갈라 쓰지 말 것.
+
+### 창은 전부 `service/ScreenCoverService` 가 소유한다
+
+`specialUse` 포그라운드 서비스 하나가 **차폐 창과 버블 창을 함께** 관리하는 상태 기계다.
+서비스를 나누지 말 것 — 상시 알림이 두 개가 되고, 그건 이 앱의 컨셉과 어긋난다.
+
+```
+bubbleWanted     사용자가 버블을 켰는가 (차폐 중 숨겨도 유지)
+bubbleSuppressed 차폐 중이라 잠시 감췄는가
+coverView        차폐 창
+bubbleView       버블 창
+```
+
+모든 상태 전이는 `syncBubble()` 하나를 거친다. 창을 직접 붙이거나 떼지 말 것.
+`coverView` 와 `bubbleWanted` 가 둘 다 비면 그때만 `stopSelf()` 한다 —
+예전처럼 차폐 해제에서 `stopSelf()` 하면 버블까지 죽는다.
 
 ## 우회 불가능한 제약 (건드리지 말 것)
 
@@ -95,6 +118,16 @@ adb shell settings put system screen_off_timeout 600000
   `PendingIntent` 오버로드를 쓴다. API 33 이하 분기는 lint 오탐이라 suppress 되어 있다.
 - **화면 회전은 `screenOrientation` 이 아니라 `configChanges` 로 처리한다.**
   고정 방향 지정은 Android 16 부터 무시된다. 목적은 재생성으로 인한 깜빡임 방지다.
+- **오버레이 창 좌표는 화면 전체가 아니라 부모 프레임 기준이다.** 실측상 부모 프레임은
+  `[0,94][1080,2214]` 였다. 화면 전체 높이로 위치를 계산하면 상태바 높이만큼 밀린다.
+  `ScreenCoverService.usableSize()` 를 쓸 것.
+- **Compose 의 `animate()` 를 서비스에서 호출하지 말 것.** 코루틴 컨텍스트에
+  `MonotonicFrameClock` 을 요구해서 `lifecycleScope` 에서 부르면
+  `IllegalStateException` 으로 크래시한다. 창 좌표 애니메이션은 단순 루프로 한다
+  (`slideBubbleX`).
+- **`LayoutParams.y` 는 픽셀이다.** dp 숫자를 그대로 넣는 실수를 이미 한 번 했다.
+- **코루틴 안에서 창을 붙일 때는 동기 플래그로 중복을 막을 것.** `addBubble()` 은
+  저장된 위치를 읽느라 코루틴 안에서 `addView` 하는데, 그 사이 재호출되면 창이 두 개 생긴다.
 - **`android.builtInKotlin` 을 끄지 말 것.** 외부 `org.jetbrains.kotlin.android`
   플러그인은 AGP 9 의 새 DSL 이 `BaseExtension` 을 제거해 `ClassCastException` 으로
   실패한다. `kotlin.plugin.compose` 만 적용한다.
