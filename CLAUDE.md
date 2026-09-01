@@ -8,6 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Android 에 임의 시점에 화면을 끄는 공개 API가 없고, 물리적으로 끄면 이 앱의 기능인
 시계·문장 표시가 불가능해진다. 대신 전면 검정 + `screenBrightness = 0f` 로 처리한다.
 
+## 용어
+
+**사용자에게 보이는 문구는 `Screen Off` 다.** 코드와 문서에서는 같은 개념을 `차폐`
+(cover)로 부른다 — `ScreenCoverService`, `coverView`, "차폐 창" 등. 둘은 같은 것을 가리킨다.
+UI 문자열(`strings.xml`)에 `차폐` 를 새로 넣지 말 것.
+
 ## 명령
 
 ```bash

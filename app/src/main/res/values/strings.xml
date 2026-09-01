@@ -3,7 +3,7 @@
     <string name="app_name">검은 화면</string>
     <string name="tile_label">검은 화면</string>
 
-    <string name="start_blackout">차폐 시작</string>
+    <string name="start_blackout">Screen Off 시작</string>
     <string name="section_content">표시 내용</string>
     <string name="show_clock">시계 표시</string>
     <string name="clock_format">시계 형식</string>
@@ -21,7 +21,7 @@
     <string name="gesture_double_tap">더블 탭</string>
     <string name="gesture_triple_tap">3회 연속 탭</string>
 
-    <string name="section_mode">차폐 방식</string>
+    <string name="section_mode">Screen Off 방식</string>
     <string name="mode_blackout">완전 검정</string>
     <string name="mode_blackout_desc">상태바까지 숨깁니다. 권한이 필요 없습니다. 다른 앱의 화면 렌더링은 멈추지만 음악·다운로드 등 백그라운드 동작은 계속됩니다.</string>
     <string name="mode_overlay">오버레이</string>
@@ -29,16 +29,16 @@
     <string name="overlay_permission_needed">‘다른 앱 위에 표시’ 권한이 필요합니다</string>
     <string name="grant_permission">권한 허용하기</string>
 
-    <string name="overlay_channel">차폐 상태</string>
-    <string name="overlay_running">차폐 중</string>
+    <string name="overlay_channel">Screen Off 상태</string>
+    <string name="overlay_running">Screen Off 중</string>
     <string name="overlay_running_desc">길게 눌러 해제하거나 아래 버튼을 누르세요</string>
     <string name="overlay_stop">해제</string>
 
     <string name="section_bubble">버블</string>
     <string name="bubble_enabled">화면 위 버블 표시</string>
-    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 차폐할 수 있는 작은 버튼입니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 앱을 닫아도 유지됩니다.</string>
     <string name="bubble_permission_note">버블을 켜면 ‘완전 검정’ 모드에도 ‘다른 앱 위에 표시’ 권한이 필요해집니다.</string>
     <string name="bubble_running">버블 실행 중</string>
-    <string name="bubble_running_desc">버블을 눌러 화면을 덮습니다</string>
+    <string name="bubble_running_desc">버블을 눌러 Screen Off 합니다</string>
     <string name="bubble_stop">버블 끄기</string>
 </resources>
