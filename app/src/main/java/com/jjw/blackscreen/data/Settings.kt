@@ -28,10 +28,10 @@ data class Settings(
     val showClock: Boolean = false,
     val clockFormat: String = ClockFormats.H24,
     val sentence: String = "",
-    /** 1~5. 순백은 쓰지 않는다 — [textColor] 참조. */
+    /** 1~5. 값이 클수록 밝다 — [screenBrightness] 참조. */
     val textLevel: Int = 3,
     val burnInShiftEnabled: Boolean = true,
-    val unlockGesture: Gesture = Gesture.LONG_PRESS,
+    val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 
     /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
     val bubbleEnabled: Boolean = false,
@@ -40,16 +40,36 @@ data class Settings(
     val bubbleYRatio: Float = 0.5f,
 ) {
     /**
-     * 창 밝기를 0으로 눌러 둔 상태이므로 순백을 쓰면 어두운 방에서 지나치게 튄다.
-     * 저휘도 그레이만 사용하고, 이는 AMOLED 번인 부담을 줄이는 효과도 있다.
+     * 글자는 **항상 흰색**이다.
+     *
+     * 보이는 밝기는 프레임버퍼 값 × 패널 밝기다. 어둡게 만드는 손잡이가 둘이면
+     * 둘 다 깎아 놓고 왜 안 보이는지 헤매게 된다 — 실제로 두 번 그랬다.
+     * (`#333333` + 패널 0 → 판독 불가, `#E6E6E6` + 패널 0.08 → 여전히 판독 불가.)
+     *
+     * 그래서 밝기 손잡이는 [screenBrightness] 하나로 통일했다. 여기는 건드리지 말 것.
      */
-    val textColor: Color
-        get() = when (textLevel.coerceIn(1, 5)) {
-            1 -> Color(0xFF181818)
-            2 -> Color(0xFF242424)
-            3 -> Color(0xFF333333)
-            4 -> Color(0xFF4A4A4A)
-            else -> Color(0xFF6B6B6B)
+    val textColor: Color get() = Color.White
+
+    /**
+     * 창 밝기 오버라이드(0..1). 이 앱에서 밝기를 조절하는 **유일한** 값이다.
+     *
+     * **표시할 내용이 없으면 무조건 0** 이다. 아무것도 안 보여줄 거면 화면은 완전히
+     * 어두워야 하고, 그게 이 앱의 기본 상태다.
+     *
+     * ⚠️ 이 값은 스크린샷으로 검증할 수 없다. `screencap` 은 프레임버퍼를 뜨는 것이라
+     *    패널 밝기가 반영되지 않는다. 반드시 실제 화면을 눈으로 봐야 한다.
+     */
+    val screenBrightness: Float
+        get() = if (!hasContent) {
+            0f
+        } else {
+            when (textLevel.coerceIn(1, 5)) {
+                1 -> 0.05f
+                2 -> 0.15f
+                3 -> 0.30f
+                4 -> 0.50f
+                else -> 0.80f
+            }
         }
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */

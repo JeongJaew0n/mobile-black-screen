@@ -33,6 +33,7 @@ import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.service.ScreenCoverService
 import com.jjw.blackscreen.ui.settings.SettingsScreen
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -76,13 +77,19 @@ class MainActivity : ComponentActivity() {
 
                     SettingsScreen(
                         settings = settings,
-                        onChange = { updated ->
-                            val bubbleToggled = updated.bubbleEnabled != settings.bubbleEnabled
-                            scope.launch { repository.update { updated } }
-                            if (updated.mode == Mode.OVERLAY || updated.bubbleEnabled) {
-                                requestNotifications(notificationPermission::launch)
+                        onChange = { transform ->
+                            scope.launch {
+                                // 저장된 값을 읽어 변환한다. 화면 스냅샷을 통째로 쓰면
+                                // 아직 로드되지 않은 항목들이 기본값으로 덮인다.
+                                val before = repository.settings.first()
+                                val after = repository.update(transform)
+                                if (after.mode == Mode.OVERLAY || after.bubbleEnabled) {
+                                    requestNotifications(notificationPermission::launch)
+                                }
+                                if (after.bubbleEnabled != before.bubbleEnabled) {
+                                    toggleBubble(after.bubbleEnabled, canDrawOverlays)
+                                }
                             }
-                            if (bubbleToggled) toggleBubble(updated.bubbleEnabled, canDrawOverlays)
                         },
                         onStart = { start(settings.mode, canDrawOverlays) },
                         canDrawOverlays = canDrawOverlays,

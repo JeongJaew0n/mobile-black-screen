@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -45,6 +46,13 @@ class BlackoutActivity : ComponentActivity() {
             //
             // ⚠️ bubbleEnabled 가 false 면 보내면 안 된다. startForegroundService 는
             //    죽어 있는 서비스를 새로 띄워 알림만 깜빡이게 만든다.
+            // 표시할 내용이 있을 때만 패널을 조금 올린다. 무표시면 0 — 완전히 어두운 화면.
+            LaunchedEffect(settings.screenBrightness) {
+                window.attributes = window.attributes.apply {
+                    screenBrightness = settings.screenBrightness
+                }
+            }
+
             if (settings.bubbleEnabled) {
                 DisposableEffect(Unit) {
                     ScreenCoverService.suppressBubble(this@BlackoutActivity)
@@ -66,9 +74,8 @@ class BlackoutActivity : ComponentActivity() {
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
 
-        // 이 창이 앞에 있는 동안만 밝기를 0 으로 덮어쓴다. 시스템 밝기 설정은 건드리지 않으므로
-        // 화면을 벗어나면 자동으로 원래 밝기로 돌아간다.
-        window.attributes = window.attributes.apply { screenBrightness = 0f }
+        // 실제 밝기 값은 설정에 따라 setContent 안에서 반영한다.
+        // 이 창이 앞에 있는 동안만 적용되며 시스템 밝기 설정은 건드리지 않는다.
 
         // 화면이 꺼지면 표시 중인 시계·문장도 같이 사라지므로 자동 꺼짐을 막는다.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

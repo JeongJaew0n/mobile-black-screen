@@ -21,9 +21,12 @@ class SettingsRepository(context: Context) {
 
     val settings: Flow<Settings> = store.data.map { it.toSettings() }
 
-    suspend fun update(transform: (Settings) -> Settings) {
+    /** 저장된 값에 [transform] 을 적용하고 그 결과를 돌려준다. */
+    suspend fun update(transform: (Settings) -> Settings): Settings {
+        var result = Settings()
         store.edit { prefs ->
             val next = transform(prefs.toSettings())
+            result = next
             prefs[Keys.MODE] = next.mode.name
             prefs[Keys.SHOW_CLOCK] = next.showClock
             prefs[Keys.CLOCK_FORMAT] = next.clockFormat
@@ -35,6 +38,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
             prefs[Keys.BUBBLE_Y_RATIO] = next.bubbleYRatio
         }
+        return result
     }
 
     private object Keys {

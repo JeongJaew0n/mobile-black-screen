@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +40,9 @@ fun BlackScreenRoot(
     }
 }
 
+/** 세로 -0.3 = 정중앙에서 위쪽으로 화면 높이의 15% 지점. */
+private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.3f)
+
 @Composable
 private fun BlackScreenContent(settings: Settings) {
     // 기본값은 요구사항대로 완전한 무표시다. 이때는 텍스트 레이아웃 자체를 만들지 않는다.
@@ -46,7 +50,8 @@ private fun BlackScreenContent(settings: Settings) {
 
     val offset = rememberBurnInShift(settings.burnInShiftEnabled)
 
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    // 정중앙보다 조금 위. 손에 들었을 때 시선이 자연스럽게 닿는 높이다.
+    Box(Modifier.fillMaxSize(), contentAlignment = ContentAlignment) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.offset { offset },

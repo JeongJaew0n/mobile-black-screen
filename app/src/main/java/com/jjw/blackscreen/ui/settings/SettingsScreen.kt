@@ -34,10 +34,15 @@ import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
 
+/**
+ * @param onChange 저장된 값에 적용할 **변환 함수**를 넘긴다. 화면이 들고 있는 스냅샷을
+ *   통째로 쓰면, DataStore 가 아직 값을 안 뱉은 시점(앱을 막 연 직후)에 항목 하나를
+ *   바꿔도 나머지가 전부 기본값으로 덮인다. 실제로 그 버그를 냈다.
+ */
 @Composable
 fun SettingsScreen(
     settings: Settings,
-    onChange: (Settings) -> Unit,
+    onChange: ((Settings) -> Settings) -> Unit,
     onStart: () -> Unit,
     canDrawOverlays: Boolean,
     onRequestOverlayPermission: () -> Unit,
@@ -66,13 +71,13 @@ fun SettingsScreen(
             label = stringResource(R.string.mode_blackout),
             description = stringResource(R.string.mode_blackout_desc),
             selected = settings.mode == Mode.BLACKOUT,
-            onSelect = { onChange(settings.copy(mode = Mode.BLACKOUT)) },
+            onSelect = { onChange { s -> s.copy(mode = Mode.BLACKOUT) } },
         )
         ModeRow(
             label = stringResource(R.string.mode_overlay),
             description = stringResource(R.string.mode_overlay_desc),
             selected = settings.mode == Mode.OVERLAY,
-            onSelect = { onChange(settings.copy(mode = Mode.OVERLAY)) },
+            onSelect = { onChange { s -> s.copy(mode = Mode.OVERLAY) } },
         )
 
         if (settings.mode == Mode.OVERLAY && !canDrawOverlays) {
@@ -103,7 +108,7 @@ fun SettingsScreen(
         SwitchRow(
             label = stringResource(R.string.show_clock),
             checked = settings.showClock,
-            onCheckedChange = { onChange(settings.copy(showClock = it)) },
+            onCheckedChange = { on -> onChange { s -> s.copy(showClock = on) } },
         )
 
         if (settings.showClock) {
@@ -116,14 +121,14 @@ fun SettingsScreen(
                 RadioRow(
                     label = format,
                     selected = settings.clockFormat == format,
-                    onSelect = { onChange(settings.copy(clockFormat = format)) },
+                    onSelect = { onChange { s -> s.copy(clockFormat = format) } },
                 )
             }
         }
 
         OutlinedTextField(
             value = settings.sentence,
-            onValueChange = { onChange(settings.copy(sentence = it)) },
+            onValueChange = { text -> onChange { s -> s.copy(sentence = text) } },
             label = { Text(stringResource(R.string.sentence)) },
             placeholder = { Text(stringResource(R.string.sentence_hint)) },
             modifier = Modifier
@@ -139,7 +144,7 @@ fun SettingsScreen(
         )
         Slider(
             value = settings.textLevel.toFloat(),
-            onValueChange = { onChange(settings.copy(textLevel = it.roundToInt())) },
+            onValueChange = { v -> onChange { s -> s.copy(textLevel = v.roundToInt()) } },
             valueRange = 1f..5f,
             steps = 3,
         )
@@ -148,7 +153,7 @@ fun SettingsScreen(
             label = stringResource(R.string.burn_in_shift),
             description = stringResource(R.string.burn_in_shift_desc),
             checked = settings.burnInShiftEnabled,
-            onCheckedChange = { onChange(settings.copy(burnInShiftEnabled = it)) },
+            onCheckedChange = { on -> onChange { s -> s.copy(burnInShiftEnabled = on) } },
         )
 
         Section(stringResource(R.string.section_bubble))
@@ -157,7 +162,7 @@ fun SettingsScreen(
             label = stringResource(R.string.bubble_enabled),
             description = stringResource(R.string.bubble_enabled_desc),
             checked = settings.bubbleEnabled,
-            onCheckedChange = { onChange(settings.copy(bubbleEnabled = it)) },
+            onCheckedChange = { on -> onChange { s -> s.copy(bubbleEnabled = on) } },
         )
         Text(
             text = stringResource(R.string.bubble_permission_note),
@@ -171,7 +176,7 @@ fun SettingsScreen(
             RadioRow(
                 label = stringResource(gesture.labelRes),
                 selected = settings.unlockGesture == gesture,
-                onSelect = { onChange(settings.copy(unlockGesture = gesture)) },
+                onSelect = { onChange { s -> s.copy(unlockGesture = gesture) } },
             )
         }
 

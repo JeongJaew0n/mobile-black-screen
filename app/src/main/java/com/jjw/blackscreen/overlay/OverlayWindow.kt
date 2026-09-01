@@ -30,6 +30,7 @@ internal fun overlayLayoutParams(): WindowManager.LayoutParams =
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
         PixelFormat.OPAQUE,
     ).apply {
-        // 최상단 가시 창의 값이 적용된다.
+        // 최상단 가시 창의 값이 적용된다. 실제 값은 설정(글자 밝기)에 따라
+        // ScreenCoverService 가 갱신한다 — 여기서는 초기값만 둔다.
         screenBrightness = 0f
     }

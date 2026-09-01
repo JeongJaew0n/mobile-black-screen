@@ -276,7 +276,8 @@ fun BlackScreenContent(settings: Settings) {
 ```
 
 - **시계 갱신은 분 단위**로. 초 단위 갱신은 전력만 먹고 이 앱에선 의미가 없습니다. 분 경계에 정렬된 타이머(다음 정각까지 `delay`)를 씁니다.
-- **텍스트 색은 순백이 아니라 저휘도 그레이** (`#2A2A2A` ~ `#404040`, 사용자 조절). 밝기가 0으로 눌려 있으므로 이 정도면 어두운 방에서 충분히 읽힙니다.
+- **글자는 흰색 고정.** 어둡게 하는 몫은 창의 `screenBrightness` 하나가 전담합니다.
+  글자색과 패널 밝기를 둘 다 낮추면 곱해져서 판독이 불가능해집니다(실제로 세 번 겪음).
 
 ### 4.4 번인 방지
 
@@ -334,7 +335,7 @@ data class Settings(
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
     val clockFormat: String = "HH:mm",
     val sentence: String = "",
-    val textLevel: Int = 3,                  // 1~5 → #181818 ~ #6B6B6B
+    val textLevel: Int = 3,                  // 1~5 → 패널 밝기 0.05 ~ 0.80
     val burnInShiftEnabled: Boolean = true,
     val unlockGesture: Gesture = Gesture.LONG_PRESS,
 )

@@ -15,7 +15,15 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-private val ShiftRadius = 24.dp
+/**
+ * 궤도는 정원이 아니라 **세로로 긴 타원**이다.
+ *
+ * 가로로 크게 흔들리면 화면 정중앙에 있어야 할 시계가 한쪽으로 치우쳐 보인다.
+ * 번인 방지에 필요한 것은 "픽셀이 조금씩 옮겨 다니는 것"이지 이동 방향이 아니므로,
+ * 가로는 눈에 띄지 않을 만큼만 움직이고 세로로 더 크게 움직인다.
+ */
+private val ShiftRadiusX = 8.dp
+private val ShiftRadiusY = 28.dp
 private const val ShiftIntervalMillis = 60_000L
 private const val ShiftSteps = 12
 
@@ -30,7 +38,9 @@ private const val ShiftSteps = 12
  */
 @Composable
 fun rememberBurnInShift(enabled: Boolean): IntOffset {
-    val radiusPx = with(LocalDensity.current) { ShiftRadius.toPx() }
+    val density = LocalDensity.current
+    val radiusXPx = with(density) { ShiftRadiusX.toPx() }
+    val radiusYPx = with(density) { ShiftRadiusY.toPx() }
     var step by remember { mutableIntStateOf(0) }
 
     // enabled 여부와 무관하게 항상 같은 수의 훅을 호출해 컴포지션 구조를 고정한다.
@@ -42,14 +52,14 @@ fun rememberBurnInShift(enabled: Boolean): IntOffset {
         }
     }
 
-    return remember(enabled, step, radiusPx) {
+    return remember(enabled, step, radiusXPx, radiusYPx) {
         if (!enabled) {
             IntOffset.Zero
         } else {
             val angle = step * (2 * PI / ShiftSteps)
             IntOffset(
-                x = (cos(angle) * radiusPx).roundToInt(),
-                y = (sin(angle) * radiusPx).roundToInt(),
+                x = (cos(angle) * radiusXPx).roundToInt(),
+                y = (sin(angle) * radiusYPx).roundToInt(),
             )
         }
     }

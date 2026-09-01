@@ -65,7 +65,8 @@ class com.android.build.gradle.BaseExtension
 - [x] `data/SettingsRepository.kt` — DataStore Preferences 래퍼
 - [x] `ui/BlackScreenContent.kt` — 두 모드 공유 Composable (무표시/시계/문장)
       · 시계는 **분 경계에 정렬된 타이머**로 분 단위만 갱신
-      · 텍스트 색은 순백이 아닌 저휘도 그레이 (`textLevel` 1~5 → `#2A2A2A`~`#404040`)
+      · ~~텍스트 색은 저휘도 그레이~~ → **오설계였음.** 패널 밝기와 곱해져 판독 불가.
+        글자는 흰색 고정, `textLevel` 은 패널 밝기(0.05~0.80)를 움직인다
 - [x] `ui/BurnInShift.kt` — 60초마다 반경 24dp 원 궤도로 즉시 이동 (애니메이션 없음)
 - [x] `ui/Clock.kt` — 분 경계 정렬 타이머 (체크리스트 최초 작성 시 누락되어 추가)
 - [x] `ui/UnlockGesture.kt` — 1.5초 롱프레스 + 원형 진행 피드백 페이드인

@@ -80,6 +80,7 @@ class ScreenCoverService :
     private val repository: SettingsRepository by lazy { SettingsRepository(this) }
 
     private var coverView: View? = null
+    private var coverParams: WindowManager.LayoutParams? = null
     private var bubbleView: View? = null
     private var bubbleParams: WindowManager.LayoutParams? = null
     private var removeTargetView: View? = null
@@ -118,6 +119,18 @@ class ScreenCoverService :
             if (repository.settings.first().bubbleEnabled) {
                 bubbleWanted = true
                 syncBubble()
+            }
+        }
+
+        // 글자 밝기 설정은 패널 밝기까지 함께 움직인다. 차폐 창이 떠 있는 동안
+        // 설정이 바뀌면 즉시 반영해야 한다.
+        lifecycleScope.launch {
+            repository.settings.collect { settings ->
+                val params = coverParams ?: return@collect
+                if (params.screenBrightness != settings.screenBrightness) {
+                    params.screenBrightness = settings.screenBrightness
+                    runCatching { windowManager.updateViewLayout(coverView, params) }
+                }
             }
         }
     }
@@ -179,14 +192,17 @@ class ScreenCoverService :
         val view = composeView { settings ->
             BlackScreenRoot(settings = settings, onUnlock = ::onCoverUnlocked)
         }
+        val params = overlayLayoutParams()
         runCatching {
-            windowManager.addView(view, overlayLayoutParams())
+            windowManager.addView(view, params)
             coverView = view
+            coverParams = params
         }
     }
 
     private fun removeCover() {
         coverView = detach(coverView)
+        coverParams = null
     }
 
     /** 차폐를 풀어도 버블은 남아야 한다. 예전처럼 stopSelf() 로 끝내면 버블까지 사라진다. */
