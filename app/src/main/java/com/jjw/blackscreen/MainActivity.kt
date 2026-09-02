@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jjw.blackscreen.blackout.BlackoutActivity
+import com.jjw.blackscreen.accessibility.ScreenOffAccessibilityService
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
@@ -58,8 +57,12 @@ class MainActivity : ComponentActivity() {
                     var canDrawOverlays by remember {
                         mutableStateOf(AndroidSettings.canDrawOverlays(this))
                     }
+                    var accessibilityEnabled by remember {
+                        mutableStateOf(ScreenOffAccessibilityService.isEnabled)
+                    }
                     LifecycleResumeEffect(Unit) {
                         canDrawOverlays = AndroidSettings.canDrawOverlays(this@MainActivity)
+                        accessibilityEnabled = ScreenOffAccessibilityService.isEnabled
                         onPauseOrDispose { }
                     }
 
@@ -69,10 +72,15 @@ class MainActivity : ComponentActivity() {
 
                     // 서비스가 시스템에 의해 종료돼 있을 수 있다. 설정이 켜져 있으면 되살린다.
                     // addBubble 은 이미 떠 있으면 그냥 반환하므로 반복 호출해도 안전하다.
-                    LaunchedEffect(settings.bubbleEnabled, canDrawOverlays) {
+                    // ⚠️ 포그라운드가 아닐 때 startForegroundService 를 부르면
+                    //    ForegroundServiceStartNotAllowedException 으로 앱이 죽는다.
+                    //    실제로 그렇게 크래시한 적이 있어 RESUME 시점으로 옮기고
+                    //    그래도 실패할 수 있으니 삼킨다.
+                    LifecycleResumeEffect(settings.bubbleEnabled, canDrawOverlays) {
                         if (settings.bubbleEnabled && canDrawOverlays) {
-                            ScreenCoverService.showBubble(this@MainActivity)
+                            runCatching { ScreenCoverService.showBubble(this@MainActivity) }
                         }
+                        onPauseOrDispose { }
                     }
 
                     SettingsScreen(
@@ -91,9 +99,11 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         },
-                        onStart = { start(settings.mode, canDrawOverlays) },
+                        onStart = { start(settings.mode) },
                         canDrawOverlays = canDrawOverlays,
+                        accessibilityEnabled = accessibilityEnabled,
                         onRequestOverlayPermission = ::openOverlaySettings,
+                        onRequestAccessibility = { ScreenOff.openAccessibilitySettings(this) },
                         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
                     )
                 }
@@ -101,11 +111,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun start(mode: Mode, canDrawOverlays: Boolean) {
-        when (mode) {
-            Mode.BLACKOUT -> startActivity(Intent(this, BlackoutActivity::class.java))
-            Mode.OVERLAY ->
-                if (canDrawOverlays) ScreenCoverService.startCover(this) else openOverlaySettings()
+    private fun start(mode: Mode) {
+        when (ScreenOff.start(this, mode)) {
+            ScreenOff.Result.STARTED -> Unit
+            ScreenOff.Result.NEEDS_ACCESSIBILITY -> ScreenOff.openAccessibilitySettings(this)
+            ScreenOff.Result.NEEDS_OVERLAY_PERMISSION -> openOverlaySettings()
         }
     }
 
@@ -114,7 +124,7 @@ class MainActivity : ComponentActivity() {
             !enabled -> ScreenCoverService.stopBubble(this)
             canDrawOverlays -> ScreenCoverService.showBubble(this)
             // 버블은 오버레이 권한 없이는 띄울 수 없다. 설정 화면으로 보내고,
-            // 돌아오면 LaunchedEffect 가 다시 시도한다.
+            // 돌아오면 LifecycleResumeEffect 가 다시 시도한다.
             else -> openOverlaySettings()
         }
     }

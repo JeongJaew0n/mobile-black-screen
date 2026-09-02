@@ -63,12 +63,28 @@ window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 - 아래에서 **다른 앱이 그대로 실행됩니다.** "화면만 꺼진" 요구에 가장 근접한 방식입니다.
 - 권한은 런타임 요청이 아니라 `Settings.ACTION_MANAGE_OVERLAY_PERMISSION` 설정 화면으로 사용자를 보내야 합니다. 허들이 높습니다.
 - **한계:**
-  - **상태바도 내비게이션 바도 덮을 수 없습니다. 우회 불가능한 하드 제약입니다.** Android 8(O)에서 `TYPE_APPLICATION_OVERLAY`가 시스템 UI 위에 그리지 못하도록 의도적으로 막혔고, Google이 버그가 아닌 설계라고 확인했습니다. `FLAG_LAYOUT_IN_SCREEN` / `FLAG_LAYOUT_NO_LIMITS` / `FLAG_LAYOUT_INSET_DECOR` 어떤 조합으로도 뚫리지 않습니다.
+  - **`TYPE_APPLICATION_OVERLAY` 에 한해** 상태바도 내비게이션 바도 덮을 수 없습니다.
+    (→ §2 방식 4 의 접근성 오버레이는 덮습니다.) Android 8(O)에서 `TYPE_APPLICATION_OVERLAY`가 시스템 UI 위에 그리지 못하도록 의도적으로 막혔고, Google이 버그가 아닌 설계라고 확인했습니다. `FLAG_LAYOUT_IN_SCREEN` / `FLAG_LAYOUT_NO_LIMITS` / `FLAG_LAYOUT_INSET_DECOR` 어떤 조합으로도 뚫리지 않습니다.
     **실측(Galaxy S23+ / Android 16): 오버레이 창 프레임이 `[0,94][1080,2214]` 로 상태바(94px) 아래에서 시작해 내비바(126px) 위에서 끝난다. z-order 상으로도 `NavigationBar`·`StatusBar` 가 오버레이보다 위에 있어 기하학·레이어 양쪽에서 막혀 있다.**
     결과적으로 상단에 시계·배터리·신호 아이콘이, 하단에 내비게이션 바가 그대로 남아 "화면이 꺼진" 착시가 깨집니다.
   - 볼륨 다이얼로그, 알림 셰이드, 잠금 화면 위에도 못 덮습니다.
   - Android 12+ 부터 다른 앱이 `hideOverlayWindows()`로 오버레이를 강제로 숨길 수 있고, 설정/비밀번호 입력 등 **민감 화면에서는 OS가 자동으로 오버레이를 숨깁니다.**
   - `FLAG_NOT_TOUCHABLE`로 터치를 아래 앱에 통과시키면, 반대로 **해제 제스처를 받을 방법이 사라집니다.** 통과/차단 중 하나를 골라야 합니다.
+
+### 방식 4 — 접근성 오버레이 (최종 채택)
+
+`TYPE_ACCESSIBILITY_OVERLAY` 는 **상태바·내비게이션 바·시스템 다이얼로그 위까지 전부
+덮습니다.** 접근성 서비스로 등록하는 것 자체가 자격이라 `SYSTEM_ALERT_WINDOW` 권한도
+필요 없습니다.
+
+- **쓰던 앱이 그대로 유지되고**(Activity 전환 없음) 화면 전체가 검어집니다 — 원래 요구 그대로
+- 실측 확인(Galaxy S23+ / Android 16): 상태바 영역 밝은 픽셀 0개, 최상단 Activity 는 아래 앱 유지
+- 대가: 사용자가 설정에서 접근성 서비스를 켜야 합니다. 심리적 허들이 큽니다
+  (개인용 사이드로딩이라 Play 정책 문제는 없습니다)
+
+> **이 방식을 초기 분석에서 놓쳤습니다.** 접근성 서비스를 "최상단 Activity 감지" 용도로만
+> 검토해 기각했고, **오버레이 레이어로서의 가능성은 아예 보지 않았습니다.** 그 결과
+> "상태바를 덮으려면 Activity 전환밖에 없다"는 잘못된 결론에 도달했습니다.
 
 ### 방식 3 — 진짜 화면 OFF
 

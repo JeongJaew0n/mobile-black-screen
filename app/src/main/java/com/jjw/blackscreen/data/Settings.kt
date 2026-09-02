@@ -2,13 +2,31 @@ package com.jjw.blackscreen.data
 
 import androidx.compose.ui.graphics.Color
 
-/** 차폐 방식. 두 모드의 트레이드오프는 docs/plans/blackout-overlay-modes/spec.md 참조. */
+/**
+ * Screen Off 방식.
+ *
+ * 이 앱의 목적은 **쓰던 앱은 그대로 두고 화면만 어두워지는 것**이다.
+ * 따라서 앱을 전환하지 않는 [FULL] / [OVERLAY] 가 정상 경로이고,
+ * [BLACKOUT] 은 어떤 권한도 주기 싫은 경우의 최후 수단이다.
+ */
 enum class Mode {
-    /** 풀스크린 Activity + 몰입 모드. 상태바까지 완전히 가려지지만 최상단 앱의 렌더링이 멈춘다. */
-    BLACKOUT,
+    /**
+     * 접근성 오버레이. `TYPE_ACCESSIBILITY_OVERLAY` 는 상태바·내비게이션 바·시스템
+     * 다이얼로그 위까지 전부 덮는다. 앱 전환이 없고 화면 전체가 검어진다 — 원하는 동작.
+     */
+    FULL,
 
-    /** 시스템 오버레이. 아래 앱이 계속 렌더링되지만 상태바는 가려지지 않는다. */
+    /**
+     * 일반 오버레이(`SYSTEM_ALERT_WINDOW`). 앱 전환은 없지만 상태바·내비바는 남는다.
+     * 접근성 권한을 주기 싫을 때의 절충안.
+     */
     OVERLAY,
+
+    /**
+     * 풀스크린 Activity. 화면 전체가 검어지지만 **쓰던 앱이 뒤로 밀린다.**
+     * 권한이 하나도 필요 없다는 것만이 장점이다.
+     */
+    BLACKOUT,
 }
 
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
@@ -23,7 +41,7 @@ enum class Gesture {
 }
 
 data class Settings(
-    val mode: Mode = Mode.BLACKOUT,
+    val mode: Mode = Mode.FULL,
     /** 기본값은 요구사항대로 "아무것도 표시하지 않는 완전한 검정"이다. */
     val showClock: Boolean = false,
     val clockFormat: String = ClockFormats.H24,

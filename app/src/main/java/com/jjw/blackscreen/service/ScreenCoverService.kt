@@ -28,6 +28,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.jjw.blackscreen.R
+import com.jjw.blackscreen.ScreenOff
 import com.jjw.blackscreen.blackout.BlackoutActivity
 import androidx.compose.ui.geometry.Offset
 import com.jjw.blackscreen.bubble.BubbleContent
@@ -369,19 +370,21 @@ class ScreenCoverService :
      */
     private fun onBubbleTapped() {
         lifecycleScope.launch {
-            when (repository.settings.first().mode) {
-                Mode.BLACKOUT -> {
-                    bubbleSuppressed = true
-                    syncBubble()
-                    startActivity(
-                        Intent(this@ScreenCoverService, BlackoutActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                    )
-                }
-                Mode.OVERLAY -> {
-                    addCover()
-                    syncBubble()
-                }
+            val mode = repository.settings.first().mode
+
+            // BLACKOUT 만 Activity 를 띄운다 — 그 동안은 버블을 감춰야 한다.
+            // FULL 은 접근성 오버레이가 버블보다 위 레이어라 알아서 가려진다.
+            if (mode == Mode.BLACKOUT) {
+                bubbleSuppressed = true
+                syncBubble()
+            }
+
+            when (ScreenOff.start(this@ScreenCoverService, mode)) {
+                ScreenOff.Result.STARTED -> if (mode == Mode.OVERLAY) syncBubble()
+                ScreenOff.Result.NEEDS_ACCESSIBILITY ->
+                    ScreenOff.openAccessibilitySettings(this@ScreenCoverService)
+                ScreenOff.Result.NEEDS_OVERLAY_PERMISSION ->
+                    ScreenOff.openOverlaySettings(this@ScreenCoverService)
             }
             updateNotification()
         }

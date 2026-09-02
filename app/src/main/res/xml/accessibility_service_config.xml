@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  화면을 덮는 창을 올리기 위한 최소 설정.
+
+  이 서비스는 화면 내용을 읽지 않는다(canRetrieveWindowContent=false).
+  접근성 서비스로 등록하는 유일한 이유는 TYPE_ACCESSIBILITY_OVERLAY 창을 쓸 수 있는
+  자격을 얻기 위해서다 — 그 창만이 상태바·내비게이션 바 위까지 덮을 수 있다.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="false"
+    android:notificationTimeout="100"
+    android:description="@string/accessibility_description" />

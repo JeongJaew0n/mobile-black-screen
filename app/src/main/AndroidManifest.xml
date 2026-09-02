@@ -65,6 +65,23 @@
                 android:value="Full-screen black overlay that visually blanks the display while other apps keep running." />
         </service>
 
+        <!--
+          TYPE_ACCESSIBILITY_OVERLAY 를 쓰기 위한 서비스. 그 창만이 상태바·내비게이션 바
+          위까지 덮을 수 있다. 화면 내용은 읽지 않는다.
+        -->
+        <service
+            android:name=".accessibility.ScreenOffAccessibilityService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <service
             android:name=".tile.BlackScreenTileService"
             android:exported="true"

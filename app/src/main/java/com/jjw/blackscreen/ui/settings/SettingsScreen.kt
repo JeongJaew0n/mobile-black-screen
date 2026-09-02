@@ -45,7 +45,9 @@ fun SettingsScreen(
     onChange: ((Settings) -> Settings) -> Unit,
     onStart: () -> Unit,
     canDrawOverlays: Boolean,
+    accessibilityEnabled: Boolean,
     onRequestOverlayPermission: () -> Unit,
+    onRequestAccessibility: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -68,6 +70,21 @@ fun SettingsScreen(
         Section(stringResource(R.string.section_mode))
 
         ModeRow(
+            label = stringResource(R.string.mode_full),
+            description = stringResource(R.string.mode_full_desc),
+            selected = settings.mode == Mode.FULL,
+            onSelect = { onChange { s -> s.copy(mode = Mode.FULL) } },
+        )
+
+        if (settings.mode == Mode.FULL && !accessibilityEnabled) {
+            PermissionCard(
+                message = stringResource(R.string.accessibility_needed),
+                action = stringResource(R.string.accessibility_open),
+                onClick = onRequestAccessibility,
+            )
+        }
+
+        ModeRow(
             label = stringResource(R.string.mode_blackout),
             description = stringResource(R.string.mode_blackout_desc),
             selected = settings.mode == Mode.BLACKOUT,
@@ -81,26 +98,11 @@ fun SettingsScreen(
         )
 
         if (settings.mode == Mode.OVERLAY && !canDrawOverlays) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.overlay_permission_needed),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = onRequestOverlayPermission) {
-                        Text(stringResource(R.string.grant_permission))
-                    }
-                }
-            }
+            PermissionCard(
+                message = stringResource(R.string.overlay_permission_needed),
+                action = stringResource(R.string.grant_permission),
+                onClick = onRequestOverlayPermission,
+            )
         }
 
         Section(stringResource(R.string.section_content))
@@ -231,7 +233,29 @@ private fun SwitchRow(
     }
 }
 
-/** 라디오 + 설명문. 두 모드의 트레이드오프는 설명을 읽어야만 판단할 수 있어 한 줄로 못 줄인다. */
+@Composable
+private fun PermissionCard(message: String, action: String, onClick: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = onClick) { Text(action) }
+        }
+    }
+}
+
+/** 라디오 + 설명문. 모드별 트레이드오프는 설명을 읽어야만 판단할 수 있어 한 줄로 못 줄인다. */
 @Composable
 private fun ModeRow(
     label: String,

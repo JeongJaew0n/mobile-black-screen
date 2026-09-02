@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
 import com.jjw.blackscreen.blackout.BlackoutActivity
+import com.jjw.blackscreen.ScreenOff
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.overlay.OverlayLauncherActivity
@@ -47,10 +48,21 @@ class BlackScreenTileService : TileService() {
     override fun onClick() {
         super.onClick()
 
+        // FULL 은 Activity 를 거치지 않는다. 중계 Activity 를 띄우면 그 순간 쓰던 앱이
+        // 뒤로 밀리는데, 그것을 피하는 것이 이 모드의 존재 이유다.
+        if (mode == Mode.FULL) {
+            ScreenOff.start(this, Mode.FULL).let { result ->
+                if (result != ScreenOff.Result.STARTED) {
+                    ScreenOff.openAccessibilitySettings(this)
+                }
+            }
+            return
+        }
+
         val target = when (mode) {
             Mode.BLACKOUT -> BlackoutActivity::class.java
             // 오버레이는 중계 Activity 를 거친다 — OverlayLauncherActivity 주석 참조.
-            Mode.OVERLAY -> OverlayLauncherActivity::class.java
+            else -> OverlayLauncherActivity::class.java
         }
 
         val intent = Intent(this, target).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

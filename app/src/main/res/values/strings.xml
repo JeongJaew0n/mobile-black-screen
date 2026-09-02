@@ -41,4 +41,11 @@
     <string name="bubble_running">버블 실행 중</string>
     <string name="bubble_running_desc">버블을 눌러 Screen Off 합니다</string>
     <string name="bubble_stop">버블 끄기</string>
+
+    <string name="accessibility_description">화면 전체를 덮기 위해 필요합니다. 상태바와 내비게이션 바 위까지 덮을 수 있는 창은 접근성 서비스만 사용할 수 있습니다. 이 앱은 화면 내용을 읽지 않습니다.</string>
+
+    <string name="mode_full">전체 화면</string>
+    <string name="mode_full_desc">쓰던 앱은 그대로 두고 화면 전체가 검어집니다. 상태바와 내비게이션 바까지 덮습니다. 접근성 권한이 필요합니다.</string>
+    <string name="accessibility_needed">접근성 권한이 필요합니다</string>
+    <string name="accessibility_open">접근성 설정 열기</string>
 </resources>

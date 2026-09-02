@@ -72,9 +72,16 @@ adb shell settings put system screen_off_timeout 600000
 **두 모드가 표시 콘텐츠를 하나의 Composable(`ui/BlackScreenContent.kt` 의
 `BlackScreenRoot`)로 공유한다.** 차이는 "어떤 창에 올리는가"뿐이다.
 
-- **Blackout** (`blackout/BlackoutActivity.kt`) — 풀스크린 Activity. 시스템 바를
-  완전히 숨긴다. 버블을 쓰지 않으면 권한 0개.
-- **Overlay** — `TYPE_APPLICATION_OVERLAY` 창. 아래 앱이 계속 렌더링된다.
+- **FULL** (`accessibility/ScreenOffAccessibilityService.kt`) — 접근성 오버레이.
+  **쓰던 앱을 그대로 두고 상태바·내비바까지 전부 덮는다.** 이 앱이 원래 하려던 동작이며
+  기본값이다.
+- **Overlay** — `TYPE_APPLICATION_OVERLAY` 창. 앱 전환은 없지만 시스템 바가 남는다.
+- **Blackout** (`blackout/BlackoutActivity.kt`) — 풀스크린 Activity.
+  **쓰던 앱이 뒤로 밀린다.** 권한이 하나도 필요 없다는 것만이 장점인 최후 수단이다.
+
+진입점이 셋(설정 버튼 / 버블 / 타일)이므로 시작 분기는 **반드시 `ScreenOff` 디스패처**를
+거친다. 특히 타일에서 FULL 을 켤 때 중계 Activity 를 쓰면 그 순간 쓰던 앱이 밀리므로
+직접 호출해야 한다.
 
 표시 내용을 고칠 때는 `BlackScreenRoot` 한 곳만 만지면 두 모드에 함께 반영된다.
 모드별로 갈라 쓰지 말 것.
@@ -95,16 +102,23 @@ bubbleView       버블 창
 `coverView` 와 `bubbleWanted` 가 둘 다 비면 그때만 `stopSelf()` 한다 —
 예전처럼 차폐 해제에서 `stopSelf()` 하면 버블까지 죽는다.
 
-## 우회 불가능한 제약 (건드리지 말 것)
+## 창 종류에 따른 제약 (여기서 한 번 크게 틀렸다)
 
-**오버레이는 상태바도 내비게이션 바도 덮지 못한다.** Android 8(O)부터 의도적으로
-금지되었고 Google 이 버그가 아니라고 확인했다. `FLAG_LAYOUT_NO_LIMITS` 를 포함해
-어떤 플래그 조합으로도 뚫리지 않는다. 실측(Galaxy S23+ / Android 16)상 창 프레임은
-`[0,94][1080,2214]` 이고 z-order 상으로도 두 바가 오버레이보다 위다.
-"내비바만이라도 덮어보자"는 시도는 이미 실패했으니 반복하지 말 것.
+**`TYPE_APPLICATION_OVERLAY`(`SYSTEM_ALERT_WINDOW`)는 상태바도 내비게이션 바도 덮지 못한다.**
+Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으로도 뚫리지 않는다.
+실측(Galaxy S23+ / Android 16)상 창 프레임은 `[0,94][1080,2214]` 이고 z-order 상으로도
+두 바가 오버레이보다 위다. `FLAG_LAYOUT_NO_LIMITS` 도 효과가 없다.
 
-`OverlayWindow.kt` 의 `FLAG_LAYOUT_NO_LIMITS` 는 다른 기기·버전을 위해 남겨둔 것이고
-이 기기에서는 효과가 없다.
+**하지만 `TYPE_ACCESSIBILITY_OVERLAY` 는 전부 덮는다.** 상태바·내비게이션 바·시스템
+다이얼로그 위까지 올라간다. 접근성 서비스 자체가 권한이라 `SYSTEM_ALERT_WINDOW` 도
+필요 없다. 실측으로 확인했다 — 상태바 영역(y 0~94) 밝은 픽셀 0개, 최상단 Activity 는
+아래 앱 그대로.
+
+> **이 구분을 놓쳐서 한참을 헤맸다.** "오버레이는 상태바를 못 덮는다"를 모든 오버레이에
+> 적용해 버린 탓에 "완전히 검게 하려면 Activity 로 전환하는 수밖에 없다"는 잘못된 전제가
+> 생겼고, 사용자가 처음부터 원한 동작(앱은 그대로, 화면만 어두워짐)과 정반대인
+> Blackout 을 기본값으로 만들었다. **제약을 말할 때는 어떤 창 종류에 대한 제약인지
+> 반드시 붙일 것.**
 
 ## 코드를 고칠 때 걸리는 함정
 
