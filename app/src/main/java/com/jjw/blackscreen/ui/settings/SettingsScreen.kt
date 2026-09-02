@@ -121,7 +121,7 @@ fun SettingsScreen(
             )
             ClockFormats.ALL.forEach { format ->
                 RadioRow(
-                    label = format,
+                    label = stringResource(format.labelRes),
                     selected = settings.clockFormat == format,
                     onSelect = { onChange { s -> s.copy(clockFormat = format) } },
                 )
@@ -185,6 +185,13 @@ fun SettingsScreen(
         Spacer(Modifier.height(32.dp))
     }
 }
+
+/** 패턴 문자열을 그대로 보여주면 알아보기 어렵다. 예시가 들어간 문구로 바꾼다. */
+private val String.labelRes: Int
+    get() = when (this) {
+        ClockFormats.H24 -> R.string.clock_24h
+        else -> R.string.clock_12h
+    }
 
 private val Gesture.labelRes: Int
     get() = when (this) {

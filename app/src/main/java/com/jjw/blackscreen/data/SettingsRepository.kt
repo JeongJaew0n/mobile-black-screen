@@ -59,7 +59,7 @@ class SettingsRepository(context: Context) {
         return Settings(
             mode = enumOrDefault(this[Keys.MODE], defaults.mode),
             showClock = this[Keys.SHOW_CLOCK] ?: defaults.showClock,
-            clockFormat = this[Keys.CLOCK_FORMAT] ?: defaults.clockFormat,
+            clockFormat = ClockFormats.migrate(this[Keys.CLOCK_FORMAT]),
             sentence = this[Keys.SENTENCE] ?: defaults.sentence,
             textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
             burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,

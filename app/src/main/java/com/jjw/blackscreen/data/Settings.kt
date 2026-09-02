@@ -97,7 +97,22 @@ data class Settings(
 
 object ClockFormats {
     const val H24 = "HH:mm"
-    const val H12 = "h:mm a"
+
+    /**
+     * 한국어는 오전/오후가 **앞**에 온다 — "오전 12:11" 이지 "12:11 오전" 이 아니다.
+     * `h:mm a` 는 영어권 순서다.
+     */
+    const val H12 = "a h:mm"
+
+    /** 예전에 저장된 영어권 순서. 읽을 때 [H12] 로 옮긴다. */
+    const val LEGACY_H12 = "h:mm a"
 
     val ALL = listOf(H24, H12)
+
+    /** 저장된 값이 사라진 형식이면 현재 형식으로 옮긴다. */
+    fun migrate(stored: String?): String = when (stored) {
+        null -> H24
+        LEGACY_H12 -> H12
+        else -> stored
+    }
 }
