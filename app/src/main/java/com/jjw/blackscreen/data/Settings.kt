@@ -54,6 +54,8 @@ data class Settings(
     /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
     val bubbleEnabled: Boolean = false,
     val bubbleEdge: Edge = Edge.RIGHT,
+    /** 1~5. 값이 클수록 버블이 크다 — [bubbleSizeDp] 참조. */
+    val bubbleSizeLevel: Int = 3,
     /** 화면 높이 대비 0..1. 회전·해상도가 바뀌어도 화면 안에 남는다. */
     val bubbleYRatio: Float = 0.5f,
 ) {
@@ -67,6 +69,21 @@ data class Settings(
      * 그래서 밝기 손잡이는 [screenBrightness] 하나로 통일했다. 여기는 건드리지 말 것.
      */
     val textColor: Color get() = Color.White
+
+    /**
+     * 버블 지름(dp).
+     *
+     * 작을수록 덜 거슬리지만 누르기 어려워진다. 접근성 권장 최소 터치 영역이 48dp 라
+     * 그보다 작은 단계는 "일부러 작게 쓰겠다" 는 선택으로만 의미가 있다.
+     */
+    val bubbleSizeDp: Int
+        get() = when (bubbleSizeLevel.coerceIn(1, 5)) {
+            1 -> 40
+            2 -> 46
+            3 -> 52
+            4 -> 60
+            else -> 70
+        }
 
     /**
      * 창 밝기 오버라이드(0..1). 이 앱에서 밝기를 조절하는 **유일한** 값이다.

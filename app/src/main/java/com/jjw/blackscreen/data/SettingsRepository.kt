@@ -36,6 +36,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
             prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
             prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
+            prefs[Keys.BUBBLE_SIZE_LEVEL] = next.bubbleSizeLevel
             prefs[Keys.BUBBLE_Y_RATIO] = next.bubbleYRatio
         }
         return result
@@ -51,6 +52,7 @@ class SettingsRepository(context: Context) {
         val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
         val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
         val BUBBLE_EDGE = stringPreferencesKey("bubble_edge")
+        val BUBBLE_SIZE_LEVEL = intPreferencesKey("bubble_size_level")
         val BUBBLE_Y_RATIO = floatPreferencesKey("bubble_y_ratio")
     }
 
@@ -66,6 +68,7 @@ class SettingsRepository(context: Context) {
             unlockGesture = enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture),
             bubbleEnabled = this[Keys.BUBBLE_ENABLED] ?: defaults.bubbleEnabled,
             bubbleEdge = enumOrDefault(this[Keys.BUBBLE_EDGE], defaults.bubbleEdge),
+            bubbleSizeLevel = this[Keys.BUBBLE_SIZE_LEVEL] ?: defaults.bubbleSizeLevel,
             bubbleYRatio = this[Keys.BUBBLE_Y_RATIO] ?: defaults.bubbleYRatio,
         )
     }

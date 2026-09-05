@@ -98,6 +98,15 @@ class ScreenCoverService :
      */
     private var bubbleAdding = false
 
+    /**
+     * 마지막으로 읽은 설정.
+     *
+     * 드래그 콜백과 창 배치는 suspend 가 아니라 그 자리에서 크기·가장자리를 알아야 한다.
+     * 수집기가 갱신해 둔 값을 쓴다.
+     */
+    @Volatile
+    private var latestSettings: Settings = Settings()
+
     /** 사용자가 버블을 켜 두었는가. 차폐 중 임시로 숨겨도 이 값은 유지된다. */
     private var bubbleWanted = false
 
@@ -127,10 +136,29 @@ class ScreenCoverService :
         // 설정이 바뀌면 즉시 반영해야 한다.
         lifecycleScope.launch {
             repository.settings.collect { settings ->
-                val params = coverParams ?: return@collect
-                if (params.screenBrightness != settings.screenBrightness) {
-                    params.screenBrightness = settings.screenBrightness
-                    runCatching { windowManager.updateViewLayout(coverView, params) }
+                val sizeChanged = settings.bubbleSizeDp != latestSettings.bubbleSizeDp
+                latestSettings = settings
+
+                coverParams?.let { params ->
+                    if (params.screenBrightness != settings.screenBrightness) {
+                        params.screenBrightness = settings.screenBrightness
+                        runCatching { windowManager.updateViewLayout(coverView, params) }
+                    }
+                }
+
+                // 크기가 바뀌면 창 자체는 WRAP_CONTENT 라 알아서 커지지만,
+                // 오른쪽 가장자리에 붙어 있으면 x 를 다시 잡아야 화면 밖으로 밀리지 않는다.
+                if (sizeChanged) bubbleParams?.let { params ->
+                    val (w, h) = usableSize()
+                    params.placeBubble(
+                        edge = settings.bubbleEdge,
+                        yRatio = settings.bubbleYRatio,
+                        screenWidth = w,
+                        screenHeight = h,
+                        density = resources.displayMetrics.density,
+                        sizeDp = settings.bubbleSizeDp,
+                    )
+                    runCatching { windowManager.updateViewLayout(bubbleView, params) }
                 }
             }
         }
@@ -232,8 +260,9 @@ class ScreenCoverService :
             val settings = repository.settings.first()
             if (!bubbleWanted || bubbleSuppressed || coverView != null) return@launch
 
-            val view = composeView {
+            val view = composeView { current ->
                 BubbleContent(
+                    sizeDp = current.bubbleSizeDp,
                     onTap = ::onBubbleTapped,
                     onDragStart = ::onBubbleDragStart,
                     onDrag = ::onBubbleDrag,
@@ -248,6 +277,7 @@ class ScreenCoverService :
                     screenWidth = w,
                     screenHeight = h,
                     density = resources.displayMetrics.density,
+                    sizeDp = settings.bubbleSizeDp,
                 )
             }
             runCatching {
@@ -302,7 +332,7 @@ class ScreenCoverService :
     private fun isOverRemoveTarget(params: WindowManager.LayoutParams): Boolean {
         val density = resources.displayMetrics.density
         val (sw, sh) = usableSize()
-        val half = bubbleSizePx(density) / 2
+        val half = bubbleSizePx(density, latestSettings.bubbleSizeDp) / 2
         val (tx, ty) = removeTargetCenter(sw, sh, density)
         val dx = (params.x + half - tx).toFloat()
         val dy = (params.y + half - ty).toFloat()
@@ -313,9 +343,9 @@ class ScreenCoverService :
     private fun snapToEdge(params: WindowManager.LayoutParams) {
         val density = resources.displayMetrics.density
         val (sw, sh) = usableSize()
-        val size = bubbleSizePx(density)
+        val size = bubbleSizePx(density, latestSettings.bubbleSizeDp)
         val edge = if (params.x + size / 2 < sw / 2) Edge.LEFT else Edge.RIGHT
-        val targetX = bubbleEdgeX(edge, sw, density)
+        val targetX = bubbleEdgeX(edge, sw, density, latestSettings.bubbleSizeDp)
         val clampedY = params.y.coerceIn(0, (sh - size).coerceAtLeast(0))
         val ratio = if (sh > size) clampedY.toFloat() / (sh - size) else 0.5f
 

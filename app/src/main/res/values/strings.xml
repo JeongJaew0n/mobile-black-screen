@@ -38,6 +38,7 @@
 
     <string name="section_bubble">버블</string>
     <string name="bubble_enabled">화면 위 버블 표시</string>
+    <string name="bubble_size">버블 크기</string>
     <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 앱을 닫아도 유지됩니다.</string>
     <string name="bubble_permission_note">버블에는 Screen Off 방식과 별개로 ‘다른 앱 위에 표시’ 권한이 필요합니다.</string>
     <string name="bubble_running">버블 실행 중</string>

@@ -5,18 +5,15 @@ import android.view.Gravity
 import android.view.WindowManager
 import com.jjw.blackscreen.data.Edge
 
-/** 버블 지름. 너무 크면 화면을 가리고, 너무 작으면 누르기 어렵다. */
-const val BUBBLE_SIZE_DP = 52
-
 /** 가장자리에서 살짝 띄운다. 0 이면 곡면 디스플레이에서 잘린다. */
 private const val EDGE_MARGIN_DP = 6
 
-internal fun bubbleSizePx(density: Float) = (BUBBLE_SIZE_DP * density).toInt()
+internal fun bubbleSizePx(density: Float, sizeDp: Int) = (sizeDp * density).toInt()
 
 /** 해당 가장자리에 붙였을 때의 x 좌표. 스냅과 최초 배치가 같은 식을 쓰게 한다. */
-internal fun bubbleEdgeX(edge: Edge, screenWidth: Int, density: Float): Int {
+internal fun bubbleEdgeX(edge: Edge, screenWidth: Int, density: Float, sizeDp: Int): Int {
     val margin = (EDGE_MARGIN_DP * density).toInt()
-    return if (edge == Edge.LEFT) margin else screenWidth - bubbleSizePx(density) - margin
+    return if (edge == Edge.LEFT) margin else screenWidth - bubbleSizePx(density, sizeDp) - margin
 }
 
 /**
@@ -45,7 +42,8 @@ internal fun WindowManager.LayoutParams.placeBubble(
     screenWidth: Int,
     screenHeight: Int,
     density: Float,
+    sizeDp: Int,
 ) {
-    x = bubbleEdgeX(edge, screenWidth, density)
-    y = ((screenHeight - bubbleSizePx(density)) * yRatio.coerceIn(0f, 1f)).toInt()
+    x = bubbleEdgeX(edge, screenWidth, density, sizeDp)
+    y = ((screenHeight - bubbleSizePx(density, sizeDp)) * yRatio.coerceIn(0f, 1f)).toInt()
 }

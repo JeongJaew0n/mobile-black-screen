@@ -28,8 +28,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
-private val BubbleSize = BUBBLE_SIZE_DP.dp
-
 /** 이 시간 동안 손대지 않으면 흐려진다. */
 private const val IDLE_DELAY_MS = 3_000L
 private const val IDLE_ALPHA = 0.4f
@@ -45,6 +43,7 @@ private const val IDLE_ALPHA = 0.4f
  */
 @Composable
 fun BubbleContent(
+    sizeDp: Int,
     onTap: () -> Unit,
     onDragStart: () -> Unit,
     onDrag: (Offset) -> Unit,
@@ -70,7 +69,7 @@ fun BubbleContent(
 
     Box(
         Modifier
-            .size(BubbleSize)
+            .size(sizeDp.dp)
             .alpha(bubbleAlpha)
             .clip(CircleShape)
             .background(Color(0xE0141414))
@@ -88,9 +87,10 @@ fun BubbleContent(
             },
         contentAlignment = Alignment.Center,
     ) {
+        // 막대 길이는 버블 크기에 비례시킨다. 고정하면 큰 버블에서 초라해 보인다.
         Box(
             Modifier
-                .width(18.dp)
+                .width((sizeDp * 0.35f).dp)
                 .height(2.dp)
                 .background(Color(0xB3FFFFFF)),
         )

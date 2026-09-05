@@ -166,6 +166,20 @@ fun SettingsScreen(
             checked = settings.bubbleEnabled,
             onCheckedChange = { on -> onChange { s -> s.copy(bubbleEnabled = on) } },
         )
+        if (settings.bubbleEnabled) {
+            Text(
+                text = "${stringResource(R.string.bubble_size)}  ${settings.bubbleSizeDp}dp",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Slider(
+                value = settings.bubbleSizeLevel.toFloat(),
+                onValueChange = { v -> onChange { s -> s.copy(bubbleSizeLevel = v.roundToInt()) } },
+                valueRange = 1f..5f,
+                steps = 3,
+            )
+        }
+
         Text(
             text = stringResource(R.string.bubble_permission_note),
             style = MaterialTheme.typography.bodySmall,
