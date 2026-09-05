@@ -212,6 +212,7 @@ private val Gesture.labelRes: Int
         Gesture.LONG_PRESS -> R.string.gesture_long_press
         Gesture.DOUBLE_TAP -> R.string.gesture_double_tap
         Gesture.TRIPLE_TAP -> R.string.gesture_triple_tap
+        Gesture.SWIPE -> R.string.gesture_swipe
     }
 
 @Composable

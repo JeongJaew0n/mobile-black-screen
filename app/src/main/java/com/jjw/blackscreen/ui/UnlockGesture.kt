@@ -1,6 +1,7 @@
 package com.jjw.blackscreen.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.data.Gesture
 
 private const val HoldMillis = 1_500f
+
+/** 쓸어서 해제에 필요한 순 변위. 화면 폭의 절반에 가까워 우연히 나오기 어렵다. */
+private val SwipeDistance = 180.dp
 private const val TapWindowMillis = 400L
 private val RingSize = 64.dp
 private val RingStroke = 3.dp
@@ -89,6 +93,12 @@ fun BoxScope.UnlockGestureLayer(
 
                     Gesture.DOUBLE_TAP -> detectTapCount(required = 2, onUnlock = onUnlock)
                     Gesture.TRIPLE_TAP -> detectTapCount(required = 3, onUnlock = onUnlock)
+
+                    Gesture.SWIPE -> detectSwipe(
+                        thresholdPx = SwipeDistance.toPx(),
+                        onProgress = { progress = it },
+                        onUnlock = onUnlock,
+                    )
                 }
             },
     )
@@ -114,6 +124,40 @@ fun BoxScope.UnlockGestureLayer(
             )
         }
     }
+}
+
+/**
+ * 한 방향으로 [thresholdPx] 만큼 쓸면 해제한다.
+ *
+ * **누적 경로가 아니라 시작점 대비 순 변위로 잰다.** 누적으로 재면 주머니 속 잔진동이
+ * 쌓여서 풀린다. 진행률은 롱프레스와 같은 원형 링으로 보여준다.
+ */
+private suspend fun PointerInputScope.detectSwipe(
+    thresholdPx: Float,
+    onProgress: (Float) -> Unit,
+    onUnlock: () -> Unit,
+) {
+    var travelled = Offset.Zero
+    var fired = false
+    detectDragGestures(
+        onDragStart = {
+            travelled = Offset.Zero
+            fired = false
+            onProgress(0f)
+        },
+        onDragEnd = { onProgress(0f) },
+        onDragCancel = { onProgress(0f) },
+        onDrag = { change, delta ->
+            change.consume()
+            travelled += delta
+            val progress = (travelled.getDistance() / thresholdPx).coerceIn(0f, 1f)
+            onProgress(progress)
+            if (progress >= 1f && !fired) {
+                fired = true
+                onUnlock()
+            }
+        },
+    )
 }
 
 /** [TapWindowMillis] 안에 [required] 번 연속으로 탭하면 해제한다. */

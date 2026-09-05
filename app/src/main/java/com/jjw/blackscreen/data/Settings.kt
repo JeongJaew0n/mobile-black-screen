@@ -38,6 +38,15 @@ enum class Gesture {
     LONG_PRESS,
     DOUBLE_TAP,
     TRIPLE_TAP,
+
+    /**
+     * 한 방향으로 길게 쓸기.
+     *
+     * 판정 기준은 이동한 경로의 총합이 아니라 **시작점 대비 순 변위**다.
+     * 경로 총합으로 재면 주머니 속에서 손가락이 잘게 흔들리기만 해도 누적되어 풀린다.
+     * 순 변위는 왔다 갔다 하면 상쇄되므로 의도적인 스와이프만 통과한다.
+     */
+    SWIPE,
 }
 
 data class Settings(

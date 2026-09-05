@@ -22,6 +22,7 @@
     <string name="gesture_long_press">1.5초 길게 누르기</string>
     <string name="gesture_double_tap">더블 탭</string>
     <string name="gesture_triple_tap">3회 연속 탭</string>
+    <string name="gesture_swipe">길게 쓸기</string>
 
     <string name="section_mode">Screen Off 방식</string>
     <string name="mode_blackout">완전 검정</string>
