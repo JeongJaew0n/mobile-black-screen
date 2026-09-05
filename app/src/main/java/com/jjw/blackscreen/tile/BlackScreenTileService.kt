@@ -28,14 +28,19 @@ class BlackScreenTileService : TileService() {
 
     // onClick 은 suspend 가 아니므로 DataStore 를 그 자리에서 읽을 수 없다.
     // 타일이 보이기 시작할 때 미리 읽어 둔다.
-    private var mode: Mode = Mode.BLACKOUT
+    //
+    // ⚠️ 기본값을 특정 모드로 못 박으면 그 모드가 비활성화됐을 때 꺼진 컴포넌트를
+    //    실행하려다 죽는다. 항상 Mode.default 를 거친다.
+    private var mode: Mode = Mode.default
 
     override fun onStartListening() {
         super.onStartListening()
         val newScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         scope = newScope
         newScope.launch {
-            mode = SettingsRepository(this@BlackScreenTileService).settings.first().mode
+            mode = Mode.sanitize(
+                SettingsRepository(this@BlackScreenTileService).settings.first().mode,
+            )
         }
     }
 

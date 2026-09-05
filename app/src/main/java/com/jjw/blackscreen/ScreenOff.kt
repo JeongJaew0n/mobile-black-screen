@@ -27,7 +27,7 @@ object ScreenOff {
         NEEDS_OVERLAY_PERMISSION,
     }
 
-    fun start(context: Context, mode: Mode): Result = when (mode) {
+    fun start(context: Context, mode: Mode): Result = when (Mode.sanitize(mode)) {
         Mode.FULL -> {
             val service = ScreenOffAccessibilityService.instance
             if (service == null) {

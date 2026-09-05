@@ -9,24 +9,45 @@ import androidx.compose.ui.graphics.Color
  * 따라서 앱을 전환하지 않는 [FULL] / [OVERLAY] 가 정상 경로이고,
  * [BLACKOUT] 은 어떤 권한도 주기 싫은 경우의 최후 수단이다.
  */
-enum class Mode {
+enum class Mode(
+    /**
+     * 이 모드를 쓸 수 있는가.
+     *
+     * `false` 로 두면 설정 화면에 나타나지 않고, 저장된 값도 읽는 시점에
+     * [Mode.default] 로 교정된다. **코드는 그대로 남는다** — 되살릴 때 이 값만 바꾼다.
+     * 매니페스트의 해당 컴포넌트도 `android:enabled="false"` 로 함께 꺼져 있다.
+     */
+    val available: Boolean,
+) {
     /**
      * 접근성 오버레이. `TYPE_ACCESSIBILITY_OVERLAY` 는 상태바·내비게이션 바·시스템
      * 다이얼로그 위까지 전부 덮는다. 앱 전환이 없고 화면 전체가 검어진다 — 원하는 동작.
      */
-    FULL,
+    FULL(available = true),
 
     /**
      * 일반 오버레이(`SYSTEM_ALERT_WINDOW`). 앱 전환은 없지만 상태바·내비바는 남는다.
      * 접근성 권한을 주기 싫을 때의 절충안.
      */
-    OVERLAY,
+    OVERLAY(available = false),
 
     /**
      * 풀스크린 Activity. 화면 전체가 검어지지만 **쓰던 앱이 뒤로 밀린다.**
      * 권한이 하나도 필요 없다는 것만이 장점이다.
      */
-    BLACKOUT,
+    BLACKOUT(available = false),
+
+    ;
+
+    companion object {
+        /** 화면에 내보낼 모드. 하나뿐이면 설정 화면이 라디오를 감춘다. */
+        val available: List<Mode> get() = entries.filter { it.available }
+
+        val default: Mode get() = available.firstOrNull() ?: FULL
+
+        /** 저장된 값이 비활성 모드를 가리키면 여기서 걸러낸다. */
+        fun sanitize(mode: Mode): Mode = if (mode.available) mode else default
+    }
 }
 
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
@@ -104,16 +125,21 @@ data class Settings(
      *    패널 밝기가 반영되지 않는다. 반드시 실제 화면을 눈으로 봐야 한다.
      */
     val screenBrightness: Float
-        get() = if (!hasContent) {
-            0f
-        } else {
-            when (textLevel.coerceIn(1, 5)) {
-                1 -> 0.05f
-                2 -> 0.15f
-                3 -> 0.30f
-                4 -> 0.50f
-                else -> 0.80f
-            }
+        get() = if (hasContent) brightnessForLevel else 0f
+
+    /**
+     * 표시 내용 유무와 무관하게 레벨에 대응하는 밝기.
+     *
+     * 설정 화면 미리보기용이다. [screenBrightness] 를 그대로 쓰면 시계·문장을 아직
+     * 켜지 않은 상태에서 슬라이더를 움직여도 0 이라 아무 변화가 없다.
+     */
+    val brightnessForLevel: Float
+        get() = when (textLevel.coerceIn(1, 5)) {
+            1 -> 0.05f
+            2 -> 0.15f
+            3 -> 0.30f
+            4 -> 0.50f
+            else -> 0.80f
         }
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */

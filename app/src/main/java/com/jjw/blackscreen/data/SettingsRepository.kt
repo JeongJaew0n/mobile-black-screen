@@ -59,7 +59,8 @@ class SettingsRepository(context: Context) {
     private fun Preferences.toSettings(): Settings {
         val defaults = Settings()
         return Settings(
-            mode = enumOrDefault(this[Keys.MODE], defaults.mode),
+            // 비활성 모드가 저장돼 있으면 갇히지 않도록 교정한다.
+            mode = Mode.sanitize(enumOrDefault(this[Keys.MODE], defaults.mode)),
             showClock = this[Keys.SHOW_CLOCK] ?: defaults.showClock,
             clockFormat = ClockFormats.migrate(this[Keys.CLOCK_FORMAT]),
             sentence = this[Keys.SENTENCE] ?: defaults.sentence,
