@@ -8,15 +8,24 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.data.Gesture
 import com.jjw.blackscreen.data.Settings
+import kotlin.math.roundToInt
 
 /**
  * Blackout 모드와 Overlay 모드가 공유하는 차폐 화면.
@@ -30,13 +39,38 @@ fun BlackScreenRoot(
     onUnlock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier.fillMaxSize().background(Color.Black)) {
-        BlackScreenContent(settings)
-        UnlockGestureLayer(
-            gesture = settings.unlockGesture,
-            ringColor = settings.textColor,
-            onUnlock = onUnlock,
-        )
+    var slideOffset by remember { mutableFloatStateOf(0f) }
+    var containerHeight by remember { mutableIntStateOf(0) }
+
+    Box(
+        modifier
+            .fillMaxSize()
+            .onSizeChanged { containerHeight = it.height },
+    ) {
+        // 검은 표면 전체가 함께 움직여야 비워진 자리로 아래 앱이 드러난다.
+        // 배경을 바깥 Box 에 두면 밀어도 검정이 그대로 남는다.
+        Box(
+            Modifier
+                .fillMaxSize()
+                .offset { IntOffset(0, slideOffset.roundToInt()) }
+                .background(Color.Black),
+        ) {
+            BlackScreenContent(settings)
+        }
+
+        if (settings.unlockGesture == Gesture.SWIPE) {
+            SlideToDismissLayer(
+                onOffsetChange = { slideOffset = it },
+                containerHeight = containerHeight,
+                onUnlock = onUnlock,
+            )
+        } else {
+            UnlockGestureLayer(
+                gesture = settings.unlockGesture,
+                ringColor = settings.textColor,
+                onUnlock = onUnlock,
+            )
+        }
     }
 }
 

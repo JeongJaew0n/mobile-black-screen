@@ -1,7 +1,10 @@
 package com.jjw.blackscreen.ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -15,6 +18,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -29,12 +33,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.jjw.blackscreen.data.Gesture
 
 private const val HoldMillis = 1_500f
 
-/** 쓸어서 해제에 필요한 순 변위. 화면 폭의 절반에 가까워 우연히 나오기 어렵다. */
-private val SwipeDistance = 180.dp
+/** 밀어 올려 해제하는 데 필요한 거리. 화면 높이 대비 비율이라 기기를 안 탄다. */
+private const val SlideDismissFraction = 0.28f
 private const val TapWindowMillis = 400L
 private val RingSize = 64.dp
 private val RingStroke = 3.dp
@@ -94,11 +99,9 @@ fun BoxScope.UnlockGestureLayer(
                     Gesture.DOUBLE_TAP -> detectTapCount(required = 2, onUnlock = onUnlock)
                     Gesture.TRIPLE_TAP -> detectTapCount(required = 3, onUnlock = onUnlock)
 
-                    Gesture.SWIPE -> detectSwipe(
-                        thresholdPx = SwipeDistance.toPx(),
-                        onProgress = { progress = it },
-                        onUnlock = onUnlock,
-                    )
+                    // 밀어 올리기는 화면이 손가락을 따라 움직여야 해서 표면 전체를
+                    // 다뤄야 한다. BlackScreenRoot 의 SlideToDismissLayer 가 맡는다.
+                    Gesture.SWIPE -> Unit
                 }
             },
     )
@@ -126,40 +129,6 @@ fun BoxScope.UnlockGestureLayer(
     }
 }
 
-/**
- * 한 방향으로 [thresholdPx] 만큼 쓸면 해제한다.
- *
- * **누적 경로가 아니라 시작점 대비 순 변위로 잰다.** 누적으로 재면 주머니 속 잔진동이
- * 쌓여서 풀린다. 진행률은 롱프레스와 같은 원형 링으로 보여준다.
- */
-private suspend fun PointerInputScope.detectSwipe(
-    thresholdPx: Float,
-    onProgress: (Float) -> Unit,
-    onUnlock: () -> Unit,
-) {
-    var travelled = Offset.Zero
-    var fired = false
-    detectDragGestures(
-        onDragStart = {
-            travelled = Offset.Zero
-            fired = false
-            onProgress(0f)
-        },
-        onDragEnd = { onProgress(0f) },
-        onDragCancel = { onProgress(0f) },
-        onDrag = { change, delta ->
-            change.consume()
-            travelled += delta
-            val progress = (travelled.getDistance() / thresholdPx).coerceIn(0f, 1f)
-            onProgress(progress)
-            if (progress >= 1f && !fired) {
-                fired = true
-                onUnlock()
-            }
-        },
-    )
-}
-
 /** [TapWindowMillis] 안에 [required] 번 연속으로 탭하면 해제한다. */
 private suspend fun PointerInputScope.detectTapCount(
     required: Int,
@@ -177,5 +146,79 @@ private suspend fun PointerInputScope.detectTapCount(
                 onUnlock()
             }
         },
+    )
+}
+
+
+/**
+ * 밀어 올려 해제.
+ *
+ * 다른 제스처와 달리 **화면 표면 자체가 손가락을 따라 움직인다.** 비워진 자리로 아래 앱이
+ * 드러나므로 창이 반투명이어야 한다(`PixelFormat.TRANSLUCENT`).
+ *
+ * 손을 뗐을 때 [SlideDismissFraction] 을 넘겼으면 마저 밀어내고 해제하고, 모자라면
+ * 제자리로 되돌린다. 되돌아오는 동작이 있어야 "얼마나 더 올려야 하는지" 를 알 수 있다.
+ *
+ * 여기서 쓰는 `animate()` 는 컴포지션 스코프라 프레임 클럭이 있다 —
+ * 서비스의 `lifecycleScope` 에서 부르면 크래시한다.
+ */
+@Composable
+fun BoxScope.SlideToDismissLayer(
+    onOffsetChange: (Float) -> Unit,
+    containerHeight: Int,
+    onUnlock: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(containerHeight) {
+                // 드래그 중 누적치는 지역 변수로 둔다. 컴포지션 값을 캡처하면
+                // 콜백이 옛 값을 보게 된다.
+                var offset = 0f
+
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        offset = 0f
+                        onOffsetChange(0f)
+                    },
+                    onVerticalDrag = { change, dy ->
+                        change.consume()
+                        // 위로만 민다. 아래로 끌어도 제자리를 넘지 않는다.
+                        offset = (offset + dy).coerceAtMost(0f)
+                        onOffsetChange(offset)
+                    },
+                    onDragEnd = {
+                        val from = offset
+                        val enough = containerHeight > 0 &&
+                            -from >= containerHeight * SlideDismissFraction
+                        scope.launch {
+                            if (enough) {
+                                animate(
+                                    initialValue = from,
+                                    targetValue = -containerHeight.toFloat(),
+                                    animationSpec = tween(durationMillis = 160),
+                                ) { v, _ -> onOffsetChange(v) }
+                                onUnlock()
+                            } else {
+                                animate(
+                                    initialValue = from,
+                                    targetValue = 0f,
+                                    animationSpec = spring(),
+                                ) { v, _ -> onOffsetChange(v) }
+                            }
+                        }
+                    },
+                    onDragCancel = {
+                        val from = offset
+                        scope.launch {
+                            animate(from, 0f, animationSpec = spring()) { v, _ ->
+                                onOffsetChange(v)
+                            }
+                        }
+                    },
+                )
+            },
     )
 }

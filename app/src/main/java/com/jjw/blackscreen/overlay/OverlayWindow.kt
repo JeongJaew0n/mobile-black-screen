@@ -14,7 +14,9 @@ import android.view.WindowManager
  *   오버레이보다 위라 기하학·레이어 양쪽에서 막혀 있다. Android 8(O)부터
  *   `TYPE_APPLICATION_OVERLAY` 가 시스템 UI 위에 그리는 것은 의도적으로 금지되어 있다.
  * - `FLAG_KEEP_SCREEN_ON` : 화면이 꺼지면 표시 중인 시계·문장도 사라진다.
- * - `PixelFormat.OPAQUE` : 완전히 가려진 아래 레이어의 합성을 컴포지터가 건너뛸 수 있다.
+ * - `PixelFormat.TRANSLUCENT` : 밀어 올리기 해제에서 비워진 자리로 아래 앱이 드러나야 한다.
+ *   불투명이면 컴포지터가 아래 레이어를 건너뛸 수 있어 전력에 유리하지만, 그러면
+ *   검정을 밀어도 그 자리에 또 검정만 보인다.
  *
  * `FLAG_NOT_TOUCHABLE` 은 **의도적으로 쓰지 않는다.** 터치를 아래 앱으로 통과시키면
  * 주머니 속 오작동이 그대로 아래 앱에 전달되고, 동시에 해제 제스처를 받을 방법이 사라진다.
@@ -28,7 +30,7 @@ internal fun overlayLayoutParams(): WindowManager.LayoutParams =
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-        PixelFormat.OPAQUE,
+        PixelFormat.TRANSLUCENT,
     ).apply {
         // 최상단 가시 창의 값이 적용된다. 실제 값은 설정(글자 밝기)에 따라
         // ScreenCoverService 가 갱신한다 — 여기서는 초기값만 둔다.

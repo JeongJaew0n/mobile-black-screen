@@ -170,7 +170,10 @@ class ScreenOffAccessibilityService :
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-            PixelFormat.OPAQUE,
+            // 밀어 올리기 해제에서 비워진 자리로 아래 앱이 드러나야 하므로 반투명이다.
+            // 불투명이면 컴포지터가 아래 레이어를 건너뛸 수 있어 전력에 유리하지만,
+            // 검정을 밀어도 그 자리에 또 검정만 보인다.
+            PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             x = 0
