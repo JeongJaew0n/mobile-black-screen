@@ -1,5 +1,19 @@
 # checklist — blackout-overlay-modes
 
+> ## ⚠️ 이 문서는 완료된 과거 작업의 기록입니다
+>
+> 이후 **[full-screen-accessibility-overlay](../full-screen-accessibility-overlay/)** 로
+> 뒤집힌 내용이 있습니다. 현재 상태는 [architecture.md](../../architecture.md) 를 보세요.
+>
+> | 이 문서의 서술 | 현재 |
+> |---|---|
+> | 모드 두 개(Blackout / Overlay), 기본은 Blackout | **세 개(FULL / Overlay / Blackout), 기본은 FULL** |
+> | "오버레이는 상태바를 덮을 수 없다 — 우회 불가" | **`TYPE_APPLICATION_OVERLAY` 에 한한 제약.** 접근성 오버레이는 덮는다 |
+> | 글자색을 저휘도 그레이로 | **글자는 흰색 고정**, 밝기는 패널 하나로만 조절 |
+> | UI 용어 `차폐` | **`Screen Off`** (코드·문서 내부 용어는 `차폐` 유지) |
+> | 기본 해제 제스처 1.5초 롱프레스 | **3회 연속 탭** |
+
+
 > 작업 진행하면서 AI 가 순차적으로 체크. `[x]` 로 표시한 항목은 완료된 것으로 간주.
 > 새 항목이 발견되면 적절한 단계에 추가하고 체크리스트를 유지한다.
 

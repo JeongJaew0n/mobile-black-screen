@@ -69,7 +69,7 @@ adb shell settings put system screen_off_timeout 600000
 
 ## 구조의 핵심
 
-**두 모드가 표시 콘텐츠를 하나의 Composable(`ui/BlackScreenContent.kt` 의
+**세 모드가 표시 콘텐츠를 하나의 Composable(`ui/BlackScreenContent.kt` 의
 `BlackScreenRoot`)로 공유한다.** 차이는 "어떤 창에 올리는가"뿐이다.
 
 - **FULL** (`accessibility/ScreenOffAccessibilityService.kt`) — 접근성 오버레이.
@@ -83,7 +83,7 @@ adb shell settings put system screen_off_timeout 600000
 거친다. 특히 타일에서 FULL 을 켤 때 중계 Activity 를 쓰면 그 순간 쓰던 앱이 밀리므로
 직접 호출해야 한다.
 
-표시 내용을 고칠 때는 `BlackScreenRoot` 한 곳만 만지면 두 모드에 함께 반영된다.
+표시 내용을 고칠 때는 `BlackScreenRoot` 한 곳만 만지면 세 모드에 함께 반영된다.
 모드별로 갈라 쓰지 말 것.
 
 ### 창은 전부 `service/ScreenCoverService` 가 소유한다
@@ -190,6 +190,12 @@ lint 의 `OldTargetApi` 경고 1건은 이 선택의 결과이며 의도된 것�
 
 ## 작업 기록
 
-`docs/plans/blackout-overlay-modes/` 에 spec / context / checklist 가 있다.
-작업을 이어갈 때는 checklist 부터 읽는다. 진행하며 체크박스를 갱신할 것.
-`docs/technical-feasibility.md` 와 `docs/architecture.md` 에 판단 근거와 함정 목록이 있다.
+`docs/plans/` 에 작업별 폴더가 있다. 인덱스는 [docs/plans/README.md](docs/plans/README.md).
+
+**현재 상태를 알고 싶으면 계획 문서가 아니라 `docs/architecture.md` 를 볼 것.**
+계획 문서는 그때의 판단 기록이고, **뒤 작업이 앞 작업의 결정을 뒤집은 경우가 있다.**
+각 폴더 상단 배너에 무엇이 바뀌었는지 적혀 있다.
+
+- `docs/architecture.md` — 현재 구조·설정 스키마·함정 목록
+- `docs/technical-feasibility.md` — 플랫폼 제약과 그 근거
+- `docs/power-measurement.md` — 전력 측정 방법과 추정치 (실측 미완)

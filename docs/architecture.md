@@ -12,34 +12,48 @@
 | 항목 | 결정 | 근거 |
 |---|---|---|
 | 플랫폼 | **Android 단독** | iOS는 오버레이·백그라운드 실행이 OS 차원에서 차단 |
-| 차폐 방식 | **하이브리드** (Blackout 기본 + Overlay 선택) | 상태바를 덮을 수 없는 제약 때문에 두 모드의 장단이 갈림 |
+| Screen Off 방식 | **세 모드, 기본은 FULL** | 창 종류마다 덮을 수 있는 범위가 달라 하나로 합칠 수 없음 |
 | 배포 | **개인용 / 사이드로딩** | Play 심사 리스크 전부 소거 |
 
-**배포가 사이드로딩으로 확정되면서 원래 최대 리스크였던 `specialUse` 포그라운드 서비스 심사(R1)가 사라졌습니다.** `SYSTEM_ALERT_WINDOW`, `FOREGROUND_SERVICE_SPECIAL_USE`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`를 정책 눈치 보지 않고 쓸 수 있습니다.
+> **한 번 크게 틀렸던 지점.** 초기 설계는 "오버레이는 상태바를 못 덮는다"를 근거로
+> **Blackout(앱 전환)을 기본값**으로 삼았습니다. 그 명제는 `TYPE_APPLICATION_OVERLAY`
+> 에만 해당하는데 모든 오버레이로 확대한 잘못된 일반화였고, 그 결과 사용자가 처음부터
+> 요구한 동작("쓰던 앱은 그대로, 화면만 어두워짐")과 정반대인 모드를 기본값으로 두었습니다.
+> `TYPE_ACCESSIBILITY_OVERLAY` 를 발견하고 FULL 모드로 바로잡았습니다(§4.1).
 
 ---
 
-## 1. 두 모드의 정확한 차이
+## 1. 세 모드의 정확한 차이
 
-|  | **Blackout** (기본) | **Overlay** |
-|---|---|---|
-| 구현 | 풀스크린 Activity + 몰입 모드 | `TYPE_APPLICATION_OVERLAY` + Foreground Service |
-| 상태바 / 내비바 | **완전히 숨김** | **둘 다 못 덮음** (실기기 확인) |
-| 다른 앱 UI 렌더링 | 멈춤 (pause/stop) | **계속 렌더링** |
-| 다른 앱 백그라운드 동작 | **계속 동작** | 계속 동작 |
-| 권한 | 없음 | 다른 앱 위에 표시 + 알림 |
-| 상시 알림 | 없음 | 있음 (제거 불가) |
-| 터치 | Activity가 수신 | 오버레이가 삼킴 |
+|  | **FULL** (기본) | **Overlay** | **Blackout** |
+|---|---|---|---|
+| 창 종류 | `TYPE_ACCESSIBILITY_OVERLAY` | `TYPE_APPLICATION_OVERLAY` | 풀스크린 Activity |
+| **쓰던 앱** | **그대로 유지** | **그대로 유지** | **뒤로 밀림** |
+| 상태바 / 내비바 | **전부 덮음** | 둘 다 남음 | 숨김 |
+| 다른 앱 UI 렌더링 | 계속 | 계속 | 멈춤 |
+| 권한 | 접근성 서비스 | 다른 앱 위에 표시 | **없음** |
+| 상시 알림 | 없음 | 있음 | 없음 |
 
-> **자주 오해하는 지점:** Blackout 모드에서도 음악 재생·다운로드/업로드·내비게이션·타이머·동기화·포그라운드 서비스는 전부 그대로 돌아갑니다. Android에서 백그라운드 앱은 죽지 않습니다. 멈추는 건 **직전 최상단 앱의 UI 렌더링뿐**입니다 — 즉 게임 진행이나 영상 재생이 멈춥니다. Overlay 모드가 추가로 사는 건 정확히 이 한 가지입니다.
+**FULL 이 이 앱이 하려던 동작입니다.** 나머지 둘은 절충안입니다 — 접근성 권한을 주기
+싫으면 Overlay, 권한을 하나도 주기 싫으면 Blackout.
 
-### 상태바 제약 (근거)
+> **자주 오해하는 지점:** Blackout 모드에서도 음악 재생·다운로드·내비게이션·타이머·
+> 동기화는 전부 그대로 돌아갑니다. Android에서 백그라운드 앱은 죽지 않습니다.
+> 멈추는 것은 **직전 최상단 앱의 UI 렌더링뿐**입니다.
 
-`TYPE_APPLICATION_OVERLAY`는 Android 8(O)부터 **시스템 UI 위에 그리는 것이 의도적으로 금지**되어 있습니다. `FLAG_LAYOUT_IN_SCREEN`, `FLAG_LAYOUT_NO_LIMITS`, `FLAG_LAYOUT_INSET_DECOR` 등 어떤 플래그 조합으로도 뚫리지 않으며, Google이 버그가 아닌 의도된 동작이라고 확인했습니다. 루팅 없이는 우회 수단이 없습니다.
+### 창 종류에 따른 제약 (실측)
 
-> **실기기 정정:** 최초 설계에서는 "내비게이션 바 영역은 `FLAG_LAYOUT_NO_LIMITS` 로 덮인다"고 적었으나 **틀렸습니다.**
-> 실측(Galaxy S23+ / Android 16): 오버레이 창 프레임이 `[0,94][1080,2214]` 로 상태바(94px) 아래에서 시작해 내비바(126px) 위에서 끝난다. z-order 상으로도 `NavigationBar`·`StatusBar` 가 오버레이보다 위에 있어 기하학·레이어 양쪽에서 막혀 있다.
-> 즉 **상태바와 내비게이션 바 둘 다 남습니다.**
+**`TYPE_APPLICATION_OVERLAY`** 는 Android 8(O)부터 시스템 UI 위에 그리는 것이 금지되어
+상태바·내비게이션 바를 덮지 못합니다. 실측(Galaxy S23+ / Android 16)상 창 프레임이
+`[0,94][1080,2214]` 로 잘리고, z-order 상으로도 두 바가 위에 있습니다.
+`FLAG_LAYOUT_NO_LIMITS` 를 포함해 어떤 플래그 조합으로도 뚫리지 않습니다.
+
+**`TYPE_ACCESSIBILITY_OVERLAY`** 는 그 위까지 전부 덮습니다. 접근성 서비스로 등록하는
+것 자체가 자격이라 `SYSTEM_ALERT_WINDOW` 도 필요 없습니다. 실측으로 상태바 영역
+(y 0~94) 밝은 픽셀 0개, 내비바 영역도 0개, 최상단 Activity 는 아래 앱 그대로임을
+확인했습니다.
+
+**제약을 말할 때는 어떤 창 종류에 대한 제약인지 반드시 붙일 것.**
 
 ---
 
@@ -64,7 +78,7 @@ targetSdk 를 올리면 새 OS 의 동작 변경을 옵트인하게 된다. 실�
 새 DSL(`android.newDsl=true` 기본값)이 `BaseExtension` 을 제거해 `ClassCastException` 으로
 실패한다. `org.jetbrains.kotlin.plugin.compose` 만 적용하면 된다.
 
-Compose를 쓰는 이유는 **두 모드가 표시 콘텐츠(시계/문장/무표시)를 하나의 Composable로 공유**하기 위해서입니다. 오버레이에 Compose를 얹는 건 약간의 배선이 필요하지만(§4.2) 콘텐츠 로직을 두 번 짜는 것보다 낫습니다.
+Compose를 쓰는 이유는 **세 모드가 표시 콘텐츠(시계/문장/무표시)를 하나의 Composable로 공유**하기 위해서입니다. Activity 가 아닌 창(서비스·접근성 서비스)에 Compose를 얹으려면 owner 배선이 필요하지만(§4.1, §4.2) 콘텐츠 로직을 세 번 짜는 것보다 낫습니다.
 
 > **참고 (선택):** 사이드로딩 전용이라면 `targetSdk`를 33으로 낮춰 `foregroundServiceType` 선언 의무 자체를 회피할 수도 있습니다. 다만 최신 OS 동작에서 벗어나므로 권장하지 않고, targetSdk 36 + `specialUse`로 정직하게 가는 것을 기본으로 둡니다.
 
@@ -87,7 +101,7 @@ app/src/main/java/.../blackscreen/
 │   ├─ BubbleContent.kt         원형 버블 (탭/드래그/유휴 페이드)
 │   └─ RemoveTarget.kt          드래그 중 뜨는 ✕ 타겟
 ├─ ui/
-│   ├─ BlackScreenContent.kt    ★ 두 모드 공유 Composable
+│   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
 │   ├─ Clock.kt                 분 경계 정렬 시계
 │   ├─ BurnInShift.kt           픽셀 시프트 로직
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 피드백
@@ -103,46 +117,58 @@ app/src/main/java/.../blackscreen/
 
 ## 4. 핵심 구현
 
-### 4.1 Blackout 모드
+### 4.1 FULL 모드 — 접근성 오버레이 (기본)
+
+`TYPE_ACCESSIBILITY_OVERLAY` 는 상태바·내비게이션 바·시스템 다이얼로그 위까지 덮습니다.
+**앱 전환이 없으므로 쓰던 앱이 그대로 유지됩니다.**
+
+`AccessibilityService` 는 `LifecycleService` 가 아니라 Compose 에 필요한 owner 가 하나도
+없습니다. 셋을 직접 구현하고 **RESUMED 까지 올립니다** — 프레임 클럭이 그 상태를 봅니다.
 
 ```kotlin
-class BlackoutActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+class ScreenOffAccessibilityService :
+    AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
 
-        // 1) 시스템 바 완전히 숨김
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.systemBars())
-            systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val savedStateController = SavedStateRegistryController.create(this)
 
-        // 2) 밝기 최소 + 화면 꺼짐 방지
-        window.attributes = window.attributes.apply { screenBrightness = 0f }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    override fun onCreate() {
+        savedStateController.performRestore(null)   // ★ super 보다 먼저
+        super.onCreate()
+        lifecycleRegistry.currentState = Lifecycle.State.CREATED
+    }
 
-        setContent { BlackScreenRoot(onUnlock = { finish() }) }
+    override fun onServiceConnected() {
+        instance = this
+        lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     }
 }
 ```
 
-`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`는 가장자리 스와이프 시 시스템 바가 잠깐 나타나는 동작입니다. 비-sticky 모드는 바가 나타난 뒤 계속 남으므로, 몰입 유지를 위해 이 값이 맞습니다.
+**창 크기를 명시적으로 지정합니다.** `MATCH_PARENT` 는 시스템 바를 제외한 부모 프레임에
+맞춰져 위아래가 남습니다. 실제 디스플레이 크기를 직접 넣고 경계를 풉니다.
 
-**Manifest:**
-```xml
-<activity
-    android:name=".blackout.BlackoutActivity"
-    android:theme="@style/Theme.Blackout"
-    android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
-    android:excludeFromRecents="true"
-    android:launchMode="singleTask" />
+```kotlin
+WindowManager.LayoutParams(
+    displayWidth, displayHeight,                       // currentWindowMetrics.bounds
+    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+    FLAG_NOT_FOCUSABLE or FLAG_LAYOUT_IN_SCREEN or
+        FLAG_LAYOUT_NO_LIMITS or FLAG_KEEP_SCREEN_ON,
+    PixelFormat.OPAQUE,
+).apply {
+    gravity = Gravity.TOP or Gravity.START; x = 0; y = 0
+    screenBrightness = latestSettings.screenBrightness
+    // 노치까지 덮는다. ALWAYS 상수는 API 30+
+}
 ```
 
-> **정정:** 처음에는 `screenOrientation="nosensor"` 로 회전 자체를 막으려 했으나,
-> **Android 16 부터 고정 화면 방향 지정은 대부분의 경우 무시됩니다**(lint `DiscouragedApi`).
-> 방향을 고정하는 대신 `configChanges` 로 **재생성 자체를 막는** 쪽이 모든 버전에서
-> 동작하며, 애초의 목적(회전 시 검은 화면 깜빡임 방지)에도 정확히 부합합니다.
+> **함정 두 가지.**
+> - `showCover()` 는 suspend 가 아니라 그 자리에서 밝기를 알아야 합니다. 설정 수집기가
+>   캐시해 둔 값(`latestSettings`)을 초기 파라미터에 씁니다. 이걸 빼먹으면 **첫 표시에만
+>   밝기 오버라이드가 걸리지 않습니다.**
+> - **앱을 재설치하면 접근성 서비스가 꺼집니다.** Android 의 정상 동작이며, 업데이트마다
+>   사용자가 설정에서 다시 켜야 합니다.
+
 
 ### 4.2 Overlay 모드
 
@@ -255,7 +281,63 @@ class OverlayLauncherActivity : ComponentActivity() {
 }
 ```
 
-### 4.3 공유 콘텐츠
+### 4.2c 진입 분기 — `ScreenOff` 디스패처
+
+진입점이 셋(설정 화면 버튼 / 버블 / 퀵 설정 타일)이라 모드 분기를 흩어 두면 금방 어긋납니다.
+`ScreenOff.start(context, mode)` 하나로 모읍니다. 권한이 없으면 시작하지 않고
+`NEEDS_ACCESSIBILITY` / `NEEDS_OVERLAY_PERMISSION` 을 돌려주어 호출부가 안내하게 합니다.
+
+**타일에서 FULL 을 켤 때는 중계 Activity 를 거치지 않습니다.** 그것을 띄우는 순간
+쓰던 앱이 뒤로 밀리는데, 그걸 피하는 것이 이 모드의 존재 이유이기 때문입니다.
+중계 Activity 는 Overlay 모드에만 필요합니다(백그라운드 FGS 시작 제약 회피, §4.2b).
+
+
+### 4.3 Blackout 모드 — 풀스크린 Activity (최후 수단)
+
+**이 모드만 쓰던 앱을 뒤로 밀어냅니다.** 권한이 하나도 필요 없다는 것이 유일한 장점이라,
+접근성도 오버레이 권한도 주고 싶지 않은 경우의 최후 수단으로만 남겨 둡니다.
+
+```kotlin
+class BlackoutActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1) 시스템 바 완전히 숨김
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        // 2) 밝기 최소 + 화면 꺼짐 방지
+        window.attributes = window.attributes.apply { screenBrightness = 0f }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        setContent { BlackScreenRoot(onUnlock = { finish() }) }
+    }
+}
+```
+
+`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`는 가장자리 스와이프 시 시스템 바가 잠깐 나타나는 동작입니다. 비-sticky 모드는 바가 나타난 뒤 계속 남으므로, 몰입 유지를 위해 이 값이 맞습니다.
+
+**Manifest:**
+```xml
+<activity
+    android:name=".blackout.BlackoutActivity"
+    android:theme="@style/Theme.Blackout"
+    android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+    android:excludeFromRecents="true"
+    android:launchMode="singleTask" />
+```
+
+> **정정:** 처음에는 `screenOrientation="nosensor"` 로 회전 자체를 막으려 했으나,
+> **Android 16 부터 고정 화면 방향 지정은 대부분의 경우 무시됩니다**(lint `DiscouragedApi`).
+> 방향을 고정하는 대신 `configChanges` 로 **재생성 자체를 막는** 쪽이 모든 버전에서
+> 동작하며, 애초의 목적(회전 시 검은 화면 깜빡임 방지)에도 정확히 부합합니다.
+
+
+### 4.4 공유 콘텐츠
 
 ```kotlin
 @Composable
@@ -279,7 +361,7 @@ fun BlackScreenContent(settings: Settings) {
 - **글자는 흰색 고정.** 어둡게 하는 몫은 창의 `screenBrightness` 하나가 전담합니다.
   글자색과 패널 밝기를 둘 다 낮추면 곱해져서 판독이 불가능해집니다(실제로 세 번 겪음).
 
-### 4.4 번인 방지
+### 4.5 번인 방지
 
 AMOLED에서 같은 위치에 시계를 몇 시간 띄우면 잔상이 남습니다.
 
@@ -291,7 +373,7 @@ fun rememberBurnInShift(enabled: Boolean): IntOffset {
 }
 ```
 
-### 4.5 해제 제스처
+### 4.6 해제 제스처
 
 단일 탭 해제는 주머니에서 바로 풀립니다. 기본값은 **1.5초 롱프레스**로 하고, 누르는 동안 원형 프로그레스를 서서히 페이드인해서 피드백을 줍니다.
 
@@ -303,7 +385,7 @@ fun rememberBurnInShift(enabled: Boolean): IntOffset {
 
 Blackout 모드에서는 볼륨 키(`onKeyDown`)로도 해제할 수 있지만, Overlay 모드는 `FLAG_NOT_FOCUSABLE` 때문에 키 이벤트를 받지 못합니다. **모드 간 동작이 달라지므로 키 해제는 넣지 않는 편이 일관됩니다.**
 
-### 4.6 진입점 — 퀵 설정 타일
+### 4.7 진입점 — 퀵 설정 타일
 
 실사용에서 가장 중요한 부분입니다. 앱을 열어서 버튼을 누르는 건 번거롭고, **상태바를 내려 타일 한 번 탭**이 자연스럽습니다.
 
@@ -327,77 +409,144 @@ class BlackScreenTileService : TileService() {
 
 ---
 
+### 4.8 상주 버블
+
+앱을 닫아도 떠 있는 원형 버튼. `ScreenCoverService` 가 차폐 창과 함께 소유하는
+상태 기계로 관리합니다 — 서비스를 나누면 상시 알림이 두 개가 됩니다.
+
+```
+bubbleWanted      사용자가 켰는가 (차폐 중 감춰도 유지)
+bubbleSuppressed  차폐 중이라 잠시 감췄는가
+```
+
+모든 상태 전이는 `syncBubble()` 하나를 거칩니다. `coverView` 와 `bubbleWanted` 가
+둘 다 비면 그때만 `stopSelf()` 합니다.
+
+- **창 크기를 버블 크기와 같게** 잡아 바깥 터치는 아래 앱으로 통과시킵니다.
+  차폐 창이 `FLAG_NOT_TOUCHABLE` 을 안 쓰는 이유("터치를 삼켜야 해서")와
+  버블이 안 쓰는 이유("자기 영역만 받으면 돼서")는 다릅니다.
+- **위치는 픽셀이 아니라 가장자리(LEFT/RIGHT) + 세로 비율**로 저장합니다.
+  픽셀로 두면 회전·해상도 변경 때 화면 밖으로 나갑니다.
+- **크기를 바꾸면 창을 다시 배치**합니다. `WRAP_CONTENT` 라 크기는 알아서 커지지만,
+  오른쪽 가장자리에서는 x 를 다시 계산하지 않으면 밀려납니다
+  (52dp 위치 x=929 에서 70dp 가 되면 오른쪽 끝이 1113 → 33px 이탈).
+- **Blackout 차폐 중에는 `BlackoutActivity` 가 서비스에 직접 알려** 버블을 감춥니다.
+  오버레이 창은 어떤 Activity 가 앞인지 알 수 없습니다. FULL 은 접근성 오버레이가
+  버블보다 위 레이어라 알아서 가려집니다.
+
+---
+
 ## 5. 설정 항목
 
 ```kotlin
 data class Settings(
-    val mode: Mode = Mode.BLACKOUT,          // BLACKOUT | OVERLAY
+    val mode: Mode = Mode.FULL,              // FULL | OVERLAY | BLACKOUT
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
-    val clockFormat: String = "HH:mm",
+    val clockFormat: String = "a h:mm",      // 한국어는 오전/오후가 앞
     val sentence: String = "",
-    val textLevel: Int = 3,                  // 1~5 → 패널 밝기 0.05 ~ 0.80
+    val textLevel: Int = 3,                  // 1~5 → 패널 밝기 0.05~0.80
     val burnInShiftEnabled: Boolean = true,
-    val unlockGesture: Gesture = Gesture.LONG_PRESS,
+    val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
+    val bubbleEnabled: Boolean = false,
+    val bubbleEdge: Edge = Edge.RIGHT,
+    val bubbleSizeLevel: Int = 3,            // 1~5 → 40~70dp
+    val bubbleYRatio: Float = 0.5f,
 )
 ```
 
-`autoStopMinutes` 는 자동 종료 타이머와 함께 3차로 미뤘습니다(§7).
-DataStore 에 저장된 enum 이름이 사라진 상수를 가리키면 기본값으로 되돌립니다.
+### 밝기 손잡이는 하나다
 
-기본값은 요구사항대로 **아무것도 표시하지 않는 완전한 검정**입니다.
+보이는 밝기는 **프레임버퍼 값 × 패널 밝기**입니다. 둘 다 깎아 놓으면 왜 안 보이는지
+헤매게 됩니다 — 실제로 세 번 그랬습니다.
 
----
+```
+#333333 + 패널 0.00  →  판독 불가
+#E6E6E6 + 패널 0.00  →  판독 불가 (곱셈의 한쪽이 0이면 소용없음)
+#E6E6E6 + 패널 0.08  →  여전히 판독 불가
+```
 
-## 6. 전력에 대한 정직한 기대치
+그래서 **글자는 항상 흰색 고정**이고, `textLevel` 은 창의 `screenBrightness` 만
+움직입니다. 표시할 내용이 없으면 밝기는 무조건 0 입니다 — 그게 이 앱의 기본 상태입니다.
 
-- 이 앱은 화면을 **끄지 않습니다.** 디스플레이 파이프라인은 계속 살아 있습니다.
-- AMOLED + 전면 검정 + 밝기 0이면 발광 픽셀이 거의 없어 소모가 낮지만 **0은 아닙니다.**
-- LCD 기기는 백라이트가 남아 이득이 훨씬 적고, 보기에도 완전히 검지 않습니다.
-- **구체적인 수치는 측정 전에는 말할 수 없습니다.** 개발 중 `adb shell dumpsys batterystats` + Battery Historian으로 실제 소모율을 측정하고, 필요하면 `autoStopMinutes` 기본값을 그 결과에 맞춰 정합니다.
+⚠️ **이 값은 `screencap` 으로 검증할 수 없습니다.** 프레임버퍼에는 패널 밝기가 담기지
+않아 픽셀값이 찍혀도 눈에는 안 보일 수 있습니다. 반드시 실제 화면을 봐야 합니다.
 
----
+### 설정 저장은 스냅샷이 아니라 변환 함수로
 
-## 7. 구현 순서
-
-### 1차 — Blackout 모드 (권한 0개)
-1. 프로젝트 스캐폴딩 (Compose, DataStore)
-2. `BlackoutActivity` — 몰입 모드 + 밝기 0 + KEEP_SCREEN_ON
-3. `BlackScreenContent` — 무표시 / 시계 / 문장
-4. 롱프레스 해제 + 프로그레스 피드백
-5. 번인 방지 픽셀 시프트
-6. 설정 화면
-7. 퀵 설정 타일
-
-이 시점에서 **권한 하나 없이 완결된 앱**이 됩니다.
-
-### 2차 — Overlay 모드
-8. `OverlayService` + FGS + 창 배선
-9. Compose ViewTree owner 배선
-10. 권한 안내 플로우
-11. 설정에서 모드 전환 + 알림 액션 해제
-12. 상태바가 남는다는 점을 설정 화면에서 명시
-
-### 3차 — 선택
-13. 자동 종료 타이머
-14. 근접센서 포켓 모드 (`PROXIMITY_SCREEN_OFF_WAKE_LOCK` — 진짜 화면 OFF)
-15. 문장 여러 개 순환 / 시간대별 문구
-16. 홈 화면 위젯·바로가기
-17. 배터리 최적화 예외 안내 (제조사별 가이드)
+`SettingsScreen.onChange` 는 `(Settings) -> Settings` 를 받습니다. 화면이 들고 있는
+스냅샷을 통째로 저장하면, DataStore 가 아직 값을 안 뱉은 시점(앱을 막 연 직후)에
+항목 하나만 바꿔도 나머지가 전부 기본값으로 덮입니다. 실제로 그 버그를 냈습니다.
 
 ---
 
-## 8. 남은 함정 목록
+## 6. 전력
+
+**아직 실측하지 못했습니다.** 시도했고 두 번 다 실패했습니다 —
+방법과 함정은 [power-measurement.md](./power-measurement.md) 참조.
+
+현재 있는 것은 추정치입니다(신뢰도 ±50%).
+
+| 상태 | 추정 전류 | 8시간 |
+|---|---|---|
+| 실제 화면 꺼짐 | 5~20 mA | 약 2% |
+| **Screen Off (이 앱)** | **70~110 mA** | **12~20%** |
+| 일반 화면 켜짐 | 120~140 mA | 21~25% |
+
+**밝기 슬라이더는 전력에 거의 영향이 없을 것으로 봅니다.** AMOLED 는 검은 픽셀이
+발광하지 않는데 이 앱은 화면의 대부분이 검정이고 시계 몇 글자만 켜집니다.
+전력의 대부분은 **"화면이 기술적으로 켜져 있다"** 는 사실 자체(SoC·디스플레이
+파이프라인·터치 패널이 계속 깨어 있음)에서 나옵니다.
+
+---
+
+## 7. 구현 이력
+
+1. **Blackout 모드** — 풀스크린 Activity, 권한 0개
+2. **Overlay 모드** — `SYSTEM_ALERT_WINDOW` + `specialUse` 포그라운드 서비스
+3. **상주 버블** — 서비스 통합(`ScreenCoverService`), 드래그·✕ 제거·유휴 페이드
+4. **FULL 모드** — 접근성 오버레이. 기본값을 여기로 옮기고 Blackout 을 최후 수단으로 격하
+5. **버블 크기 조절** — 5단계
+
+작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
+
+### 아직 하지 않은 것
+
+자동 종료 타이머, 근접센서 포켓 모드, 문장 여러 개 순환, 홈 화면 위젯,
+제조사별 배터리 최적화 안내, 부팅 후 자동 복원.
+
+---
+
+## 8. 함정 목록
+
+실제로 한 번씩 물린 것들입니다.
 
 | # | 함정 | 대응 |
 |---|---|---|
-| F1 | Service에서 `performRestore` 호출 순서 | `super.onCreate()` 이전 |
+| F1 | Service 에서 `performRestore` 호출 순서 | `super.onCreate()` **이전** |
 | F2 | `startActivityAndCollapse(Intent)` API 34+ 예외 | `PendingIntent` 오버로드 |
-| F3 | 오버레이가 설정·비밀번호 등 민감 화면에서 자동으로 숨겨짐 | 회피 불가. 설정 화면에 명시 |
-| F4 | Android 12+ 다른 앱이 `hideOverlayWindows()`로 우리 오버레이를 숨길 수 있음 | 회피 불가 |
-| F5 | 제조사(삼성·샤오미 등)의 공격적 백그라운드 종료 | 배터리 최적화 예외 안내 |
-| F6 | 화면 회전 시 Activity 재생성 → 깜빡임 | `configChanges` 로 재생성 차단. **`screenOrientation` 은 Android 16+ 에서 무시되므로 쓰면 안 된다** |
-| F7 | 오버레이 창 누수 (`removeView` 누락) | `onDestroy`에서 반드시 해제, try/catch |
-| F8 | LCD 기기에서 기대와 다른 결과 | 첫 실행 시 안내 |
-| F9 | 타일 `onClick` 은 suspend 가 아니라 DataStore 를 그 자리에서 못 읽음 | `onStartListening` 에서 모드를 미리 읽어 둠 |
-| F10 | 타일에서 FGS 직접 시작 → Android 15+ 예외 위험 | 투명 중계 Activity 경유 (§4.2b) |
-| F11 | AGP 9 + 외부 `kotlin.android` 플러그인 → `ClassCastException` | 내장 Kotlin 사용, `kotlin.android` 제거 |
+| F3 | 오버레이가 민감 화면에서 자동으로 숨겨짐 | 회피 불가 |
+| F4 | Android 12+ 다른 앱이 `hideOverlayWindows()` 로 숨김 | 회피 불가 |
+| F5 | 제조사의 공격적 백그라운드 종료 | 배터리 최적화 예외 안내 |
+| F6 | 회전 시 재생성 → 깜빡임 | `configChanges`. **`screenOrientation` 은 Android 16+ 에서 무시됨** |
+| F7 | 창 누수 | `onDestroy` 에서 해제, `runCatching` |
+| F8 | LCD 기기에서 기대와 다름 | 회피 불가 (AMOLED 전제) |
+| F9 | 타일 `onClick` 은 suspend 아님 | `onStartListening` 에서 모드 선읽기 |
+| F10 | 타일에서 FGS 직접 시작 → Android 15+ 예외 | Overlay 모드만 중계 Activity 경유 |
+| F11 | AGP 9 + 외부 `kotlin.android` → `ClassCastException` | 내장 Kotlin 사용 |
+| F12 | 코루틴 안에서 창 추가 → 경합으로 창 2개 | 동기 플래그(`bubbleAdding`) |
+| F13 | 오버레이 좌표는 화면이 아니라 **부모 프레임 기준** | `usableSize()` — 인셋 제외 |
+| F14 | Compose `animate()` 를 서비스에서 호출 → 프레임 클럭 없어 크래시 | 단순 루프(`slideBubbleX`) |
+| F15 | `LayoutParams.y` 에 dp 를 그대로 넣음 | `* density` |
+| F16 | 포그라운드 아닐 때 `startForegroundService` → 크래시 | `LifecycleResumeEffect` + `runCatching` |
+| F17 | 접근성 오버레이 첫 표시에 밝기 미적용 | 수집기가 캐시한 값을 초기 파라미터에 |
+| F18 | 앱 재설치 시 접근성 서비스 꺼짐 | Android 정상 동작. 재설치마다 다시 켜야 함 |
+
+### 실기기 검증 시 속기 쉬운 것
+
+| 증상 | 실제 원인 |
+|---|---|
+| "롱프레스 해제가 회귀했다" | adb 테스트 탭이 **해제 제스처 설정을 바꿔 놓음**. `unlock_gesture` 부터 확인할 것 |
+| "버블 페이드가 동작 안 한다" | 평균 밝기로 측정. 뒤 배경이 어두우면 안 움직임. **고대비 지점**(흰 막대)을 볼 것 |
+| "글자가 보인다"(실제로는 안 보임) | `screencap` 은 프레임버퍼라 **패널 밝기가 반영되지 않음** |
+| "타일이 동작 안 한다" | `cmd statusbar click-tile` 만으로는 `onStartListening` 이 안 돎. `expand-settings` 선행 |
+| "차폐가 안 걸린다" | 화면이 잠겨 있어 탭이 잠금화면에 떨어짐. `isKeyguardShowing` 확인 |

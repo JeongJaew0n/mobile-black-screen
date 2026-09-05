@@ -3,7 +3,8 @@
 | 문서 | 내용 |
 |---|---|
 | [technical-feasibility.md](./technical-feasibility.md) | 기술 타당성 분석 — 플랫폼별 가능/불가능 판정, 구현 방식 비교, 하드 제약, 리스크 |
-| [architecture.md](./architecture.md) | 구현 설계 — 두 모드 구조, 핵심 코드, 설정 스키마, 구현 순서, 함정 목록 |
+| [architecture.md](./architecture.md) | 구현 설계 — 세 모드 구조, 핵심 코드, 설정 스키마, 함정 목록 |
+| [power-measurement.md](./power-measurement.md) | 전력 측정 — 방법, 실패한 시도들, 현재 추정치 |
 
 ## 한 줄 요약
 

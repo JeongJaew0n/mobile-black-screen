@@ -104,7 +104,7 @@ app/src/main/java/com/jjw/blackscreen/
 │   ├─ OverlayWindow.kt         WindowManager.LayoutParams 구성
 │   └─ OverlayLauncherActivity.kt  투명 중계 Activity
 ├─ ui/
-│   ├─ BlackScreenContent.kt    ★ 두 모드가 공유하는 차폐 화면
+│   ├─ BlackScreenContent.kt    ★ 세 모드가 공유하는 Screen Off 화면
 │   ├─ Clock.kt                 분 경계 정렬 시계
 │   ├─ BurnInShift.kt           픽셀 시프트
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 링
@@ -128,7 +128,8 @@ Galaxy S23+ (SM-S916N) / Android 16 / SDK 36 / AMOLED 에서 완료 조건 17개
 | 문서 | 내용 |
 |---|---|
 | [docs/technical-feasibility.md](docs/technical-feasibility.md) | 기술 타당성 분석 — 플랫폼별 판정, 방식 비교, 하드 제약 |
-| [docs/architecture.md](docs/architecture.md) | 구현 설계 — 두 모드 구조, 핵심 코드, 함정 목록 |
+| [docs/architecture.md](docs/architecture.md) | 구현 설계 — 세 모드 구조, 핵심 코드, 함정 목록 |
+| [docs/power-measurement.md](docs/power-measurement.md) | 전력 측정 — 방법, 함정, 현재 추정치 |
 | [docs/plans/blackout-overlay-modes/](docs/plans/blackout-overlay-modes/) | 작업 계획 — 스펙, 맥락, 진행 체크리스트 |
 
 ## 하지 않은 것

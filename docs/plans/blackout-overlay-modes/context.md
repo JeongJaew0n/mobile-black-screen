@@ -1,5 +1,8 @@
 # context — blackout-overlay-modes
 
+> **기록 보존용 문서입니다.** 여기 적힌 판단 중 일부는 이후 뒤집혔습니다 —
+> 무엇이 왜 뒤집혔는지는 [full-screen-accessibility-overlay/context.md](../full-screen-accessibility-overlay/context.md) 에 있습니다.
+
 ## 사용자의 원 요청
 
 > "스마트폰에서 화면만 닫고, 실제로 백그라운드에서는 모두 다 돌아가고 있는 앱을 만들거야.
