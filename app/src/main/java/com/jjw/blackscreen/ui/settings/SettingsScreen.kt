@@ -40,6 +40,9 @@ import com.jjw.blackscreen.ui.rememberClockText
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.ClockFormats
 import com.jjw.blackscreen.data.Gesture
+import com.jjw.blackscreen.data.HOLD_STEP_MILLIS
+import com.jjw.blackscreen.data.MAX_HOLD_MILLIS
+import com.jjw.blackscreen.data.MIN_HOLD_MILLIS
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
@@ -213,6 +216,28 @@ fun SettingsScreen(
             )
         }
 
+        // 누르는 시간은 꾹 눌러 해제에서만 의미가 있다.
+        if (settings.unlockGesture == Gesture.LONG_PRESS) {
+            val seconds = "%.1f".format(settings.holdMillis / 1000f)
+            Text(
+                text = "${stringResource(R.string.hold_duration)}  ${seconds}초",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Slider(
+                value = settings.holdMillis.toFloat(),
+                onValueChange = { v ->
+                    // 눈금은 그리지 않지만 값은 0.1초에 떨어뜨린다.
+                    // 안 그러면 1,437ms 같은 값이 저장돼 표시가 지저분해진다.
+                    val snapped = (v / HOLD_STEP_MILLIS).roundToInt() * HOLD_STEP_MILLIS
+                    onChange { s -> s.copy(holdMillis = snapped) }
+                },
+                valueRange = MIN_HOLD_MILLIS.toFloat()..MAX_HOLD_MILLIS.toFloat(),
+                // steps = 0 이라 눈금 없이 매끄럽게 움직인다.
+                steps = 0,
+            )
+        }
+
         Spacer(Modifier.height(32.dp))
     }
 }
@@ -244,6 +269,7 @@ private val Gesture.labelRes: Int
         Gesture.DOUBLE_TAP -> R.string.gesture_double_tap
         Gesture.TRIPLE_TAP -> R.string.gesture_triple_tap
         Gesture.SWIPE -> R.string.gesture_swipe
+        Gesture.SLIDE_TO_UNLOCK -> R.string.gesture_slide_to_unlock
     }
 
 @Composable

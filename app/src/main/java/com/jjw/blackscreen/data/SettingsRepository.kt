@@ -34,6 +34,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.TEXT_LEVEL] = next.textLevel
             prefs[Keys.BURN_IN_SHIFT] = next.burnInShiftEnabled
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
+            prefs[Keys.HOLD_MILLIS] = next.holdMillis
             prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
             prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
             prefs[Keys.BUBBLE_SIZE_LEVEL] = next.bubbleSizeLevel
@@ -50,6 +51,7 @@ class SettingsRepository(context: Context) {
         val TEXT_LEVEL = intPreferencesKey("text_level")
         val BURN_IN_SHIFT = booleanPreferencesKey("burn_in_shift")
         val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
+        val HOLD_MILLIS = intPreferencesKey("hold_millis")
         val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
         val BUBBLE_EDGE = stringPreferencesKey("bubble_edge")
         val BUBBLE_SIZE_LEVEL = intPreferencesKey("bubble_size_level")
@@ -67,6 +69,9 @@ class SettingsRepository(context: Context) {
             textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
             burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,
             unlockGesture = enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture),
+            // 범위 밖 값이 들어와도 제스처가 먹통이 되지 않게 자른다.
+            holdMillis = (this[Keys.HOLD_MILLIS] ?: defaults.holdMillis)
+                .coerceIn(MIN_HOLD_MILLIS, MAX_HOLD_MILLIS),
             bubbleEnabled = this[Keys.BUBBLE_ENABLED] ?: defaults.bubbleEnabled,
             bubbleEdge = enumOrDefault(this[Keys.BUBBLE_EDGE], defaults.bubbleEdge),
             bubbleSizeLevel = this[Keys.BUBBLE_SIZE_LEVEL] ?: defaults.bubbleSizeLevel,

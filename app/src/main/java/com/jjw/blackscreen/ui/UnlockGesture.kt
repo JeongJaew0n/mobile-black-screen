@@ -1,16 +1,26 @@
 package com.jjw.blackscreen.ui
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -31,12 +42,16 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.Gesture
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
-private const val HoldMillis = 1_500f
 
 /** 밀어 올려 해제하는 데 필요한 거리. 화면 높이 대비 비율이라 기기를 안 탄다. */
 private const val SlideDismissFraction = 0.28f
@@ -59,6 +74,7 @@ private val RingStroke = 3.dp
 fun BoxScope.UnlockGestureLayer(
     gesture: Gesture,
     ringColor: Color,
+    holdMillis: Int,
     onUnlock: () -> Unit,
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
@@ -66,7 +82,7 @@ fun BoxScope.UnlockGestureLayer(
     var containerHeight by remember { mutableIntStateOf(0) }
 
     // 롱프레스 진행률. 링이 실제로 보이는 동안에만 프레임 루프를 돌린다.
-    LaunchedEffect(pressing, gesture) {
+    LaunchedEffect(pressing, gesture, holdMillis) {
         if (!pressing || gesture != Gesture.LONG_PRESS) {
             progress = 0f
             return@LaunchedEffect
@@ -74,7 +90,7 @@ fun BoxScope.UnlockGestureLayer(
         val start = withFrameMillis { it }
         while (true) {
             val elapsed = withFrameMillis { it } - start
-            progress = (elapsed / HoldMillis).coerceIn(0f, 1f)
+            progress = (elapsed / holdMillis.toFloat()).coerceIn(0f, 1f)
             if (progress >= 1f) {
                 onUnlock()
                 break
@@ -101,7 +117,9 @@ fun BoxScope.UnlockGestureLayer(
 
                     // 밀어 올리기는 화면이 손가락을 따라 움직여야 해서 표면 전체를
                     // 다뤄야 한다. BlackScreenRoot 의 SlideToDismissLayer 가 맡는다.
-                    Gesture.SWIPE -> Unit
+                    // 화면을 움직이거나 트랙을 그리는 방식은 표면 전체를 다뤄야 해서
+                    // BlackScreenRoot 가 별도 레이어로 처리한다.
+                    Gesture.SWIPE, Gesture.SLIDE_TO_UNLOCK -> Unit
                 }
             },
     )
@@ -221,4 +239,107 @@ fun BoxScope.SlideToDismissLayer(
                 )
             },
     )
+}
+
+/** 밀어서 잠금 해제 트랙의 치수. */
+private val TrackHeight = 56.dp
+private val TrackKnob = 46.dp
+private val TrackInset = 5.dp
+private val TrackBottomMargin = 72.dp
+
+/** 손잡이가 이 비율까지 가면 해제한다. 끝까지 딱 붙이지 않아도 되게 약간 여유를 둔다. */
+private const val SlideUnlockAt = 0.92f
+
+/**
+ * 옛 아이폰식 밀어서 잠금 해제.
+ *
+ * 다른 제스처들은 **알려주지 않으면 알 수 없다.** 롱프레스도 3회 탭도 화면에 아무 단서가
+ * 없다. 이 방식은 트랙과 손잡이가 보이므로 처음 보는 사람도 무엇을 해야 하는지 안다.
+ *
+ * 트랙 어디를 잡아도 끌린다. 손잡이만 잡게 하면 46dp 과녁을 맞혀야 해서 답답하다.
+ * 끝까지 못 가고 놓으면 튕기듯 처음으로 돌아온다.
+ *
+ * 하단에 고정된 UI 라 번인이 걱정되므로 시계와 같은 궤도로 함께 움직인다.
+ */
+@Composable
+fun BoxScope.SlideToUnlockLayer(
+    tint: Color,
+    burnInEnabled: Boolean,
+    onUnlock: () -> Unit,
+) {
+    val burnInOffset = rememberBurnInShift(burnInEnabled)
+    val density = LocalDensity.current
+    val knobPx = with(density) { TrackKnob.toPx() }
+    val insetPx = with(density) { TrackInset.toPx() }
+
+    var trackWidth by remember { mutableIntStateOf(0) }
+    var knobX by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+
+    val maxTravel = (trackWidth - knobPx - insetPx * 2).coerceAtLeast(0f)
+    val progress = if (maxTravel > 0f) (knobX / maxTravel).coerceIn(0f, 1f) else 0f
+
+    val shape = RoundedCornerShape(percent = 50)
+
+    Box(
+        Modifier
+            .align(Alignment.BottomCenter)
+            .offset { burnInOffset }
+            .padding(bottom = TrackBottomMargin)
+            .fillMaxWidth(0.86f)
+            .height(TrackHeight)
+            .clip(shape)
+            .border(1.dp, tint.copy(alpha = 0.22f), shape)
+            .onSizeChanged { trackWidth = it.width }
+            .pointerInput(maxTravel) {
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, dx ->
+                        change.consume()
+                        knobX = (knobX + dx).coerceIn(0f, maxTravel)
+                    },
+                    onDragEnd = {
+                        if (maxTravel > 0f && knobX >= maxTravel * SlideUnlockAt) {
+                            onUnlock()
+                        } else {
+                            val from = knobX
+                            scope.launch {
+                                animate(from, 0f, animationSpec = spring()) { v, _ -> knobX = v }
+                            }
+                        }
+                    },
+                    onDragCancel = {
+                        val from = knobX
+                        scope.launch {
+                            animate(from, 0f, animationSpec = spring()) { v, _ -> knobX = v }
+                        }
+                    },
+                )
+            },
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        // 손잡이가 나아갈수록 안내 문구는 물러난다.
+        Text(
+            text = stringResource(R.string.slide_to_unlock_hint),
+            color = tint.copy(alpha = (1f - progress * 1.6f).coerceAtLeast(0f) * 0.55f),
+            fontSize = 15.sp,
+            modifier = Modifier.align(Alignment.Center),
+        )
+
+        Box(
+            Modifier
+                .offset { IntOffset((insetPx + knobX).roundToInt(), 0) }
+                .size(TrackKnob)
+                .clip(CircleShape)
+                .background(tint.copy(alpha = 0.85f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            // 앱의 가로 막대 모티프. 화살표를 쓰면 다른 아이콘 언어가 하나 더 생긴다.
+            Box(
+                Modifier
+                    .width(14.dp)
+                    .height(2.dp)
+                    .background(Color.Black.copy(alpha = 0.55f)),
+            )
+        }
+    }
 }

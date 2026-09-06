@@ -68,6 +68,15 @@ enum class Gesture {
      * 순 변위는 왔다 갔다 하면 상쇄되므로 의도적인 스와이프만 통과한다.
      */
     SWIPE,
+
+    /**
+     * 옛 아이폰식 밀어서 잠금 해제.
+     *
+     * 화면 하단 트랙의 손잡이를 오른쪽 끝까지 끌면 풀린다. [SWIPE] 와 달리 화면이
+     * 벗겨지지 않고, 대신 **무엇을 해야 하는지가 눈에 보인다.** 다른 제스처들은
+     * 알려주지 않으면 알 수 없다.
+     */
+    SLIDE_TO_UNLOCK,
 }
 
 data class Settings(
@@ -80,6 +89,13 @@ data class Settings(
     val textLevel: Int = 3,
     val burnInShiftEnabled: Boolean = true,
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
+
+    /**
+     * [Gesture.LONG_PRESS] 로 해제할 때 눌러야 하는 시간(ms).
+     *
+     * 짧으면 주머니에서 풀리고, 길면 답답하다. 사람마다 다른 감각이라 조절을 연다.
+     */
+    val holdMillis: Int = DEFAULT_HOLD_MILLIS,
 
     /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
     val bubbleEnabled: Boolean = false,
@@ -146,6 +162,17 @@ data class Settings(
     val hasContent: Boolean
         get() = showClock || sentence.isNotBlank()
 }
+
+/**
+ * 꾹 눌러 해제에 쓸 수 있는 시간 범위.
+ *
+ * 하한이 1초인 이유는 그보다 짧으면 주머니에서 스치기만 해도 풀리기 때문이다.
+ * 0.1초 단위로 조절한다 — 이 정도 차이는 손끝에서 실제로 다르게 느껴진다.
+ */
+const val MIN_HOLD_MILLIS = 1_000
+const val MAX_HOLD_MILLIS = 3_500
+const val HOLD_STEP_MILLIS = 100
+const val DEFAULT_HOLD_MILLIS = 1_500
 
 object ClockFormats {
     const val H24 = "HH:mm"

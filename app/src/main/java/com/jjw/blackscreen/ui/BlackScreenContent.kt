@@ -68,6 +68,7 @@ fun BlackScreenRoot(
             UnlockGestureLayer(
                 gesture = settings.unlockGesture,
                 ringColor = settings.textColor,
+                holdMillis = settings.holdMillis,
                 onUnlock = onUnlock,
             )
         }
