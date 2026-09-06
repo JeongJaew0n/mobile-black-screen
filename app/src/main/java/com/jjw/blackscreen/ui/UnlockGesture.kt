@@ -247,6 +247,9 @@ private val TrackKnob = 46.dp
 private val TrackInset = 5.dp
 private val TrackBottomMargin = 72.dp
 
+/** 트랙 가로 비율. 넓으면 화면을 가로지르는 막대처럼 보여 답답하다. */
+private const val TrackWidthFraction = 0.66f
+
 /** 손잡이가 이 비율까지 가면 해제한다. 끝까지 딱 붙이지 않아도 되게 약간 여유를 둔다. */
 private const val SlideUnlockAt = 0.92f
 
@@ -286,7 +289,7 @@ fun BoxScope.SlideToUnlockLayer(
             .align(Alignment.BottomCenter)
             .offset { burnInOffset }
             .padding(bottom = TrackBottomMargin)
-            .fillMaxWidth(0.86f)
+            .fillMaxWidth(TrackWidthFraction)
             .height(TrackHeight)
             .clip(shape)
             .border(1.dp, tint.copy(alpha = 0.22f), shape)
