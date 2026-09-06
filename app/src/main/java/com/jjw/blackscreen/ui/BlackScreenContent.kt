@@ -64,6 +64,12 @@ fun BlackScreenRoot(
                 containerHeight = containerHeight,
                 onUnlock = onUnlock,
             )
+        } else if (settings.unlockGesture == Gesture.SLIDE_TO_UNLOCK) {
+            SlideToUnlockLayer(
+                tint = settings.textColor,
+                burnInEnabled = settings.burnInShiftEnabled,
+                onUnlock = onUnlock,
+            )
         } else {
             UnlockGestureLayer(
                 gesture = settings.unlockGesture,
