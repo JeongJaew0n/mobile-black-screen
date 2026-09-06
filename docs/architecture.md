@@ -552,7 +552,8 @@ data class Settings(
 | F15 | `LayoutParams.y` 에 dp 를 그대로 넣음 | `* density` |
 | F16 | 포그라운드 아닐 때 `startForegroundService` → 크래시 | `LifecycleResumeEffect` + `runCatching` |
 | F17 | 접근성 오버레이 첫 표시에 밝기 미적용 | 수집기가 캐시한 값을 초기 파라미터에 |
-| F18 | 앱 재설치 시 접근성 서비스 꺼짐 | Android 정상 동작. 재설치마다 다시 켜야 함 |
+| F18 | 재설치·`force-stop` 시 접근성 서비스 꺼짐 | Android 정상 동작. **강제 종료로도 꺼지므로 실사용에서도 FULL 이 조용히 멈춘다** |
+| F19 | 호출 안 하는 Composable 은 컴파일·lint 통과 | "빌드 성공" 이 아니라 **화면에 떴는지**로 확인 |
 
 ### 실기기 검증 시 속기 쉬운 것
 
@@ -560,6 +561,8 @@ data class Settings(
 |---|---|
 | "롱프레스 해제가 회귀했다" | adb 테스트 탭이 **해제 제스처 설정을 바꿔 놓음**. `unlock_gesture` 부터 확인할 것 |
 | "버블 페이드가 동작 안 한다" | 평균 밝기로 측정. 뒤 배경이 어두우면 안 움직임. **고대비 지점**(흰 막대)을 볼 것 |
+| "접근성창이 안 뜬다" | 직전 재설치·`force-stop` 이 서비스를 꺼 놓음. `accessibility_enabled` 부터 확인할 것 |
+| "새로 넣은 UI 가 안 보인다" | 호출하는 분기를 빠뜨림. 미사용 함수는 빌드가 잡아 주지 않는다 |
 | "글자가 보인다"(실제로는 안 보임) | `screencap` 은 프레임버퍼라 **패널 밝기가 반영되지 않음** |
 | "타일이 동작 안 한다" | `cmd statusbar click-tile` 만으로는 `onStartListening` 이 안 돎. `expand-settings` 선행 |
 | "차폐가 안 걸린다" | 화면이 잠겨 있어 탭이 잠금화면에 떨어짐. `isKeyguardShowing` 확인 |

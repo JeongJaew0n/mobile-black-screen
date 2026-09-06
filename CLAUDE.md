@@ -49,6 +49,12 @@ adb shell input swipe 540 1200 540 1200 2000
 # FLAG_KEEP_SCREEN_ON 검증: 타임아웃을 낮추고 그보다 오래 방치. 반드시 원복할 것
 adb shell settings put system screen_off_timeout 15000
 adb shell settings put system screen_off_timeout 600000
+
+# 접근성 서비스 재활성화 (재설치·강제 종료 후마다 필요하다)
+SVC=com.jjw.blackscreen/.accessibility.ScreenOffAccessibilityService
+adb shell settings put secure enabled_accessibility_services $SVC
+adb shell settings put secure accessibility_enabled 1
+adb shell dumpsys accessibility | grep -c "label=검은 화면"   # 1 이어야 한다
 ```
 
 **함정들.** 아래는 전부 실제로 한 번씩 속았던 것들이다.
@@ -66,6 +72,13 @@ adb shell settings put system screen_off_timeout 600000
 - **설정 화면 스크롤 위치가 매번 달라진다.** 스크롤 후 스크린샷으로 좌표를 다시 잡을 것.
 - **미세한 시각 변화를 평균 밝기로 재지 말 것.** 버블 페이드는 뒤 배경이 어두우면
   평균이 안 움직인다. 고대비 지점(흰 막대)의 픽셀값을 봐야 한다.
+- **재설치와 `am force-stop` 이 접근성 서비스를 꺼 버린다.** `accessibility_enabled`
+  가 0 이 되어 FULL 모드가 조용히 안 켜진다. 껐다고 알려주지 않으므로 "접근성창 0" 을
+  코드 버그로 오진하기 쉽다. **테스트 전에 위 재활성화 명령부터 돌릴 것.**
+  adb 아티팩트가 아니라 실사용에도 걸린다 — 사용자가 앱을 강제 종료하면 똑같이 먹통이 된다.
+- **사용자가 폰을 쓰는 중일 수 있다.** `am start` 가 앱을 앞으로 못 가져온 채 탭을
+  보내면 그 입력이 사용자가 보던 앱에 그대로 들어간다. 실제로 카카오톡 대화 화면에
+  탭을 넣은 적이 있다. **탭 직전 스크린샷으로 우리 앱이 최상단인지 확인할 것.**
 
 ## 구조의 핵심
 
@@ -122,6 +135,10 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 
 ## 코드를 고칠 때 걸리는 함정
 
+- **호출되지 않는 Composable 은 빌드로 잡히지 않는다.** `SlideToUnlockLayer` 를
+  만들어 놓고 `BlackScreenRoot` 에서 부르는 분기를 빠뜨린 채 커밋·푸시까지 갔다.
+  미사용 public 함수는 컴파일도 lint 도 그대로 통과한다. **UI 를 추가했으면
+  "빌드 성공" 이 아니라 화면에 떴는지로 확인할 것.**
 - **`OverlayService.onCreate()` 에서 `savedStateController.performRestore(null)` 은
   `super.onCreate()` 보다 먼저** 호출해야 한다. super 가 라이프사이클을 `CREATED` 로
   옮긴 뒤에 복원하면 예외가 난다. Service 에 Compose 를 얹으려면
