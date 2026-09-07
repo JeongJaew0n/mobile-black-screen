@@ -38,10 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.ui.rememberClockText
 import com.jjw.blackscreen.R
+import com.jjw.blackscreen.data.BUBBLE_STEP_DP
 import com.jjw.blackscreen.data.ClockFormats
 import com.jjw.blackscreen.data.Gesture
 import com.jjw.blackscreen.data.HOLD_STEP_MILLIS
+import com.jjw.blackscreen.data.MAX_BUBBLE_DP
 import com.jjw.blackscreen.data.MAX_HOLD_MILLIS
+import com.jjw.blackscreen.data.MIN_BUBBLE_DP
 import com.jjw.blackscreen.data.MIN_HOLD_MILLIS
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
@@ -193,10 +196,19 @@ fun SettingsScreen(
                 modifier = Modifier.padding(top = 8.dp),
             )
             Slider(
-                value = settings.bubbleSizeLevel.toFloat(),
-                onValueChange = { v -> onChange { s -> s.copy(bubbleSizeLevel = v.roundToInt()) } },
-                valueRange = 1f..5f,
-                steps = 3,
+                value = settings.bubbleSizeDp.toFloat(),
+                onValueChange = { v ->
+                    // 꾹 눌러 해제 시간과 같은 방식 — 눈금 없이 움직이되 값은 2dp 에 떨군다.
+                    val snapped = (v / BUBBLE_STEP_DP).roundToInt() * BUBBLE_STEP_DP
+                    // 같은 값이면 넘기지 않는다. 여기 저장은 떠 있는 버블 창의
+                    // updateViewLayout 까지 부르므로, 한 칸 안에서 끄는 동안
+                    // 같은 값을 계속 쓰면 창을 헛되이 다시 재운다.
+                    if (snapped != settings.bubbleSizeDp) {
+                        onChange { s -> s.copy(bubbleSizeDp = snapped) }
+                    }
+                },
+                valueRange = MIN_BUBBLE_DP.toFloat()..MAX_BUBBLE_DP.toFloat(),
+                steps = 0,
             )
         }
 

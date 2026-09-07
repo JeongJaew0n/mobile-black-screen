@@ -100,8 +100,8 @@ data class Settings(
     /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
     val bubbleEnabled: Boolean = false,
     val bubbleEdge: Edge = Edge.RIGHT,
-    /** 1~5. 값이 클수록 버블이 크다 — [bubbleSizeDp] 참조. */
-    val bubbleSizeLevel: Int = 3,
+    /** 버블 지름(dp). [MIN_BUBBLE_DP]~[MAX_BUBBLE_DP]. */
+    val bubbleSizeDp: Int = DEFAULT_BUBBLE_DP,
     /** 화면 높이 대비 0..1. 회전·해상도가 바뀌어도 화면 안에 남는다. */
     val bubbleYRatio: Float = 0.5f,
 ) {
@@ -115,21 +115,6 @@ data class Settings(
      * 그래서 밝기 손잡이는 [screenBrightness] 하나로 통일했다. 여기는 건드리지 말 것.
      */
     val textColor: Color get() = Color.White
-
-    /**
-     * 버블 지름(dp).
-     *
-     * 작을수록 덜 거슬리지만 누르기 어려워진다. 접근성 권장 최소 터치 영역이 48dp 라
-     * 그보다 작은 단계는 "일부러 작게 쓰겠다" 는 선택으로만 의미가 있다.
-     */
-    val bubbleSizeDp: Int
-        get() = when (bubbleSizeLevel.coerceIn(1, 5)) {
-            1 -> 40
-            2 -> 46
-            3 -> 52
-            4 -> 60
-            else -> 70
-        }
 
     /**
      * 창 밝기 오버라이드(0..1). 이 앱에서 밝기를 조절하는 **유일한** 값이다.
@@ -173,6 +158,35 @@ const val MIN_HOLD_MILLIS = 1_000
 const val MAX_HOLD_MILLIS = 3_500
 const val HOLD_STEP_MILLIS = 100
 const val DEFAULT_HOLD_MILLIS = 1_500
+
+/**
+ * 버블 지름(dp)의 범위.
+ *
+ * 하한은 접근성 권장 터치 영역(48dp)의 1/3 이다. "거의 안 보이게 두고 싶다" 는 선택을
+ * 막지 않기 위해서이며, 그 대가로 누르기 어려워지는 것은 사용자가 감수한다.
+ * 상한은 화면 폭의 1/4 남짓이라 그 이상은 손가락보다 커서 의미가 없다.
+ *
+ * 하한을 더 내리지 말 것. 16dp 면 안쪽 막대가 이미 5.6dp 라, 여기서 더 줄이면
+ * 버블인지 먼지인지 구분이 안 되고 꾹 누르기·드래그를 시작할 지점도 사라진다.
+ */
+const val MIN_BUBBLE_DP = 16
+const val MAX_BUBBLE_DP = 96
+const val BUBBLE_STEP_DP = 2
+const val DEFAULT_BUBBLE_DP = 52
+
+/**
+ * 예전에는 1~5 단계로만 고를 수 있었다. 저장된 단계값을 dp 로 옮긴다.
+ *
+ * 단계를 늘리는 대신 dp 를 직접 저장하도록 바꿨다 — 범위를 넓히면서 단계 수를 유지하면
+ * 눈금 간격이 벌어져 원하는 크기를 못 맞추게 된다.
+ */
+fun bubbleDpFromLegacyLevel(level: Int): Int = when (level.coerceIn(1, 5)) {
+    1 -> 40
+    2 -> 46
+    3 -> 52
+    4 -> 60
+    else -> 70
+}
 
 object ClockFormats {
     const val H24 = "HH:mm"

@@ -37,7 +37,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.HOLD_MILLIS] = next.holdMillis
             prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
             prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
-            prefs[Keys.BUBBLE_SIZE_LEVEL] = next.bubbleSizeLevel
+            prefs[Keys.BUBBLE_SIZE_DP] = next.bubbleSizeDp
             prefs[Keys.BUBBLE_Y_RATIO] = next.bubbleYRatio
         }
         return result
@@ -54,6 +54,9 @@ class SettingsRepository(context: Context) {
         val HOLD_MILLIS = intPreferencesKey("hold_millis")
         val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
         val BUBBLE_EDGE = stringPreferencesKey("bubble_edge")
+        val BUBBLE_SIZE_DP = intPreferencesKey("bubble_size_dp")
+
+        /** 구버전 키. 읽기 전용 — [bubbleDpFromLegacyLevel] 로 옮긴다. */
         val BUBBLE_SIZE_LEVEL = intPreferencesKey("bubble_size_level")
         val BUBBLE_Y_RATIO = floatPreferencesKey("bubble_y_ratio")
     }
@@ -74,7 +77,11 @@ class SettingsRepository(context: Context) {
                 .coerceIn(MIN_HOLD_MILLIS, MAX_HOLD_MILLIS),
             bubbleEnabled = this[Keys.BUBBLE_ENABLED] ?: defaults.bubbleEnabled,
             bubbleEdge = enumOrDefault(this[Keys.BUBBLE_EDGE], defaults.bubbleEdge),
-            bubbleSizeLevel = this[Keys.BUBBLE_SIZE_LEVEL] ?: defaults.bubbleSizeLevel,
+            bubbleSizeDp = (
+                this[Keys.BUBBLE_SIZE_DP]
+                    ?: this[Keys.BUBBLE_SIZE_LEVEL]?.let(::bubbleDpFromLegacyLevel)
+                    ?: defaults.bubbleSizeDp
+                ).coerceIn(MIN_BUBBLE_DP, MAX_BUBBLE_DP),
             bubbleYRatio = this[Keys.BUBBLE_Y_RATIO] ?: defaults.bubbleYRatio,
         )
     }
