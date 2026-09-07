@@ -19,9 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.R
 
 /** 꾹 누른 채로 고른 방향. */
 enum class BubbleAim { NONE, UP, DOWN }
@@ -61,7 +63,7 @@ fun AimTargets(aim: BubbleAim) {
     Box(Modifier.fillMaxSize()) {
         AimChip(
             icon = "▲",
-            label = "앱 열기",
+            label = stringResource(R.string.aim_open_app),
             active = aim == BubbleAim.UP,
             activeColor = Color(0xF02F6FA8),
             modifier = Modifier
@@ -70,7 +72,7 @@ fun AimTargets(aim: BubbleAim) {
         )
         AimChip(
             icon = "✕",
-            label = "버블 삭제",
+            label = stringResource(R.string.aim_remove_bubble),
             active = aim == BubbleAim.DOWN,
             activeColor = Color(0xF0C0392B),
             modifier = Modifier

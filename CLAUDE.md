@@ -14,6 +14,10 @@ Android 에 임의 시점에 화면을 끄는 공개 API가 없고, 물리적으
 (cover)로 부른다 — `ScreenCoverService`, `coverView`, "차폐 창" 등. 둘은 같은 것을 가리킨다.
 UI 문자열(`strings.xml`)에 `차폐` 를 새로 넣지 말 것.
 
+**문자열의 기본 로케일은 영어다** (`values/`). 한국어는 `values-ko/`. 새 UI 문자열은
+**두 파일에 함께** 넣는다 — 한쪽만 넣으면 lint `MissingTranslation` 이 에러로 막는다.
+Compose 안에 `Text("한글")` 을 직접 쓰지 말 것 — lint 가 못 잡는다(XML 전용 검사).
+
 ## 명령
 
 ```bash
@@ -49,6 +53,16 @@ adb shell input swipe 540 1200 540 1200 2000
 # FLAG_KEEP_SCREEN_ON 검증: 타임아웃을 낮추고 그보다 오래 방치. 반드시 원복할 것
 adb shell settings put system screen_off_timeout 15000
 adb shell settings put system screen_off_timeout 600000
+
+# 앱별 언어 강제 (Android 13+). 기기 언어를 안 바꿔도 화면·알림은 바뀐다.
+# 런처 이름·타일 이름·접근성 설명은 안 바뀌는 게 정상이다 — 그건 기기 언어를 바꿔야 본다.
+adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales en-US
+adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales en-XA   # 의사 로케일
+adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales ar-XB   # RTL
+adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales ""      # 원복
+
+# Kotlin 안 한글 리터럴 (주석 제외). 0 이어야 한다
+grep -rn '"[^"]*[가-힣][^"]*"' app/src/main/java --include='*.kt' | grep -v ':[0-9]*:\s*\(//\|\*\|/\*\)'
 
 # 접근성 서비스 재활성화 (재설치·강제 종료 후마다 필요하다)
 SVC=com.jjw.blackscreen/.accessibility.ScreenOffAccessibilityService
@@ -135,6 +149,15 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 
 ## 코드를 고칠 때 걸리는 함정
 
+- **시계 패턴을 문자열로 쓰지 말 것.** `ClockStyle` 은 24/12 선택만 저장하고 패턴은 ICU
+  `DateTimePatternGenerator` 가 로케일에서 만든다. `MATCH_HOUR_FIELD_LENGTH` 를 빼면 한국어
+  `09:05` 가 `9:05` 로 바뀌고, `java.time` 으로 서식하면 일부 로케일의 `B` 문자에서 예외가 난다.
+- **Composable 에서 `Locale.getDefault()` 를 읽지 말 것.** lint `NonObservableLocale` 이
+  에러로 막는다. `LocalConfiguration.current.locales[0]` 을 쓴다.
+- **버블 창에 텍스트를 넣지 말 것.** 서비스가 소유하는 창은 만들 때의 로케일로 굳는다.
+  텍스트를 가진 창(차폐·겨냥 목표)은 전부 쓸 때마다 새로 만들기 때문에 지금은 문제가 없다.
+- **밀어서 잠금 해제 트랙의 `LocalLayoutDirection = Ltr` 고정을 풀지 말 것.** RTL 에서
+  `CenterStart`/`offset` 은 뒤집히는데 드래그 delta 는 안 뒤집혀 손잡이가 손가락 반대로 간다.
 - **호출되지 않는 Composable 은 빌드로 잡히지 않는다.** `SlideToUnlockLayer` 를
   만들어 놓고 `BlackScreenRoot` 에서 부르는 분기를 빠뜨린 채 커밋·푸시까지 갔다.
   미사용 public 함수는 컴파일도 lint 도 그대로 통과한다. **UI 를 추가했으면

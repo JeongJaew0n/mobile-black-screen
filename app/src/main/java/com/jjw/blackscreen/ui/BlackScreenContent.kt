@@ -99,7 +99,7 @@ private fun BlackScreenContent(settings: Settings) {
         ) {
             if (settings.showClock) {
                 Text(
-                    text = rememberClockText(settings.clockFormat),
+                    text = rememberClockText(settings.clockStyle),
                     color = settings.textColor,
                     fontSize = 64.sp,
                     fontWeight = FontWeight.Light,

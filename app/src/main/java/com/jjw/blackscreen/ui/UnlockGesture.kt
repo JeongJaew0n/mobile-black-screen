@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -43,8 +44,10 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.R
@@ -318,31 +321,37 @@ fun BoxScope.SlideToUnlockLayer(
                     },
                 )
             },
-        contentAlignment = Alignment.CenterStart,
     ) {
-        // 손잡이가 나아갈수록 안내 문구는 물러난다.
-        Text(
-            text = stringResource(R.string.slide_to_unlock_hint),
-            color = tint.copy(alpha = (1f - progress * 1.6f).coerceAtLeast(0f) * 0.55f),
-            fontSize = 15.sp,
-            modifier = Modifier.align(Alignment.Center),
-        )
+        // 왼→오른쪽으로 미는 물리 제스처라 RTL 에서도 방향을 고정한다. 안 그러면
+        // CenterStart 와 offset 은 뒤집히는데 드래그 delta 는 물리 방향이라, 손잡이가
+        // 오른쪽에서 시작해 손가락과 반대로 간다.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+                // 손잡이가 나아갈수록 안내 문구는 물러난다.
+                Text(
+                    text = stringResource(R.string.slide_to_unlock_hint),
+                    color = tint.copy(alpha = (1f - progress * 1.6f).coerceAtLeast(0f) * 0.55f),
+                    fontSize = 15.sp,
+                    modifier = Modifier.align(Alignment.Center),
+                )
 
-        Box(
-            Modifier
-                .offset { IntOffset((insetPx + knobX).roundToInt(), 0) }
-                .size(TrackKnob)
-                .clip(CircleShape)
-                .background(tint.copy(alpha = 0.85f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            // 앱의 가로 막대 모티프. 화살표를 쓰면 다른 아이콘 언어가 하나 더 생긴다.
-            Box(
-                Modifier
-                    .width(14.dp)
-                    .height(2.dp)
-                    .background(Color.Black.copy(alpha = 0.55f)),
-            )
+                Box(
+                    Modifier
+                        .offset { IntOffset((insetPx + knobX).roundToInt(), 0) }
+                        .size(TrackKnob)
+                        .clip(CircleShape)
+                        .background(tint.copy(alpha = 0.85f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    // 앱의 가로 막대 모티프. 화살표를 쓰면 다른 아이콘 언어가 하나 더 생긴다.
+                    Box(
+                        Modifier
+                            .width(14.dp)
+                            .height(2.dp)
+                            .background(Color.Black.copy(alpha = 0.55f)),
+                    )
+                }
+            }
         }
     }
 }

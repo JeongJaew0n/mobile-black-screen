@@ -29,7 +29,7 @@ class SettingsRepository(context: Context) {
             result = next
             prefs[Keys.MODE] = next.mode.name
             prefs[Keys.SHOW_CLOCK] = next.showClock
-            prefs[Keys.CLOCK_FORMAT] = next.clockFormat
+            prefs[Keys.CLOCK_STYLE] = next.clockStyle.name
             prefs[Keys.SENTENCE] = next.sentence
             prefs[Keys.TEXT_LEVEL] = next.textLevel
             prefs[Keys.BURN_IN_SHIFT] = next.burnInShiftEnabled
@@ -46,6 +46,9 @@ class SettingsRepository(context: Context) {
     private object Keys {
         val MODE = stringPreferencesKey("mode")
         val SHOW_CLOCK = booleanPreferencesKey("show_clock")
+        val CLOCK_STYLE = stringPreferencesKey("clock_style")
+
+        /** 구버전 키(패턴 문자열). 읽기 전용 — [ClockStyle.fromLegacyPattern] 로 옮긴다. */
         val CLOCK_FORMAT = stringPreferencesKey("clock_format")
         val SENTENCE = stringPreferencesKey("sentence")
         val TEXT_LEVEL = intPreferencesKey("text_level")
@@ -67,7 +70,8 @@ class SettingsRepository(context: Context) {
             // 비활성 모드가 저장돼 있으면 갇히지 않도록 교정한다.
             mode = Mode.sanitize(enumOrDefault(this[Keys.MODE], defaults.mode)),
             showClock = this[Keys.SHOW_CLOCK] ?: defaults.showClock,
-            clockFormat = ClockFormats.migrate(this[Keys.CLOCK_FORMAT]),
+            clockStyle = this[Keys.CLOCK_STYLE]?.let { enumOrDefault(it, defaults.clockStyle) }
+                ?: ClockStyle.fromLegacyPattern(this[Keys.CLOCK_FORMAT]),
             sentence = this[Keys.SENTENCE] ?: defaults.sentence,
             textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
             burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,

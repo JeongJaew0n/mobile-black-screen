@@ -22,6 +22,16 @@ android {
         release {
             isMinifyEnabled = false
         }
+        debug {
+            // en-XA / ar-XB 의사 로케일. 감싸이지 않은 글자 = 추출 누락, 잘림 = 고정폭.
+            isPseudoLocalesEnabled = true
+        }
+    }
+
+    androidResources {
+        // values-* 를 보고 locales_config.xml 을 만들어 Android 13+ 앱별 언어 목록에 올린다.
+        // 기본 로케일은 res/resources.properties 의 unqualifiedResLocale 이 알려 준다.
+        generateLocaleConfig = true
     }
 
     compileOptions {

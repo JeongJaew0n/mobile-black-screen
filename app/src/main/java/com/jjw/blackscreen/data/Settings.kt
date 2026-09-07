@@ -83,7 +83,7 @@ data class Settings(
     val mode: Mode = Mode.FULL,
     /** 기본값은 요구사항대로 "아무것도 표시하지 않는 완전한 검정"이다. */
     val showClock: Boolean = false,
-    val clockFormat: String = ClockFormats.H24,
+    val clockStyle: ClockStyle = ClockStyle.H24,
     val sentence: String = "",
     /** 1~5. 값이 클수록 밝다 — [screenBrightness] 참조. */
     val textLevel: Int = 3,
@@ -188,24 +188,28 @@ fun bubbleDpFromLegacyLevel(level: Int): Int = when (level.coerceIn(1, 5)) {
     else -> 70
 }
 
-object ClockFormats {
-    const val H24 = "HH:mm"
+/**
+ * 시계 표기. **패턴이 아니라 24/12시간제 선택만** 저장한다.
+ *
+ * 패턴은 렌더 시점에 로케일에서 파생한다([com.jjw.blackscreen.ui.formatter]). 한국어는
+ * `오후 1:05`, 영어는 `1:05 PM`, 일본어는 `午後1:05` 로 순서·구분자·오전오후 위치가 전부
+ * 다르다. 예전에 `"h:mm a"` 를 `"a h:mm"` 로 고친 적이 있는데 그건 증상을 고친 것이었고,
+ * 원인은 "패턴을 사람이 정한다" 였다.
+ *
+ * @property skeleton ICU 스켈레톤. `HH` 는 앞자리 0 을 유지하라는 뜻이다 — 한국어 24시간제
+ *   기본은 `H:mm` 이라 그냥 두면 `09:05` 가 `9:05` 로 바뀐다.
+ */
+enum class ClockStyle(val skeleton: String) {
+    H24("HHmm"),
+    H12("hmm"),
+    ;
 
-    /**
-     * 한국어는 오전/오후가 **앞**에 온다 — "오전 12:11" 이지 "12:11 오전" 이 아니다.
-     * `h:mm a` 는 영어권 순서다.
-     */
-    const val H12 = "a h:mm"
-
-    /** 예전에 저장된 영어권 순서. 읽을 때 [H12] 로 옮긴다. */
-    const val LEGACY_H12 = "h:mm a"
-
-    val ALL = listOf(H24, H12)
-
-    /** 저장된 값이 사라진 형식이면 현재 형식으로 옮긴다. */
-    fun migrate(stored: String?): String = when (stored) {
-        null -> H24
-        LEGACY_H12 -> H12
-        else -> stored
+    companion object {
+        /** 예전에는 패턴 문자열을 그대로 저장했다. 읽을 때 여기로 옮긴다. */
+        fun fromLegacyPattern(stored: String?): ClockStyle = when (stored) {
+            null, "HH:mm" -> H24
+            "a h:mm", "h:mm a" -> H12
+            else -> H24
+        }
     }
 }

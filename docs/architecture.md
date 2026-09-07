@@ -115,7 +115,7 @@ app/src/main/java/.../blackscreen/
 │   └─ AimTargets.kt            꾹 누른 동안 뜨는 위/아래 목표
 ├─ ui/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
-│   ├─ Clock.kt                 분 경계 정렬 시계
+│   ├─ Clock.kt                 분 경계 정렬 시계 — 패턴은 ICU 가 로케일에서 파생
 │   ├─ BurnInShift.kt           픽셀 시프트 로직
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 피드백
 │   └─ settings/SettingsScreen.kt
@@ -360,7 +360,7 @@ fun BlackScreenContent(settings: Settings) {
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         Column(Modifier.align(Alignment.Center).offset { offset }) {
             if (settings.showClock) {
-                Text(formatNow(settings.clockFormat), color = settings.textColor)
+                Text(rememberClockText(settings.clockStyle), color = settings.textColor)
             }
             if (settings.sentence.isNotBlank()) {
                 Text(settings.sentence, color = settings.textColor)
@@ -478,7 +478,7 @@ bubbleSuppressed  차폐 중이라 잠시 감췄는가
 data class Settings(
     val mode: Mode = Mode.FULL,              // FULL | OVERLAY | BLACKOUT
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
-    val clockFormat: String = "a h:mm",      // 한국어는 오전/오후가 앞
+    val clockStyle: ClockStyle = H24,        // 패턴이 아니다. 로케일이 패턴을 정한다 (§5.1)
     val sentence: String = "",
     val textLevel: Int = 3,                  // 1~5 → 패널 밝기 0.05~0.80
     val burnInShiftEnabled: Boolean = true,
@@ -515,6 +515,44 @@ data class Settings(
 
 ---
 
+
+### 5.1 시계 패턴은 저장하지 않는다
+
+`ClockStyle` 은 24/12시간제 선택만 담는다. 패턴은 렌더 시점에
+
+```kotlin
+DateTimePatternGenerator.getInstance(locale)
+    .getBestPattern(style.skeleton, MATCH_HOUR_FIELD_LENGTH)   // "HHmm" / "hmm"
+```
+
+로 만들고 ICU `SimpleDateFormat` 으로 서식한다. 한국어 `오후 1:05`, 영어 `1:05 PM`,
+일본어 `午後1:05` 가 코드 한 줄에서 갈린다. 예전 저장값(`"HH:mm"`, `"a h:mm"`, `"h:mm a"`)은
+`ClockStyle.fromLegacyPattern` 이 옮긴다.
+
+`MATCH_HOUR_FIELD_LENGTH` 가 없으면 한국어 24시간제가 `9:05` 로 바뀐다(F23).
+`java.time` 으로 서식하지 말 것(F22).
+
+### 5.2 다국어
+
+```
+res/values/strings.xml       영어 — 기본 폴백. 목록에 없는 언어는 여기를 본다
+res/values-ko/strings.xml    한국어
+res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig 생성에 쓴다)
+```
+
+- 언어 추가 = `values-xx/strings.xml` 하나. `generateLocaleConfig = true` 라 Android 13+
+  앱별 언어 목록에 자동으로 오른다. lint `MissingTranslation` 은 끄지 않는다.
+- **OS 용어를 인용하는 문자열 4건**(`overlay_permission_needed`, `bubble_permission_note`,
+  `accessibility_needed`, `accessibility_open`)은 각 언어의 Android 표기를 써야 한다.
+  직역하면 사용자가 그 설정 항목을 못 찾는다. 각 `strings.xml` 상단 주석에 적어 두었다.
+- 앱 안 언어 선택은 없다. Android 13+ 는 시스템 설정에 항목이 생기고, 12 이하는 기기
+  언어를 따른다. appcompat 을 들이지 않기 위한 선택이다.
+- 앱별 언어가 닿지 않는 곳(F24)과 서비스 창의 로케일 고정(F25)은 함정 표 참조.
+- RTL: 설정 화면은 Compose 가 뒤집는다. **밀어서 잠금 해제 트랙은 `LocalLayoutDirection`
+  을 `Ltr` 로 고정**했다 — 물리 제스처인데 `CenterStart`/`offset` 은 뒤집히고 드래그 delta
+  는 안 뒤집혀 손잡이가 손가락과 반대로 가기 때문이다. 버블 가장자리는 창 좌표라 무관하다.
+- 디버그 빌드는 `en-XA`/`ar-XB` 의사 로케일을 포함한다.
+
 ## 6. 전력
 
 **아직 실측하지 못했습니다.** 시도했고 두 번 다 실패했습니다 —
@@ -543,6 +581,7 @@ data class Settings(
 4. **FULL 모드** — 접근성 오버레이. 기본값을 여기로 옮기고 Blackout 을 최후 수단으로 격하
 5. **버블 크기 조절** — 5단계 → 16~96dp 연속값
 6. **버블 겨냥 제스처** — 꾹 누른 뒤 위는 앱 열기, 아래는 삭제. ✕ 타겟 폐지
+7. **다국어** — 기본 영어 + 한국어. 시계 패턴을 ICU 파생으로. 앱별 언어 목록(`localeConfig`) 선언
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 
@@ -578,6 +617,12 @@ data class Settings(
 | F17 | 접근성 오버레이 첫 표시에 밝기 미적용 | 수집기가 캐시한 값을 초기 파라미터에 |
 | F18 | 재설치·`force-stop` 시 접근성 서비스 꺼짐 | Android 정상 동작. **강제 종료로도 꺼지므로 실사용에서도 FULL 이 조용히 멈춘다** |
 | F19 | 호출 안 하는 Composable 은 컴파일·lint 통과 | "빌드 성공" 이 아니라 **화면에 떴는지**로 확인 |
+| F20 | Compose `Text("리터럴")` 은 lint `HardcodedText` 가 안 잡음 (XML 전용) | grep 으로 한글 리터럴 0건 유지 |
+| F21 | `Locale.getDefault()` 를 Composable 에서 읽으면 lint `NonObservableLocale` 에러 | `LocalConfiguration.current.locales[0]` |
+| F22 | ICU 패턴을 `java.time` 으로 서식하면 `B` 문자에서 예외 | ICU 가 만든 패턴은 ICU `SimpleDateFormat` 으로 |
+| F23 | `getBestDateTimePattern` 은 `HH` 를 로케일 기본 폭으로 바꿈 (ko: `H:mm`) | `DateTimePatternGenerator` + `MATCH_HOUR_FIELD_LENGTH` |
+| F24 | 앱별 언어는 런처 이름·타일 이름·접근성 설명에 안 닿음 (남이 그림) | 플랫폼 동작. 기기 언어로 검증 |
+| F25 | 서비스가 소유하는 창은 만들 때의 로케일로 굳음 | 텍스트 있는 창은 매번 새로 만든다. **버블 창에 텍스트 금지** |
 
 ### 실기기 검증 시 속기 쉬운 것
 

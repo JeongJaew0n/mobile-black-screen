@@ -36,10 +36,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.ui.rememberClockSample
 import com.jjw.blackscreen.ui.rememberClockText
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.BUBBLE_STEP_DP
-import com.jjw.blackscreen.data.ClockFormats
+import com.jjw.blackscreen.data.ClockStyle
 import com.jjw.blackscreen.data.Gesture
 import com.jjw.blackscreen.data.HOLD_STEP_MILLIS
 import com.jjw.blackscreen.data.MAX_BUBBLE_DP
@@ -129,11 +130,16 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 8.dp),
             )
-            ClockFormats.ALL.forEach { format ->
+            ClockStyle.entries.forEach { style ->
                 RadioRow(
-                    label = stringResource(format.labelRes),
-                    selected = settings.clockFormat == format,
-                    onSelect = { onChange { s -> s.copy(clockFormat = format) } },
+                    // 예시는 리소스에 박지 않고 현재 로케일로 서식한다 — 언어마다 다르다.
+                    label = stringResource(
+                        R.string.clock_style_label,
+                        stringResource(style.labelRes),
+                        rememberClockSample(style),
+                    ),
+                    selected = settings.clockStyle == style,
+                    onSelect = { onChange { s -> s.copy(clockStyle = style) } },
                 )
             }
         }
@@ -191,7 +197,7 @@ fun SettingsScreen(
         )
         if (settings.bubbleEnabled) {
             Text(
-                text = "${stringResource(R.string.bubble_size)}  ${settings.bubbleSizeDp}dp",
+                text = stringResource(R.string.bubble_size_value, settings.bubbleSizeDp),
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -230,9 +236,9 @@ fun SettingsScreen(
 
         // 누르는 시간은 꾹 눌러 해제에서만 의미가 있다.
         if (settings.unlockGesture == Gesture.LONG_PRESS) {
-            val seconds = "%.1f".format(settings.holdMillis / 1000f)
             Text(
-                text = "${stringResource(R.string.hold_duration)}  ${seconds}초",
+                // 숫자 서식과 단위 어순은 리소스가 정한다 (독일어는 1,5 / 한국어는 뒤에 '초').
+                text = stringResource(R.string.hold_duration_value, settings.holdMillis / 1000f),
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -255,10 +261,10 @@ fun SettingsScreen(
 }
 
 /** 패턴 문자열을 그대로 보여주면 알아보기 어렵다. 예시가 들어간 문구로 바꾼다. */
-private val String.labelRes: Int
+private val ClockStyle.labelRes: Int
     get() = when (this) {
-        ClockFormats.H24 -> R.string.clock_24h
-        else -> R.string.clock_12h
+        ClockStyle.H24 -> R.string.clock_24h
+        ClockStyle.H12 -> R.string.clock_12h
     }
 
 private val Mode.labelRes: Int
@@ -342,7 +348,7 @@ private fun BrightnessPreview(settings: Settings) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = rememberClockText(settings.clockFormat),
+            text = rememberClockText(settings.clockStyle),
             color = Color.White,
             fontSize = 34.sp,
             fontWeight = FontWeight.Light,

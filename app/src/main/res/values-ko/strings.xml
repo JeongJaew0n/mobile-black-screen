@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  한국어.
+
+  ⚠️ OS 용어를 인용하는 문자열: overlay_permission_needed, bubble_permission_note,
+  accessibility_needed, accessibility_open. 시스템 설정 항목 이름이므로 이 언어의
+  Android 표기를 그대로 써야 한다. 직역하면 사용자가 그 항목을 찾지 못한다.
+-->
+<resources>
+    <string name="app_name">검은 화면</string>
+    <string name="tile_label">검은 화면</string>
+
+    <string name="start_blackout">Screen Off 시작</string>
+    <string name="section_content">표시 내용</string>
+    <string name="show_clock">시계 표시</string>
+    <string name="clock_format">시계 형식</string>
+    <string name="clock_24h">24시간제</string>
+    <string name="clock_12h">오전·오후</string>
+    <string name="clock_style_label">%1$s (%2$s)</string>
+    <string name="sentence">문장</string>
+    <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
+
+    <string name="section_appearance">화면</string>
+    <string name="text_level">밝기</string>
+    <string name="brightness_preview_hint">슬라이더를 누르고 있으면 실제 밝기로 보입니다</string>
+    <string name="burn_in_shift">번인 방지 이동</string>
+    <string name="burn_in_shift_desc">60초마다 글자 위치를 미세하게 옮깁니다</string>
+
+    <string name="section_unlock">해제</string>
+
+    <string name="gesture_long_press">꾹 눌러 해제</string>
+    <string name="hold_duration_value">누르는 시간 %1$.1f초</string>
+    <string name="gesture_double_tap">더블 탭</string>
+    <string name="gesture_triple_tap">3회 연속 탭</string>
+    <string name="gesture_swipe">위로 밀어 올리기</string>
+    <string name="gesture_slide_to_unlock">밀어서 잠금 해제</string>
+    <string name="slide_to_unlock_hint">밀어서 잠금 해제</string>
+
+    <string name="section_mode">Screen Off 방식</string>
+    <string name="mode_blackout">완전 검정</string>
+    <string name="mode_blackout_desc">상태바까지 숨깁니다. 권한이 필요 없습니다. 다른 앱의 화면 렌더링은 멈추지만 음악·다운로드 등 백그라운드 동작은 계속됩니다.</string>
+    <string name="mode_overlay">오버레이</string>
+    <string name="mode_overlay_desc">다른 앱이 계속 렌더링됩니다. 다만 상태바와 내비게이션 바는 덮을 수 없어 위아래에 그대로 남습니다.</string>
+    <string name="overlay_permission_needed">‘다른 앱 위에 표시’ 권한이 필요합니다</string>
+    <string name="grant_permission">권한 허용하기</string>
+
+    <string name="overlay_channel">Screen Off 상태</string>
+    <string name="overlay_running">Screen Off 중</string>
+    <string name="overlay_running_desc">길게 눌러 해제하거나 아래 버튼을 누르세요</string>
+    <string name="overlay_stop">해제</string>
+
+    <string name="section_bubble">버블</string>
+    <string name="bubble_enabled">화면 위 버블 표시</string>
+    <string name="bubble_size_value">버블 크기 %1$d dp</string>
+    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 꾹 누른 채 위로 밀면 이 설정 화면이 열리고, 아래로 밀면 버블이 사라집니다. 그냥 끌면 위치가 옮겨집니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_permission_note">버블에는 Screen Off 방식과 별개로 ‘다른 앱 위에 표시’ 권한이 필요합니다.</string>
+    <string name="bubble_running">버블 실행 중</string>
+    <string name="bubble_running_desc">눌러서 Screen Off · 꾹 눌러 위는 앱, 아래는 삭제</string>
+    <string name="bubble_stop">버블 끄기</string>
+    <string name="aim_open_app">앱 열기</string>
+    <string name="aim_remove_bubble">버블 삭제</string>
+
+    <string name="accessibility_description">화면 전체를 덮기 위해 필요합니다. 상태바와 내비게이션 바 위까지 덮을 수 있는 창은 접근성 서비스만 사용할 수 있습니다. 이 앱은 화면 내용을 읽지 않습니다.</string>
+
+    <string name="mode_full">전체 화면</string>
+    <string name="mode_full_desc">쓰던 앱은 그대로 두고 화면 전체가 검어집니다. 상태바와 내비게이션 바까지 덮습니다. 접근성 권한이 필요합니다.</string>
+    <string name="accessibility_needed">접근성 권한이 필요합니다</string>
+    <string name="accessibility_open">접근성 설정 열기</string>
+</resources>
