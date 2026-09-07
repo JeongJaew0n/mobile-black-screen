@@ -22,7 +22,7 @@
     <string name="sentence_hint">Leave empty to show nothing</string>
 
     <string name="section_appearance">Screen</string>
-    <string name="text_level">Brightness</string>
+    <string name="text_level_value">Brightness %1$d</string>
     <string name="brightness_preview_hint">Hold the slider to preview the actual brightness</string>
     <string name="burn_in_shift">Burn-in protection</string>
     <string name="burn_in_shift_desc">Nudges the text position every 60 seconds</string>

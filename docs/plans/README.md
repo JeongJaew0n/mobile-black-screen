@@ -15,7 +15,7 @@
 | 1 | [blackout-overlay-modes](./blackout-overlay-modes/) — 두 모드 차폐 앱 | 완료 (일부 결정 뒤집힘) |
 | 2 | [floating-bubble-launcher](./floating-bubble-launcher/) — 상주 버블 | 완료 |
 | 3 | [full-screen-accessibility-overlay](./full-screen-accessibility-overlay/) — FULL 모드 | 완료 |
-| 4 | [i18n](./i18n/) — 다국어 도입 | 구현 완료 (en + ko). 실기기 검증 대기 |
+| 4 | [i18n](./i18n/) — 다국어 도입 | 완료 (en + ko). RTL 은 범위 밖 |
 
 ## 왜 과거 문서를 고쳐 쓰지 않는가
 

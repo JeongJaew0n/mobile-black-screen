@@ -58,7 +58,6 @@ adb shell settings put system screen_off_timeout 600000
 # 런처 이름·타일 이름·접근성 설명은 안 바뀌는 게 정상이다 — 그건 기기 언어를 바꿔야 본다.
 adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales en-US
 adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales en-XA   # 의사 로케일
-adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales ar-XB   # RTL
 adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locales ""      # 원복
 
 # Kotlin 안 한글 리터럴 (주석 제외). 0 이어야 한다

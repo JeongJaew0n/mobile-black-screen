@@ -66,15 +66,18 @@ fun rememberClockText(style: ClockStyle): String {
 }
 
 /**
- * 설정 라디오에 붙는 예시. 고정 시각 13:05 를 현재 로케일로 서식한다.
- * 문자열 리소스에 `(오후 1:05)` 를 박아 두면 언어마다 손으로 맞춰야 한다.
+ * 설정 라디오에 붙는 예시. 고정 시각 09:05 를 현재 로케일로 서식한다.
+ * 문자열 리소스에 `(오전 9:05)` 를 박아 두면 언어마다 손으로 맞춰야 한다.
+ *
+ * 한 자리 시각을 고른 이유: 24시간제 라벨에 `09:05` 가 찍히면 `MATCH_HOUR_FIELD_LENGTH` 가
+ * 살아 있다는 뜻이고 `9:05` 면 죽은 것이다. 라벨 자체가 검증이 된다.
  */
 @Composable
 fun rememberClockSample(style: ClockStyle): String {
     val locale = currentLocale()
     return remember(style, locale) {
         val sample = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 13)
+            set(Calendar.HOUR_OF_DAY, 9)
             set(Calendar.MINUTE, 5)
         }.time
         style.formatter(locale).format(sample)

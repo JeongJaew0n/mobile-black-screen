@@ -157,7 +157,7 @@ fun SettingsScreen(
         Section(stringResource(R.string.section_appearance))
 
         Text(
-            text = "${stringResource(R.string.text_level)}  ${settings.textLevel}",
+            text = stringResource(R.string.text_level_value, settings.textLevel),
             style = MaterialTheme.typography.labelLarge,
         )
 
