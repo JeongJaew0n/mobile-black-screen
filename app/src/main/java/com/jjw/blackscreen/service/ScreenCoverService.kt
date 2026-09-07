@@ -46,6 +46,7 @@ import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.overlay.overlayLayoutParams
 import com.jjw.blackscreen.ui.BlackScreenRoot
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -179,7 +180,9 @@ class ScreenCoverService :
             ACTION_STOP_BUBBLE -> {
                 bubbleWanted = false
                 // 설정도 함께 꺼야 한다. 안 그러면 앱을 다시 열 때 되살아난다.
-                lifecycleScope.launch {
+                // 아래에서 곧 stopSelf() 하므로 lifecycleScope 의 자식으로 두면 취소된다.
+                // NonCancellable 로 서비스 수명과 떼어 놓는다.
+                lifecycleScope.launch(NonCancellable) {
                     repository.update { it.copy(bubbleEnabled = false) }
                 }
             }
@@ -391,8 +394,13 @@ class ScreenCoverService :
     private fun stopBubbleByUser() {
         bubbleWanted = false
         syncBubble()
-        lifecycleScope.launch { repository.update { it.copy(bubbleEnabled = false) } }
-        if (!hasAnythingToDo) stopSelf() else updateNotification()
+        // 저장이 끝난 뒤에 서비스를 멈춰야 한다. 저장을 launch 로 던지고 바로 stopSelf()
+        // 하면 onDestroy 가 lifecycleScope 를 취소해 저장이 실행되지 못한다 — 창은 사라졌는데
+        // 설정은 true 로 남아, 앱을 다시 열면 버블이 되살아난다. 실기기에서 실제로 그랬다.
+        lifecycleScope.launch {
+            repository.update { it.copy(bubbleEnabled = false) }
+            if (!hasAnythingToDo) stopSelf() else updateNotification()
+        }
     }
 
     /**

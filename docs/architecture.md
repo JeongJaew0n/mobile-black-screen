@@ -556,15 +556,17 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 ## 6. 전력
 
 **아직 실측하지 못했습니다.** 시도했고 두 번 다 실패했습니다 —
-방법과 함정은 [power-measurement.md](./power-measurement.md) 참조.
+**2026-09-08 실측.** 이 앱을 쓰는 대가는 C − D ≈ 87 mA(8시간에 17%p). B = C 라 밝기·시계는 비용이 아니다.
+방법과 함정, D 가 상한인 이유는 [power-measurement.md](./power-measurement.md) 참조.
 
 현재 있는 것은 추정치입니다(신뢰도 ±50%).
 
-| 상태 | 추정 전류 | 8시간 |
-|---|---|---|
-| 실제 화면 꺼짐 | 5~20 mA | 약 2% |
-| **Screen Off (이 앱)** | **70~110 mA** | **12~20%** |
-| 일반 화면 켜짐 | 120~140 mA | 21~25% |
+| 조건 | 내용 | 평균 전류 | 눈금 | 8시간 (4.2 Ah 기준) |
+|---|---|---|---|---|
+| A | 화면 켜짐 (런처) | **209.5 mA** | 12.0 | 40% |
+| B | Screen Off + 시계 (패널 0.30) | **183.3 mA** | 10.5 | 35% |
+| C | Screen Off 무표시 (패널 0.00) — 앱 기본 | **183.3 mA** | 10.5 | 35% |
+| D | 실제 화면 꺼짐 (패널 OFF) | **96.1 mA** | 5.5 | 18% |
 
 **밝기 슬라이더는 전력에 거의 영향이 없을 것으로 봅니다.** AMOLED 는 검은 픽셀이
 발광하지 않는데 이 앱은 화면의 대부분이 검정이고 시계 몇 글자만 켜집니다.
@@ -623,6 +625,9 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 | F23 | `getBestDateTimePattern` 은 `HH` 를 로케일 기본 폭으로 바꿈 (ko: `H:mm`) | `DateTimePatternGenerator` + `MATCH_HOUR_FIELD_LENGTH` |
 | F24 | 앱별 언어는 런처 이름·타일 이름·접근성 설명에 안 닿음 (남이 그림) | 플랫폼 동작. 기기 언어로 검증 |
 | F25 | 서비스가 소유하는 창은 만들 때의 로케일로 굳음 | 텍스트 있는 창은 매번 새로 만든다. **버블 창에 텍스트 금지** |
+| F26 | `consume()` 뒤의 `positionChange()` 는 `Zero` → 버블 드래그가 죽음 | delta 를 **소비 전에** 읽는다 |
+| F27 | `lifecycleScope.launch { 저장 }` 직후 `stopSelf()` → onDestroy 가 스코프를 취소해 저장이 안 됨 | 저장 코루틴 **안에서** `stopSelf()`, 또는 `launch(NonCancellable)` |
+| F28 | `collectAsStateWithLifecycle` 는 STOPPED 동안 수집을 멈춰 RESUME 직후 옛 스냅샷 | RESUME 에서 결정할 값은 `repository.settings.first()` 로 다시 읽는다 |
 
 ### 실기기 검증 시 속기 쉬운 것
 

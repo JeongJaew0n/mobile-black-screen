@@ -91,9 +91,16 @@ class MainActivity : ComponentActivity() {
                     //    ForegroundServiceStartNotAllowedException 으로 앱이 죽는다.
                     //    실제로 그렇게 크래시한 적이 있어 RESUME 시점으로 옮기고
                     //    그래도 실패할 수 있으니 삼킨다.
-                    LifecycleResumeEffect(settings.bubbleEnabled, canDrawOverlays) {
-                        if (settings.bubbleEnabled && canDrawOverlays) {
-                            runCatching { ScreenCoverService.showBubble(this@MainActivity) }
+                    // ⚠️ 여기서 composition 의 `settings` 를 읽지 말 것. 화면이 STOPPED 인 동안
+                    //    수집이 멈춰 옛 스냅샷이 남는다 — 버블을 꾹 눌러 지운 뒤 앱으로 돌아오면
+                    //    true 로 남은 값이 버블을 되살렸다. 저장소에서 지금 값을 다시 읽는다.
+                    LifecycleResumeEffect(canDrawOverlays) {
+                        if (canDrawOverlays) {
+                            scope.launch {
+                                if (repository.settings.first().bubbleEnabled) {
+                                    runCatching { ScreenCoverService.showBubble(this@MainActivity) }
+                                }
+                            }
                         }
                         onPauseOrDispose { }
                     }

@@ -89,6 +89,9 @@ adb shell dumpsys accessibility | grep -c "label=검은 화면"   # 1 이어야 
   가 0 이 되어 FULL 모드가 조용히 안 켜진다. 껐다고 알려주지 않으므로 "접근성창 0" 을
   코드 버그로 오진하기 쉽다. **테스트 전에 위 재활성화 명령부터 돌릴 것.**
   adb 아티팩트가 아니라 실사용에도 걸린다 — 사용자가 앱을 강제 종료하면 똑같이 먹통이 된다.
+- **adb 로는 비공개 서비스를 시작할 수 없다.** `am start-foreground-service … STOP_BUBBLE` 은
+  `Requires permission not exported` 로 거부된다. 알림 액션 경로를 검증하려면 같은 액션을 쓰는
+  설정 스위치를 탭한다. 이걸 모르고 "STOP_BUBBLE 이 안 먹는다" 로 오진한 적이 있다.
 - **사용자가 폰을 쓰는 중일 수 있다.** `am start` 가 앱을 앞으로 못 가져온 채 탭을
   보내면 그 입력이 사용자가 보던 앱에 그대로 들어간다. 실제로 카카오톡 대화 화면에
   탭을 넣은 적이 있다. **탭 직전 스크린샷으로 우리 앱이 최상단인지 확인할 것.**
@@ -157,6 +160,15 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   텍스트를 가진 창(차폐·겨냥 목표)은 전부 쓸 때마다 새로 만들기 때문에 지금은 문제가 없다.
 - **밀어서 잠금 해제 트랙의 `LocalLayoutDirection = Ltr` 고정을 풀지 말 것.** RTL 에서
   `CenterStart`/`offset` 은 뒤집히는데 드래그 delta 는 안 뒤집혀 손잡이가 손가락 반대로 간다.
+- **RESUME 시점의 판단에 composition 의 `settings` 를 쓰지 말 것.** `collectAsStateWithLifecycle`
+  는 화면이 STOPPED 인 동안 수집을 멈춰서, 돌아온 직후엔 옛 스냅샷이다. 버블을 지운 뒤 앱으로
+  돌아오면 true 로 남은 값이 버블을 되살렸다. `repository.settings.first()` 로 다시 읽는다.
+- **`lifecycleScope.launch { 저장 }` 뒤에 바로 `stopSelf()` 하지 말 것.** onDestroy 가 스코프를
+  취소해 저장이 실행되지 않는다. 버블을 지웠는데 설정은 true 로 남아 앱을 열면 되살아났다.
+  서비스를 멈추는 코드는 저장 코루틴 **안에서**, 저장이 끝난 뒤에 부른다.
+- **`PointerInputChange` 는 `consume()` 전에 `positionChange()` 를 읽을 것.** 소비된 변화의
+  `positionChange()` 는 `Zero` 다. 순서를 바꾸면 컴파일도 되고 크래시도 없는데 버블만 안 움직인다.
+  `detectDragGestures` 는 delta 를 미리 넘겨줘서 이 함정이 없다 — 직접 루프를 쓸 때만 걸린다.
 - **호출되지 않는 Composable 은 빌드로 잡히지 않는다.** `SlideToUnlockLayer` 를
   만들어 놓고 `BlackScreenRoot` 에서 부르는 분기를 빠뜨린 채 커밋·푸시까지 갔다.
   미사용 public 함수는 컴파일도 lint 도 그대로 통과한다. **UI 를 추가했으면
@@ -248,4 +260,4 @@ lint 의 `OldTargetApi` 경고 1건은 이 선택의 결과이며 의도된 것�
 
 - `docs/architecture.md` — 현재 구조·설정 스키마·함정 목록
 - `docs/technical-feasibility.md` — 플랫폼 제약과 그 근거
-- `docs/power-measurement.md` — 전력 측정 방법과 추정치 (실측 미완)
+- `docs/power-measurement.md` — 전력 측정 방법과 **실측치** (C 183 mA / 실제 꺼짐 96 mA, 8시간에 17%p 차)

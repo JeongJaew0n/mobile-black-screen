@@ -127,8 +127,13 @@ fun BubbleContent(
 
                         Intent.DRAG -> {
                             drag(down.id) { change ->
+                                // 반드시 소비 **전에** 읽을 것. 소비된 변화의 positionChange()
+                                // 는 Zero 라, 순서를 바꾸면 버블이 한 픽셀도 안 움직인다.
+                                // detectDragGestures 는 delta 를 미리 계산해 줘서 이 함정이
+                                // 없었다 — 직접 루프로 바꾸면서 한 번 걸렸다.
+                                val delta = change.positionChange()
                                 change.consume()
-                                onDrag(change.positionChange())
+                                onDrag(delta)
                             }
                             touchTick++
                             onDragEnd()
