@@ -44,10 +44,10 @@
     <string name="section_bubble">버블</string>
     <string name="bubble_enabled">화면 위 버블 표시</string>
     <string name="bubble_size">버블 크기</string>
-    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 꾹 누른 채 위로 밀면 이 설정 화면이 열리고, 아래로 밀면 버블이 사라집니다. 그냥 끌면 위치가 옮겨집니다. 앱을 닫아도 유지됩니다.</string>
     <string name="bubble_permission_note">버블에는 Screen Off 방식과 별개로 ‘다른 앱 위에 표시’ 권한이 필요합니다.</string>
     <string name="bubble_running">버블 실행 중</string>
-    <string name="bubble_running_desc">버블을 눌러 Screen Off 합니다</string>
+    <string name="bubble_running_desc">눌러서 Screen Off · 꾹 눌러 위는 앱, 아래는 삭제</string>
     <string name="bubble_stop">버블 끄기</string>
 
     <string name="accessibility_description">화면 전체를 덮기 위해 필요합니다. 상태바와 내비게이션 바 위까지 덮을 수 있는 창은 접근성 서비스만 사용할 수 있습니다. 이 앱은 화면 내용을 읽지 않습니다.</string>

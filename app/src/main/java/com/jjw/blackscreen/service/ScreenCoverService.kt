@@ -28,16 +28,16 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.jjw.blackscreen.R
+import com.jjw.blackscreen.MainActivity
 import com.jjw.blackscreen.ScreenOff
 import com.jjw.blackscreen.blackout.BlackoutActivity
 import androidx.compose.ui.geometry.Offset
+import com.jjw.blackscreen.bubble.AimTargets
+import com.jjw.blackscreen.bubble.BubbleAim
 import com.jjw.blackscreen.bubble.BubbleContent
-import com.jjw.blackscreen.bubble.RemoveTarget
-import com.jjw.blackscreen.bubble.REMOVE_TARGET_RADIUS_DP
+import com.jjw.blackscreen.bubble.aimTargetsLayoutParams
 import com.jjw.blackscreen.bubble.bubbleEdgeX
 import com.jjw.blackscreen.bubble.bubbleSizePx
-import com.jjw.blackscreen.bubble.removeTargetCenter
-import com.jjw.blackscreen.bubble.removeTargetLayoutParams
 import com.jjw.blackscreen.bubble.bubbleLayoutParams
 import com.jjw.blackscreen.bubble.placeBubble
 import com.jjw.blackscreen.data.Edge
@@ -84,10 +84,10 @@ class ScreenCoverService :
     private var coverParams: WindowManager.LayoutParams? = null
     private var bubbleView: View? = null
     private var bubbleParams: WindowManager.LayoutParams? = null
-    private var removeTargetView: View? = null
+    private var aimTargetsView: View? = null
 
     /** 버블이 ✕ 타겟 위에 올라와 있는가. 타겟 Composable 이 이 값을 구독한다. */
-    private val overRemoveTarget = mutableStateOf(false)
+    private val aim = mutableStateOf(BubbleAim.NONE)
 
     /**
      * 버블 생성이 진행 중인가.
@@ -207,7 +207,7 @@ class ScreenCoverService :
     override fun onDestroy() {
         removeCover()
         removeBubble()
-        hideRemoveTarget()
+        hideAimTargets()
         viewModelStore.clear()
         super.onDestroy()
     }
@@ -264,9 +264,11 @@ class ScreenCoverService :
                 BubbleContent(
                     sizeDp = current.bubbleSizeDp,
                     onTap = ::onBubbleTapped,
-                    onDragStart = ::onBubbleDragStart,
                     onDrag = ::onBubbleDrag,
                     onDragEnd = ::onBubbleDragEnd,
+                    onAimStart = ::onBubbleAimStart,
+                    onAimUpdate = ::onBubbleAimUpdate,
+                    onAimPick = ::onBubbleAimPick,
                 )
             }
             val params = bubbleLayoutParams().apply {
@@ -294,49 +296,50 @@ class ScreenCoverService :
     private fun removeBubble() {
         bubbleView = detach(bubbleView)
         bubbleParams = null
-        hideRemoveTarget()
+        hideAimTargets()
     }
 
-    // ------------------------------------------------------- 버블 드래그 / 제거
-
-    private fun onBubbleDragStart() {
-        overRemoveTarget.value = false
-        if (removeTargetView != null) return
-        val view = composeView { RemoveTarget(active = overRemoveTarget.value) }
-        runCatching {
-            windowManager.addView(view, removeTargetLayoutParams(resources.displayMetrics.density))
-            removeTargetView = view
-        }
-    }
+    // ------------------------------------------------------- 버블 드래그 / 겨냥
 
     private fun onBubbleDrag(delta: Offset) {
         val params = bubbleParams ?: return
         params.x += delta.x.toInt()
         params.y += delta.y.toInt()
         runCatching { windowManager.updateViewLayout(bubbleView, params) }
-        overRemoveTarget.value = isOverRemoveTarget(params)
     }
 
     private fun onBubbleDragEnd() {
-        val params = bubbleParams ?: return
-        val removing = overRemoveTarget.value
-        hideRemoveTarget()
-
-        if (removing) {
-            stopBubbleByUser()
-            return
-        }
-        snapToEdge(params)
+        snapToEdge(bubbleParams ?: return)
     }
 
-    private fun isOverRemoveTarget(params: WindowManager.LayoutParams): Boolean {
-        val density = resources.displayMetrics.density
-        val (sw, sh) = usableSize()
-        val half = bubbleSizePx(density, latestSettings.bubbleSizeDp) / 2
-        val (tx, ty) = removeTargetCenter(sw, sh, density)
-        val dx = (params.x + half - tx).toFloat()
-        val dy = (params.y + half - ty).toFloat()
-        return kotlin.math.hypot(dx, dy) < REMOVE_TARGET_RADIUS_DP * density
+    /**
+     * 꾹 누른 채로 겨냥하는 동안 위/아래 목표를 띄운다.
+     *
+     * 표시 전용 창이라 터치를 받지 않는다 — 손가락은 계속 버블 창이 쥐고 있어야
+     * 방향 판정이 이어진다.
+     */
+    private fun onBubbleAimStart() {
+        aim.value = BubbleAim.NONE
+        if (aimTargetsView != null) return
+        val view = composeView { AimTargets(aim = aim.value) }
+        runCatching {
+            windowManager.addView(view, aimTargetsLayoutParams())
+            aimTargetsView = view
+        }
+    }
+
+    private fun onBubbleAimUpdate(next: BubbleAim) {
+        aim.value = next
+    }
+
+    private fun onBubbleAimPick(picked: BubbleAim) {
+        hideAimTargets()
+        when (picked) {
+            BubbleAim.UP -> openApp()
+            BubbleAim.DOWN -> stopBubbleByUser()
+            // 문턱을 못 넘겼다. 마음을 바꾼 것으로 보고 아무것도 하지 않는다.
+            BubbleAim.NONE -> Unit
+        }
     }
 
     /** 놓은 위치에서 가까운 좌/우 가장자리로 붙이고, 그 위치를 저장한다. */
@@ -379,12 +382,12 @@ class ScreenCoverService :
         }
     }
 
-    private fun hideRemoveTarget() {
-        removeTargetView = detach(removeTargetView)
-        overRemoveTarget.value = false
+    private fun hideAimTargets() {
+        aimTargetsView = detach(aimTargetsView)
+        aim.value = BubbleAim.NONE
     }
 
-    /** ✕ 로 제거했을 때. 설정도 함께 꺼야 앱을 다시 열 때 되살아나지 않는다. */
+    /** 아래로 겨냥해 지웠을 때. 설정도 함께 꺼야 앱을 다시 열 때 되살아나지 않는다. */
     private fun stopBubbleByUser() {
         bubbleWanted = false
         syncBubble()
@@ -398,6 +401,22 @@ class ScreenCoverService :
      * Blackout 모드는 Activity 라 서비스에서 띄워야 하는데, 이 시점에 **보이는 오버레이 창
      * (버블)이 이미 있으므로** 백그라운드 Activity 실행 제한의 예외에 해당한다.
      */
+    /**
+     * 위로 겨냥했을 때. 설정 화면을 연다.
+     *
+     * 버블만 남기고 앱을 닫아 둔 상태에서 설정을 바꾸려면 런처까지 가야 했다.
+     * 백그라운드 Activity 시작 제한에 걸리지 않는 것은 이 서비스가 '다른 앱 위에 표시'
+     * 권한을 가질 때만 버블을 띄우기 때문이다 — 그 권한이 면제 사유다.
+     */
+    private fun openApp() {
+        runCatching {
+            startActivity(
+                Intent(this, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }
+    }
+
     private fun onBubbleTapped() {
         lifecycleScope.launch {
             val mode = repository.settings.first().mode

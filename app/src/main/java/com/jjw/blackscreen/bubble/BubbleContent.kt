@@ -4,8 +4,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -24,13 +25,20 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** 이 시간 동안 손대지 않으면 흐려진다. */
 private const val IDLE_DELAY_MS = 3_000L
 private const val IDLE_ALPHA = 0.4f
+
+/** 손을 대고 나서 무엇을 하려는 것인지 갈리는 지점. */
+private enum class Intent { TAP, DRAG, AIM, CANCEL }
 
 /**
  * 상주 버블.
@@ -38,20 +46,34 @@ private const val IDLE_ALPHA = 0.4f
  * 다른 앱 위에 계속 떠 있으므로 눈에 덜 띄어야 한다. 어두운 반투명 원에 얇은 테두리만 두고,
  * 안에는 차폐를 뜻하는 가로 막대 하나만 넣는다(퀵 설정 타일 아이콘과 같은 모티프).
  *
- * 탭과 드래그는 별도의 `pointerInput` 으로 나눠 붙인다. 드래그 감지기는 터치 슬롭을
- * 넘겨야 발동하므로, 짧게 누른 것은 탭 감지기로 간다.
+ * ## 제스처가 갈리는 방식
+ *
+ * 손을 댄 뒤 **길게 누르기 시간 안에** 무엇을 하려는 것인지 판정한다.
+ *
+ * | 그 사이에 | 판정 | 동작 |
+ * |---|---|---|
+ * | 손을 뗐다 | [Intent.TAP] | Screen Off |
+ * | 터치 슬롭을 넘겼다 | [Intent.DRAG] | 버블을 옮긴다 |
+ * | 아무것도 안 했다 | [Intent.AIM] | 위/아래 겨냥 — 위는 앱 열기, 아래는 버블 삭제 |
+ *
+ * 감지기를 `pointerInput` 두 개로 나눠 붙이면 이 판정을 할 수 없다. 겨냥 모드는 꾹 누른
+ * **뒤에 이어지는 이동**을 봐야 하는데, `detectTapGestures` 의 `onLongPress` 는 그 시점에
+ * 제스처를 끝내 버리기 때문이다.
  */
 @Composable
 fun BubbleContent(
     sizeDp: Int,
     onTap: () -> Unit,
-    onDragStart: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
+    onAimStart: () -> Unit,
+    onAimUpdate: (BubbleAim) -> Unit,
+    onAimPick: (BubbleAim) -> Unit,
 ) {
     // 상호작용이 있을 때마다 증가시켜 유휴 타이머를 되감는다.
     var touchTick by remember { mutableIntStateOf(0) }
     var idle by remember { mutableStateOf(false) }
+    val haptics = LocalHapticFeedback.current
 
     LaunchedEffect(touchTick) {
         idle = false
@@ -75,15 +97,78 @@ fun BubbleContent(
             .background(Color(0xE0141414))
             .border(1.dp, Color(0x33FFFFFF), CircleShape)
             .pointerInput(Unit) {
-                detectTapGestures(onTap = { touchTick++; onTap() })
-            }
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { touchTick++; onDragStart() },
-                    onDrag = { change, delta -> change.consume(); onDrag(delta) },
-                    onDragEnd = { touchTick++; onDragEnd() },
-                    onDragCancel = { touchTick++; onDragEnd() },
-                )
+                val slop = viewConfiguration.touchSlop
+                val aimThreshold = AIM_THRESHOLD_DP.dp.toPx()
+
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    touchTick++
+
+                    val intent = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                        var decided: Intent? = null
+                        while (decided == null) {
+                            val change = awaitPointerEvent().changes
+                                .firstOrNull { it.id == down.id }
+                            decided = when {
+                                change == null -> Intent.CANCEL
+                                !change.pressed -> Intent.TAP
+                                (change.position - down.position).getDistance() > slop ->
+                                    Intent.DRAG
+                                else -> null
+                            }
+                        }
+                        decided
+                    } ?: Intent.AIM
+
+                    when (intent) {
+                        Intent.CANCEL -> Unit
+
+                        Intent.TAP -> onTap()
+
+                        Intent.DRAG -> {
+                            drag(down.id) { change ->
+                                change.consume()
+                                onDrag(change.positionChange())
+                            }
+                            touchTick++
+                            onDragEnd()
+                        }
+
+                        Intent.AIM -> {
+                            // 화면이 그대로라 눌린 줄 모른다. 진동으로 알린다.
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAimStart()
+
+                            var aim = BubbleAim.NONE
+                            var pressed = true
+                            while (pressed) {
+                                val change = awaitPointerEvent().changes
+                                    .firstOrNull { it.id == down.id } ?: break
+                                change.consume()
+                                pressed = change.pressed
+
+                                val dy = change.position.y - down.position.y
+                                val next = when {
+                                    dy <= -aimThreshold -> BubbleAim.UP
+                                    dy >= aimThreshold -> BubbleAim.DOWN
+                                    else -> BubbleAim.NONE
+                                }
+                                if (next != aim) {
+                                    aim = next
+                                    // 잡혔다는 것을 눈으로만 알리면 화면을 봐야 한다.
+                                    if (next != BubbleAim.NONE) {
+                                        haptics.performHapticFeedback(
+                                            HapticFeedbackType.TextHandleMove,
+                                        )
+                                    }
+                                    onAimUpdate(next)
+                                }
+                            }
+                            touchTick++
+                            onAimPick(aim)
+                        }
+                    }
+                }
             },
         contentAlignment = Alignment.Center,
     ) {

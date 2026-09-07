@@ -111,8 +111,8 @@ app/src/main/java/.../blackscreen/
 │   └─ OverlayLauncherActivity.kt  투명 중계 Activity (§4.2b)
 ├─ bubble/
 │   ├─ BubbleWindow.kt          버블 창 LayoutParams + 가장자리 좌표 계산
-│   ├─ BubbleContent.kt         원형 버블 (탭/드래그/유휴 페이드)
-│   └─ RemoveTarget.kt          드래그 중 뜨는 ✕ 타겟
+│   ├─ BubbleContent.kt         원형 버블 (탭/드래그/겨냥/유휴 페이드)
+│   └─ AimTargets.kt            꾹 누른 동안 뜨는 위/아래 목표
 ├─ ui/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
 │   ├─ Clock.kt                 분 경계 정렬 시계
@@ -447,6 +447,29 @@ bubbleSuppressed  차폐 중이라 잠시 감췄는가
   오버레이 창은 어떤 Activity 가 앞인지 알 수 없습니다. FULL 은 접근성 오버레이가
   버블보다 위 레이어라 알아서 가려집니다.
 
+#### 제스처 세 갈래
+
+손을 댄 뒤 **길게 누르기 시간 안에** 무엇을 하려는 것인지 판정합니다.
+
+| 그 사이에 | 판정 | 동작 |
+|---|---|---|
+| 손을 뗐다 | 탭 | Screen Off |
+| 터치 슬롭을 넘겼다 | 드래그 | 버블을 옮긴다 (놓으면 가장자리로 스냅) |
+| 아무것도 안 했다 | 겨냥 | 위로 밀면 앱 열기, 아래로 밀면 버블 삭제 |
+
+- **`pointerInput` 을 하나로 합쳐야 합니다.** 예전에는 탭 감지기와 드래그 감지기를
+  따로 붙였는데, 겨냥은 꾹 누른 **뒤에 이어지는 이동**을 봐야 하고
+  `detectTapGestures` 의 `onLongPress` 는 그 시점에 제스처를 끝내 버립니다.
+- **방향은 누른 지점 대비 순 변위**로 잽니다(44dp). 누적 거리로 재면 손 떨림이 쌓여
+  겨냥하지 않은 쪽이 잡힙니다 — 쓸어서 해제와 같은 이유입니다. 올렸다가 내리면
+  상쇄되므로 마음을 바꿀 수 있고, 문턱을 못 넘기고 떼면 아무 일도 없습니다.
+- **목표 창은 `FLAG_NOT_TOUCHABLE`** 입니다. 손가락은 계속 버블 창이 쥐고 있어야
+  방향 판정이 이어집니다. 목표를 맞히는 것이 아니라 방향만 고르는 것이라,
+  위치는 화면 위아래에 고정하고 어느 쪽이 잡혔는지만 밝힙니다 — 버블 옆에 붙이면
+  버블이 화면 끝에 있을 때 하나가 화면 밖으로 나갑니다.
+- **드래그 중 뜨던 ✕ 타겟은 없앴습니다.** 삭제가 겨냥으로 옮겨오면서 경로가 둘이 되고,
+  버블을 화면 아래쪽에 두려고 끌 때마다 삭제가 잡힐 위험이 있었습니다.
+
 ---
 
 ## 5. 설정 항목
@@ -462,7 +485,7 @@ data class Settings(
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = false,
     val bubbleEdge: Edge = Edge.RIGHT,
-    val bubbleSizeLevel: Int = 3,            // 1~5 → 40~70dp
+    val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
     val bubbleYRatio: Float = 0.5f,
 )
 ```
@@ -518,7 +541,8 @@ data class Settings(
 2. **Overlay 모드** — `SYSTEM_ALERT_WINDOW` + `specialUse` 포그라운드 서비스
 3. **상주 버블** — 서비스 통합(`ScreenCoverService`), 드래그·✕ 제거·유휴 페이드
 4. **FULL 모드** — 접근성 오버레이. 기본값을 여기로 옮기고 Blackout 을 최후 수단으로 격하
-5. **버블 크기 조절** — 5단계
+5. **버블 크기 조절** — 5단계 → 16~96dp 연속값
+6. **버블 겨냥 제스처** — 꾹 누른 뒤 위는 앱 열기, 아래는 삭제. ✕ 타겟 폐지
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 
