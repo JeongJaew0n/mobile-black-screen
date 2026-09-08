@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
 import android.provider.Settings as AndroidSettings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,12 +17,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -59,19 +57,6 @@ class MainActivity : ComponentActivity() {
                     var canDrawOverlays by remember {
                         mutableStateOf(AndroidSettings.canDrawOverlays(this))
                     }
-                    // 밝기는 창의 패널 밝기라 색 견본으로 보여줄 수 없다.
-                    // 슬라이더를 만지는 동안 이 창을 실제 밝기로 낮춰야 정직한 미리보기가 된다.
-                    var previewingBrightness by remember { mutableStateOf(false) }
-                    LaunchedEffect(previewingBrightness, settings.brightnessForLevel) {
-                        window.attributes = window.attributes.apply {
-                            screenBrightness = if (previewingBrightness) {
-                                settings.brightnessForLevel
-                            } else {
-                                WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-                            }
-                        }
-                    }
-
                     var accessibilityEnabled by remember {
                         mutableStateOf(ScreenOffAccessibilityService.isEnabled)
                     }
@@ -126,7 +111,6 @@ class MainActivity : ComponentActivity() {
                         accessibilityEnabled = accessibilityEnabled,
                         onRequestOverlayPermission = ::openOverlaySettings,
                         onRequestAccessibility = { ScreenOff.openAccessibilitySettings(this) },
-                        onBrightnessPreview = { previewingBrightness = it },
                         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
                     )
                 }

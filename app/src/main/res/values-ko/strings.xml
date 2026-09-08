@@ -20,11 +20,6 @@
     <string name="sentence">문장</string>
     <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
 
-    <string name="section_appearance">화면</string>
-    <string name="text_level_value">밝기 %1$d</string>
-    <string name="brightness_preview_hint">슬라이더를 누르고 있으면 실제 밝기로 보입니다</string>
-    <string name="burn_in_shift">번인 방지 이동</string>
-    <string name="burn_in_shift_desc">60초마다 글자 위치를 미세하게 옮깁니다</string>
 
     <string name="section_unlock">해제</string>
 
