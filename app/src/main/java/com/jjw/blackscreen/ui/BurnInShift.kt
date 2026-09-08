@@ -28,39 +28,41 @@ private const val ShiftIntervalMillis = 60_000L
 private const val ShiftSteps = 12
 
 /**
- * AMOLED 번인 방지용 픽셀 시프트.
+ * AMOLED 번인 방지용 픽셀 시프트. **끌 수 없다.**
  *
  * 같은 위치에 시계를 몇 시간 띄우면 잔상이 남으므로 [ShiftIntervalMillis] 마다
- * 반경 [ShiftRadius] 원 궤도 위의 다음 지점으로 옮긴다.
+ * 반경 [ShiftRadiusX]×[ShiftRadiusY] 타원 궤도 위의 다음 지점으로 옮긴다.
  *
- * 이동은 의도적으로 애니메이션 없이 즉시 처리한다. 어차피 화면 밝기가 0 으로 눌려 있어
- * 사용자는 이동을 인지하지 못하고, 프레임을 계속 돌리는 쪽이 전력만 먹는다.
+ * 예전에는 설정 토글이 있었다. 끄면 얻는 것이 없고 잃는 것은 되돌릴 수 없는 패널 손상이라
+ * 없앴다 — 밝기 슬라이더를 없앤 것과 같은 이유다. 비용도 1분에 `step++` 한 번뿐이다.
+ *
+ * 이동은 의도적으로 애니메이션 없이 즉시 처리한다. 1분에 한 번 옮기는 데 프레임을 계속
+ * 돌리는 것은 전력 낭비다.
+ *
+ * > 예전 주석은 "밝기가 0 이라 사용자가 이동을 인지하지 못한다" 를 근거로 들었는데
+ * > 거꾸로였다. 밝기가 0 인 것은 표시할 내용이 없을 때이고, 그때는 시프트 자체가 무의미하다.
+ * > 시프트가 필요한 상황에서는 밝기가 [CONTENT_BRIGHTNESS] 라 오히려 보인다.
+ * > 결론은 그대로지만 근거가 틀렸다.
  */
 @Composable
-fun rememberBurnInShift(enabled: Boolean): IntOffset {
+fun rememberBurnInShift(): IntOffset {
     val density = LocalDensity.current
     val radiusXPx = with(density) { ShiftRadiusX.toPx() }
     val radiusYPx = with(density) { ShiftRadiusY.toPx() }
     var step by remember { mutableIntStateOf(0) }
 
-    // enabled 여부와 무관하게 항상 같은 수의 훅을 호출해 컴포지션 구조를 고정한다.
-    LaunchedEffect(enabled) {
-        if (!enabled) return@LaunchedEffect
+    LaunchedEffect(Unit) {
         while (true) {
             delay(ShiftIntervalMillis)
             step++
         }
     }
 
-    return remember(enabled, step, radiusXPx, radiusYPx) {
-        if (!enabled) {
-            IntOffset.Zero
-        } else {
-            val angle = step * (2 * PI / ShiftSteps)
-            IntOffset(
-                x = (cos(angle) * radiusXPx).roundToInt(),
-                y = (sin(angle) * radiusYPx).roundToInt(),
-            )
-        }
+    return remember(step, radiusXPx, radiusYPx) {
+        val angle = step * (2 * PI / ShiftSteps)
+        IntOffset(
+            x = (cos(angle) * radiusXPx).roundToInt(),
+            y = (sin(angle) * radiusYPx).roundToInt(),
+        )
     }
 }

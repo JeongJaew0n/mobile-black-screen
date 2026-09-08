@@ -67,7 +67,6 @@ fun BlackScreenRoot(
         } else if (settings.unlockGesture == Gesture.SLIDE_TO_UNLOCK) {
             SlideToUnlockLayer(
                 tint = settings.textColor,
-                burnInEnabled = settings.burnInShiftEnabled,
                 onUnlock = onUnlock,
             )
         } else {
@@ -89,7 +88,7 @@ private fun BlackScreenContent(settings: Settings) {
     // 기본값은 요구사항대로 완전한 무표시다. 이때는 텍스트 레이아웃 자체를 만들지 않는다.
     if (!settings.hasContent) return
 
-    val offset = rememberBurnInShift(settings.burnInShiftEnabled)
+    val offset = rememberBurnInShift()
 
     // 정중앙보다 조금 위. 손에 들었을 때 시선이 자연스럽게 닿는 높이다.
     Box(Modifier.fillMaxSize(), contentAlignment = ContentAlignment) {

@@ -270,10 +270,9 @@ private const val SlideUnlockAt = 0.92f
 @Composable
 fun BoxScope.SlideToUnlockLayer(
     tint: Color,
-    burnInEnabled: Boolean,
     onUnlock: () -> Unit,
 ) {
-    val burnInOffset = rememberBurnInShift(burnInEnabled)
+    val burnInOffset = rememberBurnInShift()
     val density = LocalDensity.current
     val knobPx = with(density) { TrackKnob.toPx() }
     val insetPx = with(density) { TrackInset.toPx() }
