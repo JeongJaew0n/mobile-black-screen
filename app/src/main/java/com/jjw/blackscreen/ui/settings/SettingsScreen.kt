@@ -1,6 +1,5 @@
 package com.jjw.blackscreen.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -24,20 +22,12 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.ui.rememberClockSample
-import com.jjw.blackscreen.ui.rememberClockText
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.BUBBLE_STEP_DP
 import com.jjw.blackscreen.data.ClockStyle
@@ -66,7 +56,6 @@ fun SettingsScreen(
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibility: () -> Unit,
     /** 슬라이더를 만지는 동안 true. 호출부가 창 밝기를 실제 값으로 낮춰 미리보기를 만든다. */
-    onBrightnessPreview: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -154,39 +143,6 @@ fun SettingsScreen(
                 .padding(top = 12.dp),
         )
 
-        Section(stringResource(R.string.section_appearance))
-
-        Text(
-            text = stringResource(R.string.text_level_value, settings.textLevel),
-            style = MaterialTheme.typography.labelLarge,
-        )
-
-        // 밝기는 글자색이 아니라 창의 패널 밝기다. 그래서 색 견본으로는 보여줄 수 없다 —
-        // 프레임버퍼는 그대로고 패널만 바뀌므로 레벨을 바꿔도 똑같이 보인다.
-        // 조작하는 동안 실제로 창을 어둡게 만들어야 정직한 미리보기가 된다.
-        //
-        // ⚠️ Slider 에 interactionSource 를 넘겨 press/drag 를 관찰하는 방법은 동작하지 않는다.
-        //    이벤트가 오지 않는다(실측 확인). Slider 자신의 콜백을 쓴다.
-        Slider(
-            value = settings.textLevel.toFloat(),
-            onValueChange = { v ->
-                onBrightnessPreview(true)
-                onChange { s -> s.copy(textLevel = v.roundToInt()) }
-            },
-            onValueChangeFinished = { onBrightnessPreview(false) },
-            valueRange = 1f..5f,
-            steps = 3,
-        )
-
-        BrightnessPreview(settings)
-
-        SwitchRow(
-            label = stringResource(R.string.burn_in_shift),
-            description = stringResource(R.string.burn_in_shift_desc),
-            checked = settings.burnInShiftEnabled,
-            onCheckedChange = { on -> onChange { s -> s.copy(burnInShiftEnabled = on) } },
-        )
-
         Section(stringResource(R.string.section_bubble))
 
         SwitchRow(
@@ -195,6 +151,15 @@ fun SettingsScreen(
             checked = settings.bubbleEnabled,
             onCheckedChange = { on -> onChange { s -> s.copy(bubbleEnabled = on) } },
         )
+        // 기본값이 켜짐이라 첫 실행에서 여기 걸린다. 스위치는 켜져 있는데 화면에는
+        // 아무것도 없는 상태를 설명하지 않으면 고장으로 보인다.
+        if (settings.bubbleEnabled && !canDrawOverlays) {
+            PermissionCard(
+                message = stringResource(R.string.overlay_permission_needed),
+                action = stringResource(R.string.grant_permission),
+                onClick = onRequestOverlayPermission,
+            )
+        }
         if (settings.bubbleEnabled) {
             Text(
                 text = stringResource(R.string.bubble_size_value, settings.bubbleSizeDp),
@@ -336,39 +301,6 @@ private fun SwitchRow(
  * 이 상자만 보면 레벨과 무관하게 늘 같아 보인다. 슬라이더를 만지는 동안 창 전체가
  * 실제 밝기로 어두워지면서 비로소 차이가 드러난다. 둘이 한 쌍이다.
  */
-@Composable
-private fun BrightnessPreview(settings: Settings) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 4.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.Black)
-            .padding(vertical = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = rememberClockText(settings.clockStyle),
-            color = Color.White,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Light,
-        )
-        if (settings.sentence.isNotBlank()) {
-            Text(
-                text = settings.sentence,
-                color = Color.White,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(top = 6.dp),
-            )
-        }
-        Text(
-            text = stringResource(R.string.brightness_preview_hint),
-            color = Color(0xFF9E9E9E),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(top = 10.dp),
-        )
-    }
-}
 
 @Composable
 private fun PermissionCard(message: String, action: String, onClick: () -> Unit) {

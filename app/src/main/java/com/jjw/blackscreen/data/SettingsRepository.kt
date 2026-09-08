@@ -31,8 +31,6 @@ class SettingsRepository(context: Context) {
             prefs[Keys.SHOW_CLOCK] = next.showClock
             prefs[Keys.CLOCK_STYLE] = next.clockStyle.name
             prefs[Keys.SENTENCE] = next.sentence
-            prefs[Keys.TEXT_LEVEL] = next.textLevel
-            prefs[Keys.BURN_IN_SHIFT] = next.burnInShiftEnabled
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
             prefs[Keys.HOLD_MILLIS] = next.holdMillis
             prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
@@ -51,8 +49,6 @@ class SettingsRepository(context: Context) {
         /** 구버전 키(패턴 문자열). 읽기 전용 — [ClockStyle.fromLegacyPattern] 로 옮긴다. */
         val CLOCK_FORMAT = stringPreferencesKey("clock_format")
         val SENTENCE = stringPreferencesKey("sentence")
-        val TEXT_LEVEL = intPreferencesKey("text_level")
-        val BURN_IN_SHIFT = booleanPreferencesKey("burn_in_shift")
         val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
         val HOLD_MILLIS = intPreferencesKey("hold_millis")
         val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
@@ -73,8 +69,6 @@ class SettingsRepository(context: Context) {
             clockStyle = this[Keys.CLOCK_STYLE]?.let { enumOrDefault(it, defaults.clockStyle) }
                 ?: ClockStyle.fromLegacyPattern(this[Keys.CLOCK_FORMAT]),
             sentence = this[Keys.SENTENCE] ?: defaults.sentence,
-            textLevel = this[Keys.TEXT_LEVEL] ?: defaults.textLevel,
-            burnInShiftEnabled = this[Keys.BURN_IN_SHIFT] ?: defaults.burnInShiftEnabled,
             unlockGesture = enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture),
             // 범위 밖 값이 들어와도 제스처가 먹통이 되지 않게 자른다.
             holdMillis = (this[Keys.HOLD_MILLIS] ?: defaults.holdMillis)

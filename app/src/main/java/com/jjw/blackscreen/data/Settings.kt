@@ -85,9 +85,6 @@ data class Settings(
     val showClock: Boolean = false,
     val clockStyle: ClockStyle = ClockStyle.H24,
     val sentence: String = "",
-    /** 1~5. 값이 클수록 밝다 — [screenBrightness] 참조. */
-    val textLevel: Int = 3,
-    val burnInShiftEnabled: Boolean = true,
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 
     /**
@@ -97,8 +94,17 @@ data class Settings(
      */
     val holdMillis: Int = DEFAULT_HOLD_MILLIS,
 
-    /** 상주 버블. 켜면 Blackout 모드도 오버레이 권한을 요구하게 된다. */
-    val bubbleEnabled: Boolean = false,
+    /**
+     * 상주 버블. **기본값이 켜짐이다.**
+     *
+     * 앱을 열자마자 버블이 떠 있어야 한다 — 이 앱의 주 사용 경로가 "다른 앱을 쓰다가 버블을
+     * 눌러 Screen Off" 이고, 설정 화면은 한 번 보고 마는 곳이기 때문이다. 꺼진 채로 두면
+     * 설정을 찾아 들어가 켜야만 쓸 수 있다.
+     *
+     * 켜면 '다른 앱 위에 표시' 권한이 필요하다. 권한이 없으면 창이 안 뜨므로, 스위치가 켜져
+     * 있는데 화면에 아무것도 없는 상태가 된다 — 설정 화면이 권한 카드로 이 상태를 설명한다.
+     */
+    val bubbleEnabled: Boolean = true,
     val bubbleEdge: Edge = Edge.RIGHT,
     /** 버블 지름(dp). [MIN_BUBBLE_DP]~[MAX_BUBBLE_DP]. */
     val bubbleSizeDp: Int = DEFAULT_BUBBLE_DP,
@@ -126,22 +132,8 @@ data class Settings(
      *    패널 밝기가 반영되지 않는다. 반드시 실제 화면을 눈으로 봐야 한다.
      */
     val screenBrightness: Float
-        get() = if (hasContent) brightnessForLevel else 0f
+        get() = if (hasContent) CONTENT_BRIGHTNESS else 0f
 
-    /**
-     * 표시 내용 유무와 무관하게 레벨에 대응하는 밝기.
-     *
-     * 설정 화면 미리보기용이다. [screenBrightness] 를 그대로 쓰면 시계·문장을 아직
-     * 켜지 않은 상태에서 슬라이더를 움직여도 0 이라 아무 변화가 없다.
-     */
-    val brightnessForLevel: Float
-        get() = when (textLevel.coerceIn(1, 5)) {
-            1 -> 0.05f
-            2 -> 0.15f
-            3 -> 0.30f
-            4 -> 0.50f
-            else -> 0.80f
-        }
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */
     val hasContent: Boolean
@@ -173,6 +165,19 @@ const val MIN_BUBBLE_DP = 16
 const val MAX_BUBBLE_DP = 96
 const val BUBBLE_STEP_DP = 2
 const val DEFAULT_BUBBLE_DP = 52
+
+/**
+ * 시계·문장을 표시할 때의 패널 밝기. **조절 손잡이가 없다.**
+ *
+ * 예전에는 1~5 단계 슬라이더가 있었다. 실측(docs/power-measurement.md)에서 패널 0.30 과
+ * 0.00 의 소모가 눈금 하나도 차이 나지 않아 — 비용은 켜진 픽셀이 아니라 화면이 켜져 있다는
+ * 사실에서 나온다 — 조절할 이유가 사라져 없앴다. 이 값은 그 슬라이더의 기본값이었고
+ * 사용자가 "적당하다" 고 한 값이다. 바꾸려면 여기 한 곳만 고친다.
+ *
+ * 글자색은 항상 흰색이다. 글자색과 패널 밝기를 둘 다 깎아 놓으면 왜 안 보이는지 헤맨다 —
+ * 실제로 세 번 그랬다. 밝기는 이 상수 하나로만 정한다.
+ */
+const val CONTENT_BRIGHTNESS = 0.30f
 
 /**
  * 예전에는 1~5 단계로만 고를 수 있었다. 저장된 단계값을 dp 로 옮긴다.

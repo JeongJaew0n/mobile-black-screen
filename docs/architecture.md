@@ -355,7 +355,7 @@ class BlackoutActivity : ComponentActivity() {
 ```kotlin
 @Composable
 fun BlackScreenContent(settings: Settings) {
-    val offset = rememberBurnInShift(settings.burnInShiftEnabled)
+    val offset = rememberBurnInShift()
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         Column(Modifier.align(Alignment.Center).offset { offset }) {
@@ -380,11 +380,24 @@ AMOLED에서 같은 위치에 시계를 몇 시간 띄우면 잔상이 남습니
 
 ```kotlin
 @Composable
-fun rememberBurnInShift(enabled: Boolean): IntOffset {
-    // 60초마다 반경 24dp 원 궤도 위의 다음 지점으로 이동
+fun rememberBurnInShift(): IntOffset {
+    // 60초마다 8dp × 28dp 타원 궤도 위의 다음 지점으로 이동
     // 이동은 애니메이션 없이 즉시 (애니메이션은 전력 소모)
 }
 ```
+
+**끌 수 없습니다.** 설정 토글이 있었지만 없앴습니다 — 끄면 얻는 것이 없고 잃는 것은
+되돌릴 수 없는 패널 손상입니다. 비용도 1분에 `step++` 한 번뿐이라 저울에 올릴 것이
+없습니다. 밝기 슬라이더를 없앤 것과 같은 판단입니다.
+
+궤도가 정원이 아니라 **세로로 긴 타원**인 이유는 가로로 흔들리면 화면 정중앙에 있어야 할
+시계가 한쪽으로 치우쳐 보이기 때문입니다. 번인 방지에 필요한 것은 이동 방향이 아니라
+"픽셀이 옮겨 다니는 것" 입니다.
+
+> ⚠️ 예전 주석은 "밝기가 0 이라 사용자가 이동을 인지하지 못한다" 를 근거로 들었는데
+> 거꾸로였습니다. 밝기가 0 인 것은 표시할 내용이 없을 때이고 그때는 시프트 자체가
+> 무의미합니다. 시프트가 필요한 상황에서는 밝기가 `CONTENT_BRIGHTNESS` 라 오히려 보입니다.
+> 결론(애니메이션 없음)은 그대로지만 근거가 틀렸습니다.
 
 ### 4.6 해제 제스처
 
@@ -480,17 +493,23 @@ data class Settings(
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
     val clockStyle: ClockStyle = H24,        // 패턴이 아니다. 로케일이 패턴을 정한다 (§5.1)
     val sentence: String = "",
-    val textLevel: Int = 3,                  // 1~5 → 패널 밝기 0.05~0.80
-    val burnInShiftEnabled: Boolean = true,
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
-    val bubbleEnabled: Boolean = false,
+    val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
     val bubbleEdge: Edge = Edge.RIGHT,
     val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
     val bubbleYRatio: Float = 0.5f,
 )
 ```
 
-### 밝기 손잡이는 하나다
+### 밝기는 상수 하나다
+
+시계·문장을 표시할 때의 패널 밝기는 `CONTENT_BRIGHTNESS = 0.30` 상수입니다. 표시할 내용이
+없으면 무조건 0 — 그게 이 앱의 기본 상태입니다.
+
+**조절 슬라이더(1~5단계, 0.05~0.80)는 없앴습니다.** 실측(§6)에서 패널 0.30 과 0.00 의 소모가
+눈금 하나도 차이 나지 않았습니다. 비용은 켜진 픽셀이 아니라 화면이 켜져 있다는 사실에서
+나오므로, 밝기를 낮춰 얻을 것이 없고 설정 항목 하나와 미리보기 창만 늘었습니다.
+`0.30` 은 그 슬라이더의 기본값이었고 사용자가 "적당하다" 고 한 값입니다.
 
 보이는 밝기는 **프레임버퍼 값 × 패널 밝기**입니다. 둘 다 깎아 놓으면 왜 안 보이는지
 헤매게 됩니다 — 실제로 세 번 그랬습니다.
@@ -501,8 +520,7 @@ data class Settings(
 #E6E6E6 + 패널 0.08  →  여전히 판독 불가
 ```
 
-그래서 **글자는 항상 흰색 고정**이고, `textLevel` 은 창의 `screenBrightness` 만
-움직입니다. 표시할 내용이 없으면 밝기는 무조건 0 입니다 — 그게 이 앱의 기본 상태입니다.
+그래서 **글자는 항상 흰색 고정**이고, 밝기는 창의 `screenBrightness` 상수로만 정합니다.
 
 ⚠️ **이 값은 `screencap` 으로 검증할 수 없습니다.** 프레임버퍼에는 패널 밝기가 담기지
 않아 픽셀값이 찍혀도 눈에는 안 보일 수 있습니다. 반드시 실제 화면을 봐야 합니다.
@@ -584,6 +602,8 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 5. **버블 크기 조절** — 5단계 → 16~96dp 연속값
 6. **버블 겨냥 제스처** — 꾹 누른 뒤 위는 앱 열기, 아래는 삭제. ✕ 타겟 폐지
 7. **다국어** — 기본 영어 + 한국어. 시계 패턴을 ICU 파생으로. 앱별 언어 목록(`localeConfig`) 선언
+8. **밝기 슬라이더 제거** — 실측으로 B = C 확인 후 상수 0.30 으로
+9. **번인 방지 토글 제거** — 끌 이유가 없는 설정. `화면` 섹션이 통째로 사라짐
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 
