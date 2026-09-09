@@ -525,10 +525,21 @@ class ScreenCoverService :
             PendingIntent.FLAG_IMMUTABLE,
         )
 
+        // 알림 본문을 누르면 설정 화면. 버블만 떠 있을 때 설정으로 가는 두 번째 길이다
+        // (첫 번째는 버블을 꾹 눌러 위로). 차폐 중에는 알림 창을 내릴 수 없어 의미가 없지만
+        // 분기할 이유도 없다.
+        val openApp = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_tile)
             .setContentTitle(getString(title))
             .setContentText(getString(text))
+            .setContentIntent(openApp)
             .setOngoing(true)
             .addAction(
                 Notification.Action.Builder(null, getString(actionLabel), pending).build(),
