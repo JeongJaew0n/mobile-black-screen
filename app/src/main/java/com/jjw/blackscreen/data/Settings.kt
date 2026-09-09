@@ -64,6 +64,18 @@ enum class Edge { LEFT, RIGHT }
  */
 enum class BubbleIcon { BAR, DOT, RING, MOON, POWER }
 
+/**
+ * 시계 글꼴. 다섯 가지 중 고른다.
+ *
+ * 전부 **기기에 이미 있는 글꼴**이다 — Android 가 `sans-serif` / `serif` / `monospace` /
+ * `cursive` 계열을 보장한다. 글꼴 파일을 묶지 않으니 APK 가 커지지 않고 네트워크도 없다.
+ * 한글 오전/오후는 어느 글꼴을 골라도 시스템 한글 글꼴로 떨어진다. 갈리는 것은 숫자다.
+ *
+ * 실제 [FontFamily]/[FontWeight] 매핑은 UI 층(`ui/Clock.kt`)에 있다 — data 층이 Compose 타입을
+ * 알 필요는 없다.
+ */
+enum class ClockFont { LIGHT, BOLD, SERIF, MONO, CURSIVE }
+
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
 enum class Gesture {
     LONG_PRESS,
@@ -94,6 +106,8 @@ data class Settings(
     /** 기본값은 요구사항대로 "아무것도 표시하지 않는 완전한 검정"이다. */
     val showClock: Boolean = false,
     val clockStyle: ClockStyle = ClockStyle.H24,
+    /** 시계 글꼴. 기본은 지금까지의 모양(기본 글꼴 Light). */
+    val clockFont: ClockFont = ClockFont.LIGHT,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 

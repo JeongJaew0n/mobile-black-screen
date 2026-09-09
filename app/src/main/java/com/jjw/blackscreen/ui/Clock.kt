@@ -9,6 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import com.jjw.blackscreen.data.ClockFont
 import com.jjw.blackscreen.data.ClockStyle
 import kotlinx.coroutines.delay
 import java.util.Calendar
@@ -83,3 +86,22 @@ fun rememberClockSample(style: ClockStyle): String {
         style.formatter(locale).format(sample)
     }
 }
+
+/**
+ * 글꼴 계열. [ClockFont.LIGHT] 와 [ClockFont.BOLD] 는 기기 기본 글꼴(삼성이면 SamsungOne,
+ * 순정이면 Roboto)이고 굵기만 다르다. 나머지는 Android 가 보장하는 generic family 다.
+ */
+val ClockFont.family: FontFamily
+    get() = when (this) {
+        ClockFont.LIGHT, ClockFont.BOLD -> FontFamily.Default
+        ClockFont.SERIF -> FontFamily.Serif
+        ClockFont.MONO -> FontFamily.Monospace
+        ClockFont.CURSIVE -> FontFamily.Cursive
+    }
+
+val ClockFont.weight: FontWeight
+    get() = when (this) {
+        ClockFont.LIGHT -> FontWeight.Light
+        ClockFont.BOLD -> FontWeight.Bold
+        else -> FontWeight.Normal
+    }

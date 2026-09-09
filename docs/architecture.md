@@ -495,6 +495,7 @@ data class Settings(
     val mode: Mode = Mode.FULL,              // FULL | OVERLAY | BLACKOUT
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
     val clockStyle: ClockStyle = H24,        // 패턴이 아니다. 로케일이 패턴을 정한다 (§5.1)
+    val clockFont: ClockFont = LIGHT,        // LIGHT / BOLD / SERIF / MONO / CURSIVE — 기기 내장 글꼴만
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
@@ -610,6 +611,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 9. **번인 방지 토글 제거** — 끌 이유가 없는 설정. `화면` 섹션이 통째로 사라짐
 10. **버블 기호 선택** — 막대/점/고리/달/전원. 이모지 대신 도형으로 그려 기기·글꼴 무관
 11. **표시 내용 미리보기** — 설정에서 차폐 화면과 같은 `BlackScreenContent` 를 상자에 그림. 패널 밝기는 못 보여줘 캡션으로 알림
+12. **시계 글꼴 5종** — 기기 내장 generic family(sans/serif/mono/cursive)만 써서 글꼴 파일을 묶지 않음. 피커는 이름 대신 그 글꼴로 찍은 숫자를 보여줌
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 

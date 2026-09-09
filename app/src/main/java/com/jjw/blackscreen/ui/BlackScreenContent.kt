@@ -22,7 +22,6 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -131,7 +130,8 @@ private fun BlackScreenContent(settings: Settings) {
                     text = rememberClockText(settings.clockStyle),
                     color = settings.textColor,
                     fontSize = 64.sp,
-                    fontWeight = FontWeight.Light,
+                    fontFamily = settings.clockFont.family,
+                    fontWeight = settings.clockFont.weight,
                 )
             }
             if (settings.sentence.isNotBlank()) {

@@ -17,6 +17,12 @@
     <string name="clock_24h">24시간제</string>
     <string name="clock_12h">오전·오후</string>
     <string name="clock_style_label">%1$s (%2$s)</string>
+    <string name="clock_font">시계 글꼴</string>
+    <string name="clock_font_light">가늘게</string>
+    <string name="clock_font_bold">굵게</string>
+    <string name="clock_font_serif">명조</string>
+    <string name="clock_font_mono">고정폭</string>
+    <string name="clock_font_cursive">필기</string>
     <string name="sentence">문장</string>
     <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
     <string name="content_preview_hint">실제 화면은 이보다 어둡습니다 — 패널 밝기를 0.30 으로 낮춥니다</string>

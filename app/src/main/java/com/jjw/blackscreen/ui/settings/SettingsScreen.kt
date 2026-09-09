@@ -1,6 +1,11 @@
 package com.jjw.blackscreen.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.data.ClockFont
+import com.jjw.blackscreen.ui.family
+import com.jjw.blackscreen.ui.weight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -144,6 +149,52 @@ fun SettingsScreen(
                     selected = settings.clockStyle == style,
                     onSelect = { onChange { s -> s.copy(clockStyle = style) } },
                 )
+            }
+
+            Text(
+                text = stringResource(R.string.clock_font),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            // 글꼴 이름이 아니라 그 글꼴로 찍은 숫자를 보여준다. 이름을 읽고 상상하게 하면
+            // 고르고 나서 실망한다. 오전/오후 표기는 한글 글꼴로 떨어져 차이가 없으니 뺀다.
+            // 아래 미리보기 상자가 고른 글꼴로 즉시 바뀌어 전체 모습은 거기서 본다.
+            val digits = rememberClockSample(settings.clockStyle)
+                .let { Regex("\\d{1,2}:\\d{2}").find(it)?.value ?: it }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                ClockFont.entries.forEach { font ->
+                    val selected = settings.clockFont == font
+                    val name = stringResource(font.labelRes)
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .selectable(selected = selected, role = Role.RadioButton) {
+                                onChange { s -> s.copy(clockFont = font) }
+                            }
+                            .background(Color.Black)
+                            .border(
+                                width = if (selected) 2.dp else 1.dp,
+                                color = if (selected) MaterialTheme.colorScheme.primary else Color(0x33FFFFFF),
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                            .padding(horizontal = 8.dp, vertical = 10.dp)
+                            .semantics { contentDescription = name },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = digits,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontFamily = font.family,
+                            fontWeight = font.weight,
+                        )
+                    }
+                }
             }
         }
 
@@ -314,6 +365,15 @@ private val Mode.descriptionRes: Int
         Mode.FULL -> R.string.mode_full_desc
         Mode.OVERLAY -> R.string.mode_overlay_desc
         Mode.BLACKOUT -> R.string.mode_blackout_desc
+    }
+
+private val ClockFont.labelRes: Int
+    get() = when (this) {
+        ClockFont.LIGHT -> R.string.clock_font_light
+        ClockFont.BOLD -> R.string.clock_font_bold
+        ClockFont.SERIF -> R.string.clock_font_serif
+        ClockFont.MONO -> R.string.clock_font_mono
+        ClockFont.CURSIVE -> R.string.clock_font_cursive
     }
 
 private val BubbleIcon.labelRes: Int
