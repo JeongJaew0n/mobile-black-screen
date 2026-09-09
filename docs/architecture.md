@@ -112,6 +112,7 @@ app/src/main/java/.../blackscreen/
 ├─ bubble/
 │   ├─ BubbleWindow.kt          버블 창 LayoutParams + 가장자리 좌표 계산
 │   ├─ BubbleContent.kt         원형 버블 (탭/드래그/겨냥/유휴 페이드)
+│   ├─ BubbleGlyph.kt           버블 안 기호 5종 — 실제 버블과 설정 미리보기가 공유
 │   └─ AimTargets.kt            꾹 누른 동안 뜨는 위/아래 목표
 ├─ ui/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
@@ -496,6 +497,7 @@ data class Settings(
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
     val bubbleEdge: Edge = Edge.RIGHT,
+    val bubbleIcon: BubbleIcon = BAR,       // BAR / DOT / RING / MOON / POWER
     val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
     val bubbleYRatio: Float = 0.5f,
 )
@@ -604,6 +606,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 7. **다국어** — 기본 영어 + 한국어. 시계 패턴을 ICU 파생으로. 앱별 언어 목록(`localeConfig`) 선언
 8. **밝기 슬라이더 제거** — 실측으로 B = C 확인 후 상수 0.30 으로
 9. **번인 방지 토글 제거** — 끌 이유가 없는 설정. `화면` 섹션이 통째로 사라짐
+10. **버블 기호 선택** — 막대/점/고리/달/전원. 이모지 대신 도형으로 그려 기기·글꼴 무관
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 

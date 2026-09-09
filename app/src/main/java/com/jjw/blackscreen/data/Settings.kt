@@ -54,6 +54,16 @@ enum class Mode(
 /** 버블이 붙어 있는 화면 가장자리. 픽셀 좌표로 저장하면 회전·해상도 변경 때 화면 밖으로 나간다. */
 enum class Edge { LEFT, RIGHT }
 
+/**
+ * 버블 안에 그리는 기호. 다섯 가지 중 고른다.
+ *
+ * 이모지가 아니라 **도형으로 직접 그린다.** 이모지는 기기·글꼴마다 모양이 다르고 색이 있어
+ * 어두운 반투명 원과 어울리지 않으며, 유휴 페이드로 흐려질 때 얼룩처럼 보인다.
+ * 그리는 코드는 [com.jjw.blackscreen.bubble.BubbleGlyph] 한 곳이고, 설정 화면 미리보기와
+ * 실제 버블이 같은 함수를 쓴다 — 골라 놓은 것과 뜨는 것이 다를 수 없다.
+ */
+enum class BubbleIcon { BAR, DOT, RING, MOON, POWER }
+
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
 enum class Gesture {
     LONG_PRESS,
@@ -106,6 +116,8 @@ data class Settings(
      */
     val bubbleEnabled: Boolean = true,
     val bubbleEdge: Edge = Edge.RIGHT,
+    /** 버블 안의 기호. 기본은 퀵 설정 타일과 같은 가로 막대. */
+    val bubbleIcon: BubbleIcon = BubbleIcon.BAR,
     /** 버블 지름(dp). [MIN_BUBBLE_DP]~[MAX_BUBBLE_DP]. */
     val bubbleSizeDp: Int = DEFAULT_BUBBLE_DP,
     /** 화면 높이 대비 0..1. 회전·해상도가 바뀌어도 화면 안에 남는다. */

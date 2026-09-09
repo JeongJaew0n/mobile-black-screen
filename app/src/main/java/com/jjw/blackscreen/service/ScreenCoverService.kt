@@ -266,6 +266,7 @@ class ScreenCoverService :
             val view = composeView { current ->
                 BubbleContent(
                     sizeDp = current.bubbleSizeDp,
+                    icon = current.bubbleIcon,
                     onTap = ::onBubbleTapped,
                     onDrag = ::onBubbleDrag,
                     onDragEnd = ::onBubbleDragEnd,

@@ -48,6 +48,12 @@
     <string name="section_bubble">Bubble</string>
     <string name="bubble_enabled">Show bubble over other apps</string>
     <string name="bubble_size_value">Bubble size %1$d dp</string>
+    <string name="bubble_icon">Bubble symbol</string>
+    <string name="bubble_icon_bar">Bar</string>
+    <string name="bubble_icon_dot">Dot</string>
+    <string name="bubble_icon_ring">Ring</string>
+    <string name="bubble_icon_moon">Moon</string>
+    <string name="bubble_icon_power">Power</string>
     <string name="bubble_enabled_desc">A small button that turns Screen Off on while you use other apps. Press and hold, then slide up to open these settings or down to remove the bubble. Drag to move it. It stays after you close the app.</string>
     <string name="bubble_permission_note">The bubble needs the ‘Display over other apps’ permission, separately from the Screen Off method.</string>
     <string name="bubble_running">Bubble is running</string>

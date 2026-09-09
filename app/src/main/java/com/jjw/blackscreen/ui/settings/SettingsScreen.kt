@@ -1,6 +1,16 @@
 package com.jjw.blackscreen.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.jjw.blackscreen.bubble.BubbleGlyph
+import com.jjw.blackscreen.data.BubbleIcon
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +35,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.ui.rememberClockSample
@@ -181,6 +194,50 @@ fun SettingsScreen(
                 valueRange = MIN_BUBBLE_DP.toFloat()..MAX_BUBBLE_DP.toFloat(),
                 steps = 0,
             )
+
+        }
+
+        Text(
+            text = stringResource(R.string.bubble_icon),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+        // 버블을 꺼 둔 상태에서도 고를 수 있게 스위치 밖에 둔다 — 켰을 때 어떤 모양이 뜰지
+        // 미리 정해 두는 용도다. 미리보기는 실제 버블과 같은 BubbleGlyph 를 같은 배경 위에 그린다.
+        // 이름표는 없다. 기호가 곧 이름이고, 글자가 붙으면 다섯 개가 한 줄에 안 들어간다.
+        // 대신 contentDescription 으로 스크린리더에는 이름을 준다.
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            BubbleIcon.entries.forEach { icon ->
+                val selected = settings.bubbleIcon == icon
+                val name = stringResource(icon.labelRes)
+                Box(
+                    Modifier
+                        .clip(CircleShape)
+                        // clickable + 수동 selected 시맨틱은 접근성 트리에 안 실렸다(실측).
+                        // selectable 이 선택 상태와 라디오 역할을 함께 실어 준다.
+                        .selectable(selected = selected, role = Role.RadioButton) {
+                            onChange { s -> s.copy(bubbleIcon = icon) }
+                        }
+                        .padding(6.dp)
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xE0141414))
+                        .border(
+                            width = if (selected) 2.dp else 1.dp,
+                            color = if (selected) MaterialTheme.colorScheme.primary else Color(0x33FFFFFF),
+                            shape = CircleShape,
+                        )
+                        .semantics { contentDescription = name },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    BubbleGlyph(icon = icon, sizeDp = 52)
+                }
+            }
         }
 
         Text(
@@ -244,6 +301,15 @@ private val Mode.descriptionRes: Int
         Mode.FULL -> R.string.mode_full_desc
         Mode.OVERLAY -> R.string.mode_overlay_desc
         Mode.BLACKOUT -> R.string.mode_blackout_desc
+    }
+
+private val BubbleIcon.labelRes: Int
+    get() = when (this) {
+        BubbleIcon.BAR -> R.string.bubble_icon_bar
+        BubbleIcon.DOT -> R.string.bubble_icon_dot
+        BubbleIcon.RING -> R.string.bubble_icon_ring
+        BubbleIcon.MOON -> R.string.bubble_icon_moon
+        BubbleIcon.POWER -> R.string.bubble_icon_power
     }
 
 private val Gesture.labelRes: Int
