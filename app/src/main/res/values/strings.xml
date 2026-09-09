@@ -20,6 +20,7 @@
     <string name="clock_style_label">%1$s (%2$s)</string>
     <string name="sentence">Sentence</string>
     <string name="sentence_hint">Leave empty to show nothing</string>
+    <string name="content_preview_hint">The real screen is dimmer than this — the panel brightness is lowered to 0.30</string>
 
 
     <string name="section_unlock">Unlock</string>

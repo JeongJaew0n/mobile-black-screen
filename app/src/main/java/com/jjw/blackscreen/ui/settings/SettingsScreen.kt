@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.ui.rememberClockSample
+import com.jjw.blackscreen.ui.BlackScreenPreview
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.BUBBLE_STEP_DP
 import com.jjw.blackscreen.data.ClockStyle
@@ -155,6 +156,18 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .padding(top = 12.dp),
         )
+
+        // 시계·문장을 켰을 때 실제로 어떻게 뜨는지. 차폐 화면과 같은 Composable 을 그린다.
+        // 표시할 것이 없으면 상자도 없다 — 검은 사각형만 덜렁 있으면 고장으로 보인다.
+        if (settings.hasContent) {
+            BlackScreenPreview(settings, Modifier.padding(top = 16.dp))
+            Text(
+                text = stringResource(R.string.content_preview_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
 
         Section(stringResource(R.string.section_bubble))
 

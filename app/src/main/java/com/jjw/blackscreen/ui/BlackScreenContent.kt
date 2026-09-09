@@ -3,6 +3,10 @@ package com.jjw.blackscreen.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -82,6 +86,32 @@ fun BlackScreenRoot(
 
 /** 세로 -0.3 = 정중앙에서 위쪽으로 화면 높이의 15% 지점. */
 private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.3f)
+
+/** 미리보기 상자 높이. 시계(64sp)와 문장 한 줄이 들어가는 최소치. */
+private val PreviewHeight = 180.dp
+
+/**
+ * 설정 화면용 미리보기. **차폐 화면과 같은 [BlackScreenContent] 를 그대로 그린다.**
+ *
+ * 폰트 크기·정렬·번인 궤도까지 실제와 같은 코드다 — 미리보기 전용 레이아웃을 따로 두면
+ * 실제와 어긋나는 날이 온다. 다른 것은 상자 높이와 둥근 모서리뿐이다.
+ *
+ * ⚠️ 패널 밝기(0.30)는 보여줄 수 없다. 이 앱의 창 밝기는 `screenBrightness` 로 낮추는데
+ * 설정 화면 창을 낮추면 설정 자체가 안 보인다. 실제 화면은 이보다 어둡다 — 설정 화면이
+ * 그 사실을 캡션으로 알린다.
+ */
+@Composable
+fun BlackScreenPreview(settings: Settings, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(PreviewHeight)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black),
+    ) {
+        BlackScreenContent(settings)
+    }
+}
 
 @Composable
 private fun BlackScreenContent(settings: Settings) {
