@@ -131,8 +131,10 @@ Galaxy S23+ (SM-S916N) / Android 16 / SDK 36 / AMOLED 에서 완료 조건 17개
 |---|---|
 | [docs/technical-feasibility.md](docs/technical-feasibility.md) | 기술 타당성 분석 — 플랫폼별 판정, 방식 비교, 하드 제약 |
 | [docs/architecture.md](docs/architecture.md) | 구현 설계 — 세 모드 구조, 핵심 코드, 함정 목록 |
-| [docs/power-measurement.md](docs/power-measurement.md) | 전력 측정 — 방법, 함정, 현재 추정치 |
-| [docs/plans/blackout-overlay-modes/](docs/plans/blackout-overlay-modes/) | 작업 계획 — 스펙, 맥락, 진행 체크리스트 |
+| [docs/power-measurement.md](docs/power-measurement.md) | 전력 측정 — 방법, 함정, **실측치**(2026-09-08) |
+| [docs/plans/](docs/plans/) | 작업별 계획 — 스펙, 맥락, 진행 체크리스트. 뒤 작업이 앞 결정을 뒤집은 경우가 있다 |
+| [docs/glossary/](docs/glossary/) | 이 프로젝트에서만 통하는 용어 — Screen Off/차폐, FULL, 버블, 겨냥… |
+| [docs/troubleshootings/](docs/troubleshootings/) | 시간을 잡아먹은 오류의 증상·원인·해결 |
 
 ## 하지 않은 것
 
