@@ -144,6 +144,14 @@ private fun BlackScreenContent(settings: Settings) {
                     modifier = Modifier.padding(top = if (settings.showClock) 8.dp else 0.dp),
                 )
             }
+            if (settings.showBattery) {
+                BatteryLine(
+                    status = rememberBatteryStatus(),
+                    tint = settings.textColor,
+                    fontFamily = settings.clockFont.family,
+                    modifier = Modifier.padding(top = if (settings.showClock || settings.showDate) 8.dp else 0.dp),
+                )
+            }
             if (settings.sentence.isNotBlank()) {
                 Text(
                     text = settings.sentence,
@@ -152,7 +160,7 @@ private fun BlackScreenContent(settings: Settings) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .padding(horizontal = 40.dp)
-                        .padding(top = if (settings.showClock || settings.showDate) 24.dp else 0.dp),
+                        .padding(top = if (settings.showClock || settings.showDate || settings.showBattery) 24.dp else 0.dp),
                 )
             }
         }

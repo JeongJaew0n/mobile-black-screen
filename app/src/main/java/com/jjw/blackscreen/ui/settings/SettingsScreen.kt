@@ -260,6 +260,12 @@ fun SettingsScreen(
                 }
             }
 
+            SwitchRow(
+                label = stringResource(R.string.show_battery),
+                checked = settings.showBattery,
+                onCheckedChange = { on -> onChange { s -> s.copy(showBattery = on) } },
+            )
+
             OutlinedTextField(
                 value = settings.sentence,
                 onValueChange = { text -> onChange { s -> s.copy(sentence = text) } },
@@ -375,7 +381,8 @@ fun SettingsScreen(
 
             Section(stringResource(R.string.section_unlock))
 
-            Gesture.entries.forEach { gesture ->
+            // 미제공 제스처(available = false)는 목록에서 빠진다. 코드는 남아 있다.
+            Gesture.available.forEach { gesture ->
                 RadioRow(
                     label = stringResource(gesture.labelRes),
                     selected = settings.unlockGesture == gesture,

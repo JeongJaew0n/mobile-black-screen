@@ -97,7 +97,13 @@ enum class DateStyle(val skeleton: String) {
 }
 
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
-enum class Gesture {
+enum class Gesture(
+    /**
+     * 이 제스처를 고를 수 있는가. [Mode.available] 과 같은 장치다 — `false` 면 설정에 나타나지
+     * 않고 저장된 값도 읽는 시점에 [Gesture.default] 로 교정된다. **코드는 그대로 남는다.**
+     */
+    val available: Boolean = true,
+) {
     LONG_PRESS,
     DOUBLE_TAP,
     TRIPLE_TAP,
@@ -108,8 +114,12 @@ enum class Gesture {
      * 판정 기준은 이동한 경로의 총합이 아니라 **시작점 대비 순 변위**다.
      * 경로 총합으로 재면 주머니 속에서 손가락이 잘게 흔들리기만 해도 누적되어 풀린다.
      * 순 변위는 왔다 갔다 하면 상쇄되므로 의도적인 스와이프만 통과한다.
+     *
+     * **미제공.** 화면이 손가락을 따라 벗겨지는 동작이 밀어서 잠금 해제([SLIDE_TO_UNLOCK])와
+     * 겹치고, 둘 중 무엇을 해야 하는지가 눈에 보이는 쪽은 후자다. 코드와 [SlideToDismissLayer]
+     * 는 남겨 두고 `available = false` 로만 감춘다.
      */
-    SWIPE,
+    SWIPE(available = false),
 
     /**
      * 옛 아이폰식 밀어서 잠금 해제.
@@ -119,6 +129,13 @@ enum class Gesture {
      * 알려주지 않으면 알 수 없다.
      */
     SLIDE_TO_UNLOCK,
+    ;
+
+    companion object {
+        val available: List<Gesture> get() = entries.filter { it.available }
+        val default: Gesture get() = TRIPLE_TAP
+        fun sanitize(gesture: Gesture): Gesture = if (gesture.available) gesture else default
+    }
 }
 
 data class Settings(
@@ -131,6 +148,8 @@ data class Settings(
     /** 시계 아래 날짜. 기본은 끔 — 무표시가 기본이라는 원칙 그대로. */
     val showDate: Boolean = false,
     val dateStyle: DateStyle = DateStyle.MEDIUM,
+    /** 배터리 잔량. 밤새 켜 두는 앱이라 아침에 얼마 남았는지가 시계 다음으로 궁금한 정보다. */
+    val showBattery: Boolean = false,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 
@@ -186,7 +205,7 @@ data class Settings(
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */
     val hasContent: Boolean
-        get() = showClock || showDate || sentence.isNotBlank()
+        get() = showClock || showDate || showBattery || sentence.isNotBlank()
 }
 
 /**

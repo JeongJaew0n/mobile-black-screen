@@ -498,6 +498,7 @@ data class Settings(
     val clockFont: ClockFont = LIGHT,        // LIGHT / BOLD / SERIF / MONO / CURSIVE — 기기 내장 글꼴만
     val showDate: Boolean = false,
     val dateStyle: DateStyle = MEDIUM,      // ICU 스켈레톤 6종. 패턴은 로케일이 정한다 (§5.1)
+    val showBattery: Boolean = false,        // 배터리 브로드캐스트만 받는다. 폴링 없음
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
@@ -618,6 +619,8 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 12. **시계 글꼴 5종** — 기기 내장 generic family(sans/serif/mono/cursive)만 써서 글꼴 파일을 묶지 않음. 피커는 이름 대신 그 글꼴로 찍은 숫자를 보여줌
 13. **설정 화면 탭 분리** — `화면 표시`(시계·문장·미리보기) / `설정`(버블·해제). 제목·시작 버튼·권한 카드는 탭 위 고정
 14. **날짜 표시** — 시계 아래 날짜. 형식 6종은 ICU 스켈레톤(`yMd`…`EEEE`)으로 저장, 모달에서 오늘 날짜 예시로 고름. 자정에만 갱신
+15. **위로 밀어 올리기 미제공** — `Gesture.available = false`. 밀어서 잠금 해제와 겹침. 코드·`SlideToDismissLayer` 는 남김
+16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 

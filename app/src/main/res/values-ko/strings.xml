@@ -27,6 +27,7 @@
     <string name="show_date">날짜 표시</string>
     <string name="date_format">날짜 형식</string>
     <string name="close">닫기</string>
+    <string name="show_battery">배터리 잔량 표시</string>
     <string name="sentence">문장</string>
     <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
     <string name="content_preview_hint">실제 화면은 이보다 어둡습니다 — 패널 밝기를 0.30 으로 낮춥니다</string>
