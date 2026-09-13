@@ -496,6 +496,8 @@ data class Settings(
     val showClock: Boolean = false,          // 기본은 "아무것도 없음"
     val clockStyle: ClockStyle = H24,        // 패턴이 아니다. 로케일이 패턴을 정한다 (§5.1)
     val clockFont: ClockFont = LIGHT,        // LIGHT / BOLD / SERIF / MONO / CURSIVE — 기기 내장 글꼴만
+    val showDate: Boolean = false,
+    val dateStyle: DateStyle = MEDIUM,      // ICU 스켈레톤 6종. 패턴은 로케일이 정한다 (§5.1)
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
@@ -540,6 +542,8 @@ data class Settings(
 
 
 ### 5.1 시계 패턴은 저장하지 않는다
+
+날짜(`DateStyle`)도 같다 — 스켈레톤 `yMMMd` 하나가 한국어 `2026년 9월 13일`, 영어 `Sep 13, 2026` 으로 갈린다.
 
 `ClockStyle` 은 24/12시간제 선택만 담는다. 패턴은 렌더 시점에
 
@@ -613,6 +617,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 11. **표시 내용 미리보기** — 설정에서 차폐 화면과 같은 `BlackScreenContent` 를 상자에 그림. 패널 밝기는 못 보여줘 캡션으로 알림
 12. **시계 글꼴 5종** — 기기 내장 generic family(sans/serif/mono/cursive)만 써서 글꼴 파일을 묶지 않음. 피커는 이름 대신 그 글꼴로 찍은 숫자를 보여줌
 13. **설정 화면 탭 분리** — `화면 표시`(시계·문장·미리보기) / `설정`(버블·해제). 제목·시작 버튼·권한 카드는 탭 위 고정
+14. **날짜 표시** — 시계 아래 날짜. 형식 6종은 ICU 스켈레톤(`yMd`…`EEEE`)으로 저장, 모달에서 오늘 날짜 예시로 고름. 자정에만 갱신
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 

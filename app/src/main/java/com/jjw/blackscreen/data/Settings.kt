@@ -76,6 +76,26 @@ enum class BubbleIcon { BAR, DOT, RING, MOON, POWER }
  */
 enum class ClockFont { LIGHT, BOLD, SERIF, MONO, CURSIVE }
 
+/**
+ * 날짜 표기. [ClockStyle] 과 같은 원칙 — **패턴이 아니라 ICU 스켈레톤**을 저장하고, 실제
+ * 순서·구분자·조사는 로케일이 정한다. `yMMMd` 하나가 한국어 `2026년 9월 13일`, 영어
+ * `Sep 13, 2026` 으로 갈린다. 패턴 문자열을 언어별로 번역했다면 이 표는 언어 수만큼 늘었다.
+ */
+enum class DateStyle(val skeleton: String) {
+    /** 2026. 9. 13. / 9/13/2026 */
+    NUMERIC("yMd"),
+    /** 2026년 9월 13일 / Sep 13, 2026 */
+    MEDIUM("yMMMd"),
+    /** 2026년 9월 13일 (토) / Sat, Sep 13, 2026 */
+    MEDIUM_WEEKDAY("yMMMEd"),
+    /** 9월 13일 / Sep 13 */
+    MONTH_DAY("MMMd"),
+    /** 9월 13일 (토) / Sat, Sep 13 */
+    MONTH_DAY_WEEKDAY("MMMEd"),
+    /** 토요일 / Saturday */
+    WEEKDAY("EEEE"),
+}
+
 /** 차폐 해제 제스처. 단일 탭은 주머니에서 바로 풀리므로 선택지에 없다. */
 enum class Gesture {
     LONG_PRESS,
@@ -108,6 +128,9 @@ data class Settings(
     val clockStyle: ClockStyle = ClockStyle.H24,
     /** 시계 글꼴. 기본은 지금까지의 모양(기본 글꼴 Light). */
     val clockFont: ClockFont = ClockFont.LIGHT,
+    /** 시계 아래 날짜. 기본은 끔 — 무표시가 기본이라는 원칙 그대로. */
+    val showDate: Boolean = false,
+    val dateStyle: DateStyle = DateStyle.MEDIUM,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 
@@ -163,7 +186,7 @@ data class Settings(
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */
     val hasContent: Boolean
-        get() = showClock || sentence.isNotBlank()
+        get() = showClock || showDate || sentence.isNotBlank()
 }
 
 /**

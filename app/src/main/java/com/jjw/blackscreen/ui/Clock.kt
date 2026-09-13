@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.jjw.blackscreen.data.ClockFont
 import com.jjw.blackscreen.data.ClockStyle
+import com.jjw.blackscreen.data.DateStyle
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.Date
@@ -105,3 +106,44 @@ val ClockFont.weight: FontWeight
         ClockFont.BOLD -> FontWeight.Bold
         else -> FontWeight.Normal
     }
+
+/** 날짜 서식. 시계와 같은 ICU 경로다 — `java.time` 을 쓰지 않는 이유는 [ClockStyle.formatter] 참조. */
+fun DateStyle.formatter(locale: Locale): SimpleDateFormat {
+    val pattern = DateTimePatternGenerator.getInstance(locale).getBestPattern(skeleton)
+    return SimpleDateFormat(pattern, locale)
+}
+
+/**
+ * 날짜 문자열. **자정에만** 갱신한다.
+ *
+ * 시계는 분마다 바뀌지만 날짜는 하루에 한 번 바뀐다. 다음 자정까지 정확히 기다렸다가 한 번
+ * 갱신한다 — 분마다 다시 서식해도 티는 안 나지만 이유 없는 일은 안 한다.
+ */
+@Composable
+fun rememberDateText(style: DateStyle): String {
+    val locale = currentLocale()
+    val formatter = remember(style, locale) { style.formatter(locale) }
+    var text by remember(formatter) { mutableStateOf(formatter.format(Date())) }
+
+    LaunchedEffect(formatter) {
+        while (true) {
+            val now = Calendar.getInstance()
+            val midnight = (now.clone() as Calendar).apply {
+                add(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            delay(midnight.timeInMillis - now.timeInMillis)
+            text = formatter.format(Date())
+        }
+    }
+
+    return text
+}
+
+/** 설정 모달에 붙는 예시. 오늘 날짜를 그 형식으로 — 날짜는 오늘이 가장 좋은 예시다. */
+@Composable
+fun rememberDateSample(style: DateStyle): String {
+    val locale = currentLocale()
+    return remember(style, locale) { style.formatter(locale).format(Date()) }
+}

@@ -134,6 +134,16 @@ private fun BlackScreenContent(settings: Settings) {
                     fontWeight = settings.clockFont.weight,
                 )
             }
+            if (settings.showDate) {
+                // 시계와 같은 글꼴 계열, 굵기는 보통. 한글(년·월·일)은 어차피 한글 글꼴로 떨어진다.
+                Text(
+                    text = rememberDateText(settings.dateStyle),
+                    color = settings.textColor,
+                    fontSize = 22.sp,
+                    fontFamily = settings.clockFont.family,
+                    modifier = Modifier.padding(top = if (settings.showClock) 8.dp else 0.dp),
+                )
+            }
             if (settings.sentence.isNotBlank()) {
                 Text(
                     text = settings.sentence,
@@ -142,7 +152,7 @@ private fun BlackScreenContent(settings: Settings) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .padding(horizontal = 40.dp)
-                        .padding(top = if (settings.showClock) 24.dp else 0.dp),
+                        .padding(top = if (settings.showClock || settings.showDate) 24.dp else 0.dp),
                 )
             }
         }

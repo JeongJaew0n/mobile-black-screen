@@ -36,9 +36,14 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import com.jjw.blackscreen.data.DateStyle
+import com.jjw.blackscreen.ui.rememberDateSample
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
@@ -226,6 +231,32 @@ fun SettingsScreen(
                             )
                         }
                     }
+                }
+            }
+
+            SwitchRow(
+                label = stringResource(R.string.show_date),
+                checked = settings.showDate,
+                onCheckedChange = { on -> onChange { s -> s.copy(showDate = on) } },
+            )
+            if (settings.showDate) {
+                // 형식은 여섯 가지라 라디오를 펼치면 화면이 길어진다. 한 줄(현재 형식의 오늘 날짜)만
+                // 보이고, 누르면 모달에서 고른다.
+                var dateDialog by rememberSaveable { mutableStateOf(false) }
+                ValueRow(
+                    label = stringResource(R.string.date_format),
+                    value = rememberDateSample(settings.dateStyle),
+                    onClick = { dateDialog = true },
+                )
+                if (dateDialog) {
+                    DateStyleDialog(
+                        current = settings.dateStyle,
+                        onSelect = { style ->
+                            onChange { s -> s.copy(dateStyle = style) }
+                            dateDialog = false
+                        },
+                        onDismiss = { dateDialog = false },
+                    )
                 }
             }
 
@@ -522,6 +553,57 @@ private fun ModeRow(
             )
         }
     }
+}
+
+/** 라벨 + 현재 값 한 줄. 누르면 호출부가 모달을 연다. */
+@Composable
+private fun ValueRow(label: String, value: String, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+/**
+ * 날짜 형식 모달. 항목 이름은 없다 — **오늘 날짜를 그 형식으로 찍은 것**이 항목이다.
+ * "중간 · 요일 포함" 같은 이름을 읽고 상상하게 하는 것보다 결과를 보여주는 쪽이 빠르다.
+ */
+@Composable
+private fun DateStyleDialog(
+    current: DateStyle,
+    onSelect: (DateStyle) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.date_format)) },
+        text = {
+            Column {
+                DateStyle.entries.forEach { style ->
+                    RadioRow(
+                        label = rememberDateSample(style),
+                        selected = style == current,
+                        onSelect = { onSelect(style) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
+        },
+    )
 }
 
 @Composable

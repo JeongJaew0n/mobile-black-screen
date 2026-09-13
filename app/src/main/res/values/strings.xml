@@ -25,6 +25,9 @@
     <string name="clock_font_serif">Serif</string>
     <string name="clock_font_mono">Monospace</string>
     <string name="clock_font_cursive">Handwriting</string>
+    <string name="show_date">Show date</string>
+    <string name="date_format">Date format</string>
+    <string name="close">Close</string>
     <string name="sentence">Sentence</string>
     <string name="sentence_hint">Leave empty to show nothing</string>
     <string name="content_preview_hint">The real screen is dimmer than this — the panel brightness is lowered to 0.30</string>
