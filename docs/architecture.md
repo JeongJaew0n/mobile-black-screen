@@ -620,6 +620,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 13. **설정 화면 탭 분리** — `화면 표시`(시계·문장·미리보기) / `설정`(버블·해제). 제목·시작 버튼·권한 카드는 탭 위 고정
 14. **날짜 표시** — 시계 아래 날짜. 형식 6종은 ICU 스켈레톤(`yMd`…`EEEE`)으로 저장, 모달에서 오늘 날짜 예시로 고름. 자정에만 갱신
 15. **위로 밀어 올리기 미제공** — `Gesture.available = false`. 밀어서 잠금 해제와 겹침. 코드·`SlideToDismissLayer` 는 남김
+17. **밀어서 잠금 해제 미제공** — 같은 장치. 트랙이 항상 그려져 '완전한 검정' 기본과 어긋남. 제공 제스처는 꾹 눌러 / 더블 탭 / 3회 탭 셋
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.

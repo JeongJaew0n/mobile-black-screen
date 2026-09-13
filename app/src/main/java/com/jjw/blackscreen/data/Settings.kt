@@ -127,8 +127,11 @@ enum class Gesture(
      * 화면 하단 트랙의 손잡이를 오른쪽 끝까지 끌면 풀린다. [SWIPE] 와 달리 화면이
      * 벗겨지지 않고, 대신 **무엇을 해야 하는지가 눈에 보인다.** 다른 제스처들은
      * 알려주지 않으면 알 수 없다.
+     *
+     * **미제공.** 트랙과 손잡이가 항상 화면에 그려져 "아무것도 없는 검은 화면" 이라는 앱의
+     * 기본 모습과 어긋난다. 코드와 [SlideToUnlockLayer] 는 남겨 두고 `available = false` 로만 감춘다.
      */
-    SLIDE_TO_UNLOCK,
+    SLIDE_TO_UNLOCK(available = false),
     ;
 
     companion object {
