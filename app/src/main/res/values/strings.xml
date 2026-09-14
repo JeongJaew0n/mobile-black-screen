@@ -66,13 +66,15 @@
     <string name="bubble_icon_ring">Ring</string>
     <string name="bubble_icon_moon">Moon</string>
     <string name="bubble_icon_power">Power</string>
-    <string name="bubble_enabled_desc">A small button that turns Screen Off on while you use other apps. Press and hold, then slide up to open these settings or down to remove the bubble. Drag to move it. It stays after you close the app.</string>
+    <string name="bubble_enabled_desc">A small button that turns Screen Off on while you use other apps. Press and hold, then slide up to open these settings or down to close the bubble (it comes back when you open the app). Drag to move it. It stays after you close the app.</string>
+    <string name="bubble_hidden">Hide bubble</string>
+    <string name="bubble_hidden_desc">The bubble stays away even when you open the app — for when you want it out of the way for a while. Closing the bubble by holding and sliding down is temporary; it comes back when you open the app.</string>
     <string name="bubble_permission_note">The bubble needs the ‘Display over other apps’ permission, separately from the Screen Off method.</string>
     <string name="bubble_running">Bubble is running</string>
-    <string name="bubble_running_desc">Tap for Screen Off · hold, then up for app, down to remove</string>
-    <string name="bubble_stop">Remove bubble</string>
+    <string name="bubble_running_desc">Tap for Screen Off · hold, then up for app, down to close</string>
+    <string name="bubble_stop">Close bubble</string>
     <string name="aim_open_app">Open app</string>
-    <string name="aim_remove_bubble">Remove bubble</string>
+    <string name="aim_remove_bubble">Close bubble</string>
 
     <string name="accessibility_description">Needed to cover the whole screen. Only an accessibility service can draw a window over the status bar and navigation bar. This app does not read screen content.</string>
 

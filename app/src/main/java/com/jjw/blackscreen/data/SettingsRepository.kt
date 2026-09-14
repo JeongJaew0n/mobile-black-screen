@@ -38,6 +38,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
             prefs[Keys.HOLD_MILLIS] = next.holdMillis
             prefs[Keys.BUBBLE_ENABLED] = next.bubbleEnabled
+            prefs[Keys.BUBBLE_HIDDEN] = next.bubbleHidden
             prefs[Keys.BUBBLE_EDGE] = next.bubbleEdge.name
             prefs[Keys.BUBBLE_ICON] = next.bubbleIcon.name
             prefs[Keys.BUBBLE_SIZE_DP] = next.bubbleSizeDp
@@ -61,6 +62,7 @@ class SettingsRepository(context: Context) {
         val UNLOCK_GESTURE = stringPreferencesKey("unlock_gesture")
         val HOLD_MILLIS = intPreferencesKey("hold_millis")
         val BUBBLE_ENABLED = booleanPreferencesKey("bubble_enabled")
+        val BUBBLE_HIDDEN = booleanPreferencesKey("bubble_hidden")
         val BUBBLE_EDGE = stringPreferencesKey("bubble_edge")
         val BUBBLE_ICON = stringPreferencesKey("bubble_icon")
         val BUBBLE_SIZE_DP = intPreferencesKey("bubble_size_dp")
@@ -88,6 +90,7 @@ class SettingsRepository(context: Context) {
             holdMillis = (this[Keys.HOLD_MILLIS] ?: defaults.holdMillis)
                 .coerceIn(MIN_HOLD_MILLIS, MAX_HOLD_MILLIS),
             bubbleEnabled = this[Keys.BUBBLE_ENABLED] ?: defaults.bubbleEnabled,
+            bubbleHidden = this[Keys.BUBBLE_HIDDEN] ?: defaults.bubbleHidden,
             bubbleEdge = enumOrDefault(this[Keys.BUBBLE_EDGE], defaults.bubbleEdge),
             bubbleIcon = enumOrDefault(this[Keys.BUBBLE_ICON], defaults.bubbleIcon),
             bubbleSizeDp = (

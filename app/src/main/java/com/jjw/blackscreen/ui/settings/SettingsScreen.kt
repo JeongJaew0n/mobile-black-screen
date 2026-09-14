@@ -307,6 +307,12 @@ fun SettingsScreen(
                 )
             }
             if (settings.bubbleEnabled) {
+                SwitchRow(
+                    label = stringResource(R.string.bubble_hidden),
+                    description = stringResource(R.string.bubble_hidden_desc),
+                    checked = settings.bubbleHidden,
+                    onCheckedChange = { on -> onChange { s -> s.copy(bubbleHidden = on) } },
+                )
                 Text(
                     text = stringResource(R.string.bubble_size_value, settings.bubbleSizeDp),
                     style = MaterialTheme.typography.labelLarge,

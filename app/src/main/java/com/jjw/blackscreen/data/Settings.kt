@@ -174,6 +174,14 @@ data class Settings(
      * 있는데 화면에 아무것도 없는 상태가 된다 — 설정 화면이 권한 카드로 이 상태를 설명한다.
      */
     val bubbleEnabled: Boolean = true,
+    /**
+     * 버블 숨기기. 켜져 있으면 앱을 열어도 버블이 뜨지 않는다.
+     *
+     * [bubbleEnabled] 와 다르다. 버블을 꾹 눌러 아래로 **닫는 것은 일시적**이다 — 창만 사라지고
+     * 옵션은 그대로라 앱을 다시 열면 돌아온다. "한동안 치워 두고 싶다" 는 이 스위치로 한다.
+     * 옵션을 끄면 크기·기호 설정까지 함께 사라지는데, 그건 잠시 치우는 것과 다른 일이다.
+     */
+    val bubbleHidden: Boolean = false,
     val bubbleEdge: Edge = Edge.RIGHT,
     /** 버블 안의 기호. 기본은 퀵 설정 타일과 같은 가로 막대. */
     val bubbleIcon: BubbleIcon = BubbleIcon.BAR,

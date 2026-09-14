@@ -65,13 +65,15 @@
     <string name="bubble_icon_ring">고리</string>
     <string name="bubble_icon_moon">달</string>
     <string name="bubble_icon_power">전원</string>
-    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 꾹 누른 채 위로 밀면 이 설정 화면이 열리고, 아래로 밀면 버블이 사라집니다. 그냥 끌면 위치가 옮겨집니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_enabled_desc">다른 앱을 쓰는 중에도 눌러서 바로 Screen Off 하는 작은 버튼입니다. 꾹 누른 채 위로 밀면 이 설정 화면이 열리고, 아래로 밀면 버블이 닫힙니다(앱을 다시 열면 돌아옵니다). 그냥 끌면 위치가 옮겨집니다. 앱을 닫아도 유지됩니다.</string>
+    <string name="bubble_hidden">버블 숨기기</string>
+    <string name="bubble_hidden_desc">켜져 있으면 앱을 열어도 버블이 뜨지 않습니다. 한동안 치워 두고 싶을 때 씁니다. 버블을 꾹 눌러 아래로 닫는 것은 일시적이라 앱을 다시 열면 돌아옵니다.</string>
     <string name="bubble_permission_note">버블에는 Screen Off 방식과 별개로 ‘다른 앱 위에 표시’ 권한이 필요합니다.</string>
     <string name="bubble_running">버블 실행 중</string>
-    <string name="bubble_running_desc">눌러서 Screen Off · 꾹 눌러 위는 앱, 아래는 삭제</string>
-    <string name="bubble_stop">버블 끄기</string>
+    <string name="bubble_running_desc">눌러서 Screen Off · 꾹 눌러 위는 앱, 아래는 닫기</string>
+    <string name="bubble_stop">버블 닫기</string>
     <string name="aim_open_app">앱 열기</string>
-    <string name="aim_remove_bubble">버블 삭제</string>
+    <string name="aim_remove_bubble">버블 닫기</string>
 
     <string name="accessibility_description">화면 전체를 덮기 위해 필요합니다. 상태바와 내비게이션 바 위까지 덮을 수 있는 창은 접근성 서비스만 사용할 수 있습니다. 이 앱은 화면 내용을 읽지 않습니다.</string>
 

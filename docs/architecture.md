@@ -469,7 +469,7 @@ bubbleSuppressed  차폐 중이라 잠시 감췄는가
 |---|---|---|
 | 손을 뗐다 | 탭 | Screen Off |
 | 터치 슬롭을 넘겼다 | 드래그 | 버블을 옮긴다 (놓으면 가장자리로 스냅) |
-| 아무것도 안 했다 | 겨냥 | 위로 밀면 앱 열기, 아래로 밀면 버블 삭제 |
+| 아무것도 안 했다 | 겨냥 | 위로 밀면 앱 열기, 아래로 밀면 버블 닫기(일시적 — 앱을 열면 돌아옴) |
 
 - **`pointerInput` 을 하나로 합쳐야 합니다.** 예전에는 탭 감지기와 드래그 감지기를
   따로 붙였는데, 겨냥은 꾹 누른 **뒤에 이어지는 이동**을 봐야 하고
@@ -502,6 +502,7 @@ data class Settings(
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
+    val bubbleHidden: Boolean = false,       // 켜면 앱을 열어도 안 뜸. 닫기(겨냥 아래)는 일시적
     val bubbleEdge: Edge = Edge.RIGHT,
     val bubbleIcon: BubbleIcon = BAR,       // BAR / DOT / RING / MOON / POWER
     val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
@@ -621,6 +622,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 14. **날짜 표시** — 시계 아래 날짜. 형식 6종은 ICU 스켈레톤(`yMd`…`EEEE`)으로 저장, 모달에서 오늘 날짜 예시로 고름. 자정에만 갱신
 15. **위로 밀어 올리기 미제공** — `Gesture.available = false`. 밀어서 잠금 해제와 겹침. 코드·`SlideToDismissLayer` 는 남김
 17. **밀어서 잠금 해제 미제공** — 같은 장치. 트랙이 항상 그려져 '완전한 검정' 기본과 어긋남. 제공 제스처는 꾹 눌러 / 더블 탭 / 3회 탭 셋
+18. **버블 닫기는 일시적** — 겨냥 아래·알림 액션은 창만 지우고 옵션을 건드리지 않음. 앱을 열면 돌아옴. 계속 감추는 건 새 `버블 숨기기` 스위치
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.

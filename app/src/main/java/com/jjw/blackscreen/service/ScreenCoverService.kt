@@ -46,7 +46,6 @@ import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.overlay.overlayLayoutParams
 import com.jjw.blackscreen.ui.BlackScreenRoot
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -177,15 +176,9 @@ class ScreenCoverService :
                 bubbleWanted = true
                 bubbleSuppressed = false
             }
-            ACTION_STOP_BUBBLE -> {
-                bubbleWanted = false
-                // 설정도 함께 꺼야 한다. 안 그러면 앱을 다시 열 때 되살아난다.
-                // 아래에서 곧 stopSelf() 하므로 lifecycleScope 의 자식으로 두면 취소된다.
-                // NonCancellable 로 서비스 수명과 떼어 놓는다.
-                lifecycleScope.launch(NonCancellable) {
-                    repository.update { it.copy(bubbleEnabled = false) }
-                }
-            }
+            // 닫기는 일시적이다. 창만 지우고 설정은 건드리지 않는다 — 앱을 다시 열면 돌아온다.
+            // 계속 감춰 두는 것은 bubbleHidden 설정이 맡는다.
+            ACTION_STOP_BUBBLE -> bubbleWanted = false
             ACTION_SUPPRESS_BUBBLE -> bubbleSuppressed = true
             ACTION_RESTORE_BUBBLE -> bubbleSuppressed = false
             ACTION_STOP_COVER -> removeCover()
@@ -391,17 +384,18 @@ class ScreenCoverService :
         aim.value = BubbleAim.NONE
     }
 
-    /** 아래로 겨냥해 지웠을 때. 설정도 함께 꺼야 앱을 다시 열 때 되살아나지 않는다. */
+    /**
+     * 아래로 겨냥해 닫았을 때. **일시적이다** — 창만 지우고 설정은 건드리지 않는다.
+     * 앱을 다시 열면 [com.jjw.blackscreen.MainActivity] 가 되살린다. 한동안 치워 두려면
+     * 사용자가 '버블 숨기기' 를 켠다.
+     *
+     * (예전에는 여기서 bubbleEnabled 를 false 로 썼다. 그 시절 함정 — 저장 코루틴을 던지고
+     * 바로 stopSelf() 하면 취소된다 — 은 architecture.md F27 에 남아 있다.)
+     */
     private fun stopBubbleByUser() {
         bubbleWanted = false
         syncBubble()
-        // 저장이 끝난 뒤에 서비스를 멈춰야 한다. 저장을 launch 로 던지고 바로 stopSelf()
-        // 하면 onDestroy 가 lifecycleScope 를 취소해 저장이 실행되지 못한다 — 창은 사라졌는데
-        // 설정은 true 로 남아, 앱을 다시 열면 버블이 되살아난다. 실기기에서 실제로 그랬다.
-        lifecycleScope.launch {
-            repository.update { it.copy(bubbleEnabled = false) }
-            if (!hasAnythingToDo) stopSelf() else updateNotification()
-        }
+        if (!hasAnythingToDo) stopSelf() else updateNotification()
     }
 
     /**

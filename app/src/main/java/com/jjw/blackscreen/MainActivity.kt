@@ -82,7 +82,9 @@ class MainActivity : ComponentActivity() {
                     LifecycleResumeEffect(canDrawOverlays) {
                         if (canDrawOverlays) {
                             scope.launch {
-                                if (repository.settings.first().bubbleEnabled) {
+                                val s = repository.settings.first()
+                                // 닫은 버블은 여기서 돌아온다. 숨기기가 켜져 있으면 돌아오지 않는다.
+                                if (s.bubbleEnabled && !s.bubbleHidden) {
                                     runCatching { ScreenCoverService.showBubble(this@MainActivity) }
                                 }
                             }
@@ -101,9 +103,9 @@ class MainActivity : ComponentActivity() {
                                 if (after.mode == Mode.OVERLAY || after.bubbleEnabled) {
                                     requestNotifications(notificationPermission::launch)
                                 }
-                                if (after.bubbleEnabled != before.bubbleEnabled) {
-                                    toggleBubble(after.bubbleEnabled, canDrawOverlays)
-                                }
+                                val wasShown = before.bubbleEnabled && !before.bubbleHidden
+                                val isShown = after.bubbleEnabled && !after.bubbleHidden
+                                if (isShown != wasShown) toggleBubble(isShown, canDrawOverlays)
                             }
                         },
                         onStart = { start(settings.mode) },
@@ -126,9 +128,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun toggleBubble(enabled: Boolean, canDrawOverlays: Boolean) {
+    /** [show] = 표시 옵션이 켜져 있고 숨기기가 꺼져 있는 상태. 둘을 합친 값 하나만 본다. */
+    private fun toggleBubble(show: Boolean, canDrawOverlays: Boolean) {
         when {
-            !enabled -> ScreenCoverService.stopBubble(this)
+            !show -> ScreenCoverService.stopBubble(this)
             canDrawOverlays -> ScreenCoverService.showBubble(this)
             // 버블은 오버레이 권한 없이는 띄울 수 없다. 설정 화면으로 보내고,
             // 돌아오면 LifecycleResumeEffect 가 다시 시도한다.
