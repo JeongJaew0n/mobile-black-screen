@@ -568,6 +568,7 @@ class ScreenCoverService :
         fun startCover(context: Context) = send(context, ACTION_START_COVER)
         fun showBubble(context: Context) = send(context, ACTION_SHOW_BUBBLE)
         fun stopBubble(context: Context) = send(context, ACTION_STOP_BUBBLE)
+        fun stopCover(context: Context) = send(context, ACTION_STOP_COVER)
 
         /**
          * 차폐 Activity 가 뜰 때 버블을 감춘다.

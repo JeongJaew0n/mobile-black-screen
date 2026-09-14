@@ -471,6 +471,7 @@ private val Gesture.labelRes: Int
         Gesture.TRIPLE_TAP -> R.string.gesture_triple_tap
         Gesture.SWIPE -> R.string.gesture_swipe
         Gesture.SLIDE_TO_UNLOCK -> R.string.gesture_slide_to_unlock
+        Gesture.FINGERPRINT -> R.string.gesture_fingerprint
     }
 
 @Composable

@@ -121,8 +121,8 @@ fun BoxScope.UnlockGestureLayer(
                     // 밀어 올리기는 화면이 손가락을 따라 움직여야 해서 표면 전체를
                     // 다뤄야 한다. BlackScreenRoot 의 SlideToDismissLayer 가 맡는다.
                     // 화면을 움직이거나 트랙을 그리는 방식은 표면 전체를 다뤄야 해서
-                    // BlackScreenRoot 가 별도 레이어로 처리한다.
-                    Gesture.SWIPE, Gesture.SLIDE_TO_UNLOCK -> Unit
+                    // BlackScreenRoot 가 별도 레이어로 처리한다. 지문도 자기 레이어가 있다.
+                    Gesture.SWIPE, Gesture.SLIDE_TO_UNLOCK, Gesture.FINGERPRINT -> Unit
                 }
             },
     )
@@ -353,4 +353,20 @@ fun BoxScope.SlideToUnlockLayer(
             }
         }
     }
+}
+
+/**
+ * 지문 해제 트리거. 화면 어디를 탭해도 [onTrigger] — 지문 프롬프트를 띄우는 쪽은 호출부다.
+ *
+ * 화면에는 아무것도 그리지 않는다. 밝기 0 이면 어차피 안 보이고, 프롬프트가 뜨면 SystemUI 가
+ * 아이콘을 센서 위치에 그려 준다. 탭 한 번은 주머니에서도 나지만, 그 뒤에 **지문까지 맞아야**
+ * 풀리므로 단일 탭 해제의 문제(주머니에서 풀림)는 없다.
+ */
+@Composable
+fun BoxScope.FingerprintUnlockLayer(onTrigger: () -> Unit) {
+    Box(
+        Modifier
+            .matchParentSize()
+            .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) },
+    )
 }

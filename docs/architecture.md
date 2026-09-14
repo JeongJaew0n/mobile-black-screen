@@ -623,6 +623,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 15. **위로 밀어 올리기 미제공** — `Gesture.available = false`. 밀어서 잠금 해제와 겹침. 코드·`SlideToDismissLayer` 는 남김
 17. **밀어서 잠금 해제 미제공** — 같은 장치. 트랙이 항상 그려져 '완전한 검정' 기본과 어긋남. 제공 제스처는 꾹 눌러 / 더블 탭 / 3회 탭 셋
 18. **버블 닫기는 일시적** — 겨냥 아래·알림 액션은 창만 지우고 옵션을 건드리지 않음. 앱을 열면 돌아옴. 계속 감추는 건 새 `버블 숨기기` 스위치
+19. **지문으로 해제** — 차폐 탭 → 투명 `BiometricUnlockActivity` 가 프레임워크 `BiometricPrompt`. 프롬프트가 접근성 오버레이 아래에 그려져 그동안 차폐를 알파 0.55 로 낮추고 밝기를 올림. API 28+ 에서만 목록에 뜸
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.

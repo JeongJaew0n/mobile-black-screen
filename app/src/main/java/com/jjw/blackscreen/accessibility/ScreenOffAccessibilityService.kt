@@ -2,6 +2,8 @@ package com.jjw.blackscreen.accessibility
 
 import android.accessibilityservice.AccessibilityService
 import android.graphics.PixelFormat
+import androidx.compose.runtime.mutableStateOf
+import com.jjw.blackscreen.data.CONTENT_BRIGHTNESS
 import android.os.Build
 import android.view.Gravity
 import android.view.View
@@ -78,6 +80,12 @@ class ScreenOffAccessibilityService :
     private var coverView: View? = null
     private var coverParams: WindowManager.LayoutParams? = null
 
+    /**
+     * 지문 프롬프트가 떠 있는 동안 true. 차폐를 반투명으로 낮추고 밝기를 올려 SystemUI 의
+     * 지문 아이콘이 비쳐 보이게 한다 — 프롬프트는 접근성 오버레이 **아래**에 그려진다.
+     */
+    private val biometricPromptActive = mutableStateOf(false)
+
     val isCovering: Boolean get() = coverView != null
 
     override fun onCreate() {
@@ -135,7 +143,11 @@ class ScreenOffAccessibilityService :
                 val settings by repository.settings.collectAsStateWithLifecycle(
                     initialValue = Settings(),
                 )
-                BlackScreenRoot(settings = settings, onUnlock = ::hideCover)
+                BlackScreenRoot(
+                    settings = settings,
+                    onUnlock = ::hideCover,
+                    dimmed = biometricPromptActive.value,
+                )
             }
         }
 
@@ -145,6 +157,18 @@ class ScreenOffAccessibilityService :
             coverView = view
             coverParams = params
         }
+    }
+
+    fun setBiometricPromptActive(active: Boolean) {
+        biometricPromptActive.value = active
+        val params = coverParams ?: return
+        // 프롬프트가 보여야 하니 표시 내용이 없어도 밝기를 올린다. 끝나면 설정값으로 돌아간다.
+        params.screenBrightness = if (active) {
+            maxOf(latestSettings.screenBrightness, CONTENT_BRIGHTNESS)
+        } else {
+            latestSettings.screenBrightness
+        }
+        runCatching { windowManager.updateViewLayout(coverView, params) }
     }
 
     fun hideCover() {

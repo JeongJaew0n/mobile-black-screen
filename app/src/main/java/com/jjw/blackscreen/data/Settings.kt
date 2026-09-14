@@ -132,12 +132,26 @@ enum class Gesture(
      * 기본 모습과 어긋난다. 코드와 [SlideToUnlockLayer] 는 남겨 두고 `available = false` 로만 감춘다.
      */
     SLIDE_TO_UNLOCK(available = false),
+
+    /**
+     * 지문으로 해제. 차폐를 탭하면 시스템 지문 프롬프트가 뜨고, 인식되면 풀린다.
+     *
+     * 프롬프트는 SystemUI 창이라 **접근성 오버레이 아래**에 그려진다. 그래서 프롬프트가 떠 있는
+     * 동안 차폐를 반투명으로 낮춰 지문 아이콘이 비쳐 보이게 한다. 센서는 창과 무관하게
+     * 동작하므로 손가락은 그대로 읽힌다. 프레임워크 `BiometricPrompt` 가 API 28 부터라
+     * 그 아래에서는 목록에 나타나지 않는다.
+     */
+    FINGERPRINT,
     ;
 
+    /** 이 기기에서 쓸 수 있는가. 지문은 프레임워크 프롬프트가 있는 API 28 이상만. */
+    val supportedOnThisDevice: Boolean
+        get() = this != FINGERPRINT || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
+
     companion object {
-        val available: List<Gesture> get() = entries.filter { it.available }
+        val available: List<Gesture> get() = entries.filter { it.available && it.supportedOnThisDevice }
         val default: Gesture get() = TRIPLE_TAP
-        fun sanitize(gesture: Gesture): Gesture = if (gesture.available) gesture else default
+        fun sanitize(gesture: Gesture): Gesture = if (gesture.available && gesture.supportedOnThisDevice) gesture else default
     }
 }
 

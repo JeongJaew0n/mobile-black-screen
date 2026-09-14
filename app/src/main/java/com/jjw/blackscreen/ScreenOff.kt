@@ -56,6 +56,15 @@ object ScreenOff {
         }
     }
 
+    /**
+     * 차폐를 푼다. 지문 프롬프트처럼 **차폐 창 바깥**에서 해제할 때 쓴다 — 창 안의 제스처는
+     * 자기 창의 `onUnlock` 을 직접 부른다. 제공 모드가 FULL 뿐이라 접근성 창만 내린다.
+     */
+    fun stop(context: Context) {
+        ScreenOffAccessibilityService.instance?.hideCover()
+        if (Mode.OVERLAY.available) ScreenCoverService.stopCover(context)
+    }
+
     fun openAccessibilitySettings(context: Context) {
         context.startActivity(
             Intent(AndroidSettings.ACTION_ACCESSIBILITY_SETTINGS)

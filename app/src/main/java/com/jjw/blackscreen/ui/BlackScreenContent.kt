@@ -3,6 +3,9 @@ package com.jjw.blackscreen.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import com.jjw.blackscreen.biometric.BiometricUnlockActivity
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,6 +44,8 @@ fun BlackScreenRoot(
     settings: Settings,
     onUnlock: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 지문 프롬프트가 떠 있는 동안 true — 검정을 반투명으로 낮춰 아래 SystemUI 가 비친다. */
+    dimmed: Boolean = false,
 ) {
     var slideOffset by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableIntStateOf(0) }
@@ -56,7 +61,7 @@ fun BlackScreenRoot(
             Modifier
                 .fillMaxSize()
                 .offset { IntOffset(0, slideOffset.roundToInt()) }
-                .background(Color.Black),
+                .background(Color.Black.copy(alpha = if (dimmed) DimmedAlpha else 1f)),
         ) {
             BlackScreenContent(settings)
         }
@@ -66,6 +71,20 @@ fun BlackScreenRoot(
                 onOffsetChange = { slideOffset = it },
                 containerHeight = containerHeight,
                 onUnlock = onUnlock,
+            )
+        } else if (settings.unlockGesture == Gesture.FINGERPRINT) {
+            // 탭하면 투명 Activity 가 시스템 지문 프롬프트를 띄운다. 차폐 창이 보이는 동안은
+            // 우리 UID 에 보이는 창이 있어 백그라운드 Activity 시작 제한에 걸리지 않는다.
+            val context = LocalContext.current
+            FingerprintUnlockLayer(
+                onTrigger = {
+                    runCatching {
+                        context.startActivity(
+                            Intent(context, BiometricUnlockActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }
+                },
             )
         } else if (settings.unlockGesture == Gesture.SLIDE_TO_UNLOCK) {
             SlideToUnlockLayer(
@@ -85,6 +104,9 @@ fun BlackScreenRoot(
 
 /** 세로 -0.3 = 정중앙에서 위쪽으로 화면 높이의 15% 지점. */
 private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.3f)
+
+/** 지문 프롬프트 동안의 검정 알파. 아이콘이 보일 만큼만 비치고, 아래 앱은 여전히 어둡다. */
+private const val DimmedAlpha = 0.55f
 
 /** 미리보기 상자 높이. 시계(64sp)와 문장 한 줄이 들어가는 최소치. */
 private val PreviewHeight = 180.dp
