@@ -508,7 +508,9 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
 - **제어 버튼**(`MediaControlsLayer`)은 차폐의 **모든 해제 레이어보다 위**(Box 의 마지막 자식)에
   둔다. 버튼이 탭을 소비해야 그 탭이 3회 탭·더블 탭 카운트로 새지 않는다. 아이콘은 Canvas 도형.
   `PlaybackState.actions` 로 이전/다음 지원 여부를 보고 미지원이면 흐리게. 제어는 세션의
-  `transportControls` 로 보내고 결과 상태는 세션 콜백이 다시 알려 준다.
+  **`dispatchMediaButtonEvent(KEYCODE_MEDIA_*)`** 로 보낸다 — `transportControls.pause()` 는 앱이
+  `ACTION_PAUSE` 를 지원할 때만 먹고, `PLAY_PAUSE` 토글만 주는 앱(곰오디오 등)에선 무시된다.
+  결과 상태는 세션 콜백이 다시 알려 준다.
   `getActiveSessions` 의 `SecurityException`(런타임). 문구는 `media_permission_needed` 하나.
 
 ## 5. 설정 항목

@@ -187,6 +187,10 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 - **밝기를 정하는 곳은 `ScreenOffAccessibilityService.effectiveBrightness()` 하나다.** 재생 바가
   들어오면서 설정값(`hasContent`)만으로는 밝기를 못 정하게 됐다 — 재생 중·권한 안내·지문 프롬프트를
   거기서 합친다. 다른 곳에서 `screenBrightness` 를 직접 쓰지 말 것.
+- **미디어 제어는 `transportControls.pause()` 가 아니라 미디어 버튼 이벤트로 보낼 것.** 많은 앱이
+  `ACTION_PAUSE`/`ACTION_PLAY` 를 지원 안 하고 `PLAY_PAUSE` 토글만 준다(곰오디오 actions=0x204).
+  그런 앱에 `pause()` 를 보내면 조용히 무시된다 — "버튼이 안 먹는다" 로 보인다. 잠금화면 버튼과
+  같은 `dispatchMediaButtonEvent(KEYCODE_MEDIA_PLAY_PAUSE)` 가 호환성이 넓다. 실측으로 확인.
 - **`MediaListenerService` 에 알림을 읽는 코드를 넣지 말 것.** 알림 접근은 모든 알림을 읽을 수
   있는 권한이고, 콜백을 비워 두는 것이 "재생 정보만 쓴다" 는 유일한 약속이다.
 - **시계 패턴을 문자열로 쓰지 말 것.** `ClockStyle` 은 24/12 선택만 저장하고 패턴은 ICU

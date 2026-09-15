@@ -8,6 +8,7 @@ import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.view.KeyEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -116,15 +117,19 @@ class MediaWatcher(private val context: Context) {
         _nowPlaying.value = selected?.let(::toNowPlaying)
     }
 
-    // 제어는 선택된 세션의 전송 컨트롤로 보낸다. 상태 변화는 세션 콜백이 알려 주므로 여기서
-    // nowPlaying 을 직접 고치지 않는다 — 곧 onPlaybackStateChanged 가 온다.
-    fun playPause() {
+    // 제어는 **미디어 버튼 이벤트**로 보낸다. transportControls.pause()/play() 는 세션이
+    // ACTION_PAUSE / ACTION_PLAY 를 명시적으로 지원할 때만 먹는데, 곰오디오처럼 PLAY_PAUSE
+    // 토글만 지원하는(actions=0x204) 앱이 흔하다 — 그런 앱에 pause() 를 보내면 조용히 무시된다.
+    // 미디어 키는 잠금화면 재생 버튼이 쓰는 것과 같은 경로라 호환성이 가장 넓다.
+    // 상태 변화는 세션 콜백이 알려 주므로 nowPlaying 을 직접 고치지 않는다.
+    private fun sendKey(keyCode: Int) {
         val c = selected ?: return
-        if (c.playbackState?.state == PlaybackState.STATE_PLAYING) c.transportControls.pause()
-        else c.transportControls.play()
+        c.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+        c.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
     }
-    fun skipNext() { selected?.transportControls?.skipToNext() }
-    fun skipPrevious() { selected?.transportControls?.skipToPrevious() }
+    fun playPause() = sendKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+    fun skipNext() = sendKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+    fun skipPrevious() = sendKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
 
     private fun toNowPlaying(c: MediaController): NowPlaying? {
         val state = c.playbackState ?: return null

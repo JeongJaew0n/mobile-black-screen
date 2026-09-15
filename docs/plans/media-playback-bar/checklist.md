@@ -22,7 +22,7 @@
 
 ## 3. 표시
 - [x] `MediaBar` Composable — 하단 고정, 제목·부제·막대·시간, 자체 번인 궤도
-- [x] 제어(이전·재생/일시정지·다음) — `MediaControlsLayer`, 해제 레이어 위, 탭 소비, transportControls
+- [x] 제어(이전·재생/일시정지·다음) — 해제 레이어 위, 탭 소비. **미디어 버튼 이벤트**로 전송(transportControls 는 곰오디오류에서 무시됨, 실측 확인)
 - [x] 10초 루프는 playing 일 때만
 - [x] 밝기 결정에 `nowPlaying` 합성 (`hasContent` 만으로는 부족)
 - [x] 미리보기 상자에도
