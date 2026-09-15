@@ -492,7 +492,7 @@ bubbleSuppressed  차폐 중이라 잠시 감췄는가
 
 음악·동영상이 재생 중이면 차폐 **하단**에 제목 · 아티스트/앱 · 진행 막대 · `1:23 / 4:56`.
 FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아래에서 계속 재생된다 — 그 상태를
-눈으로 확인하는 수단이다. 표시 전용(제어는 2차, 해제 제스처와 충돌해서).
+눈으로 확인하는 수단이다. 제어(이전·재생/일시정지·다음)는 재생 바 위 별도 레이어. 해제 제스처와 충돌하지 않게 처리했다(아래).
 
 - **권한**: 알림 접근. `MediaSessionManager.getActiveSessions()` 가 `NotificationListenerService`
   컴포넌트를 요구한다. `MediaListenerService` 는 콜백이 전부 비어 있다 — 알림을 읽지 않는다.
@@ -505,6 +505,10 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
   하므로 접근성 서비스의 `effectiveBrightness()` 가 설정·재생 상태·지문 프롬프트를 합쳐 정한다.
   **밝기를 정하는 곳은 그 함수 하나다.**
 - **권한 상실 감지** 세 지점: 설정 RESUME(카드), 차폐 표시 시(재생 바 자리에 문구),
+- **제어 버튼**(`MediaControlsLayer`)은 차폐의 **모든 해제 레이어보다 위**(Box 의 마지막 자식)에
+  둔다. 버튼이 탭을 소비해야 그 탭이 3회 탭·더블 탭 카운트로 새지 않는다. 아이콘은 Canvas 도형.
+  `PlaybackState.actions` 로 이전/다음 지원 여부를 보고 미지원이면 흐리게. 제어는 세션의
+  `transportControls` 로 보내고 결과 상태는 세션 콜백이 다시 알려 준다.
   `getActiveSessions` 의 `SecurityException`(런타임). 문구는 `media_permission_needed` 하나.
 
 ## 5. 설정 항목
@@ -645,6 +649,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 18. **버블 닫기는 일시적** — 겨냥 아래·알림 액션은 창만 지우고 옵션을 건드리지 않음. 앱을 열면 돌아옴. 계속 감추는 건 새 `버블 숨기기` 스위치
 19. **지문으로 해제** — 차폐 탭 → 투명 `BiometricUnlockActivity` 가 프레임워크 `BiometricPrompt`. 프롬프트가 접근성 오버레이 아래에 그려져 그동안 차폐를 알파 0.55 로 낮추고 밝기를 올림. API 28+ 에서만 목록에 뜸
 20. **재생 바** — 알림 접근 권한(`MediaListenerService`, 콜백 비움) + `MediaSessionManager`. 차폐 하단 고정, 표시 전용, 10초 재그림. 관찰은 차폐 수명에만. 밝기는 `effectiveBrightness()` 가 설정·재생·프롬프트를 합쳐 결정
+21. **재생 제어** — 이전·재생/일시정지·다음. 해제 레이어 위에서 탭 소비로 제스처와 분리. `transportControls`
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.

@@ -165,6 +165,9 @@ class ScreenOffAccessibilityService :
                     dimmed = biometricPromptActive.value,
                     nowPlaying = nowPlaying,
                     mediaPermissionMissing = mediaPermissionMissing.value,
+                    onMediaPlayPause = mediaWatcher::playPause,
+                    onMediaNext = mediaWatcher::skipNext,
+                    onMediaPrevious = mediaWatcher::skipPrevious,
                 )
             }
         }

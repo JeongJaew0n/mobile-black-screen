@@ -51,6 +51,9 @@ fun BlackScreenRoot(
     nowPlaying: NowPlaying? = null,
     /** 재생 바를 켰는데 알림 접근이 없다 — 재생 바 자리에 안내 문구를 띄운다. */
     mediaPermissionMissing: Boolean = false,
+    onMediaPlayPause: () -> Unit = {},
+    onMediaNext: () -> Unit = {},
+    onMediaPrevious: () -> Unit = {},
 ) {
     var slideOffset by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableIntStateOf(0) }
@@ -112,6 +115,18 @@ fun BlackScreenRoot(
                 onUnlock = onUnlock,
             )
         }
+
+        // 제어 버튼은 해제 레이어보다 **위**에 온다. 버튼이 탭을 소비해야 그 탭이 해제 제스처로
+        // 새지 않는다. 그래서 Box 의 마지막 자식이다.
+        if (settings.showMedia && nowPlaying != null) {
+            MediaControlsLayer(
+                nowPlaying = nowPlaying,
+                tint = settings.textColor,
+                onPlayPause = onMediaPlayPause,
+                onNext = onMediaNext,
+                onPrevious = onMediaPrevious,
+            )
+        }
     }
 }
 
@@ -141,6 +156,9 @@ fun BlackScreenPreview(
     modifier: Modifier = Modifier,
     nowPlaying: NowPlaying? = null,
     mediaPermissionMissing: Boolean = false,
+    onMediaPlayPause: () -> Unit = {},
+    onMediaNext: () -> Unit = {},
+    onMediaPrevious: () -> Unit = {},
 ) {
     val showBar = settings.showMedia && (nowPlaying != null || mediaPermissionMissing)
     Box(
@@ -160,6 +178,16 @@ fun BlackScreenPreview(
                 fontFamily = settings.clockFont.family,
                 bottomMargin = 16.dp,
             )
+            if (nowPlaying != null) {
+                MediaControlsLayer(
+                    nowPlaying = nowPlaying,
+                    tint = settings.textColor,
+                    onPlayPause = onMediaPlayPause,
+                    onNext = onMediaNext,
+                    onPrevious = onMediaPrevious,
+                    bottomMargin = 16.dp,
+                )
+            }
         }
     }
 }

@@ -21,7 +21,8 @@
 - [x] 수명: 차폐 뜰 때 start / 내릴 때 stop (접근성 서비스 소유)
 
 ## 3. 표시
-- [x] `MediaBar` Composable — 하단 고정, 제목·부제·막대·시간, 자체 번인 궤도, 2차 제어 자리
+- [x] `MediaBar` Composable — 하단 고정, 제목·부제·막대·시간, 자체 번인 궤도
+- [x] 제어(이전·재생/일시정지·다음) — `MediaControlsLayer`, 해제 레이어 위, 탭 소비, transportControls
 - [x] 10초 루프는 playing 일 때만
 - [x] 밝기 결정에 `nowPlaying` 합성 (`hasContent` 만으로는 부족)
 - [x] 미리보기 상자에도

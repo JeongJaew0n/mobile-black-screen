@@ -89,6 +89,9 @@ fun SettingsScreen(
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibility: () -> Unit,
     onRequestNotificationAccess: () -> Unit,
+    onMediaPlayPause: () -> Unit,
+    onMediaNext: () -> Unit,
+    onMediaPrevious: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -304,6 +307,9 @@ fun SettingsScreen(
                     Modifier.padding(top = 16.dp),
                     nowPlaying = nowPlaying,
                     mediaPermissionMissing = settings.showMedia && !notificationAccess,
+                    onMediaPlayPause = onMediaPlayPause,
+                    onMediaNext = onMediaNext,
+                    onMediaPrevious = onMediaPrevious,
                 )
                 Text(
                     text = stringResource(R.string.content_preview_hint),

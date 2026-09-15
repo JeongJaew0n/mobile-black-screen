@@ -1,6 +1,15 @@
 package com.jjw.blackscreen.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -156,4 +165,85 @@ private fun formatClock(ms: Long): String {
     val m = (total % 3600) / 60
     val s = total % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+}
+
+/**
+ * 재생 제어 버튼 — 이전 · 재생/일시정지 · 다음. **차폐의 모든 해제 레이어 위**에 놓여야 한다.
+ * 그래야 버튼 탭이 해제 제스처(3회 탭 등)로 새지 않는다 — 버튼이 탭을 소비하면 아래 제스처
+ * 레이어는 그 이벤트를 못 본다. 그래서 [BlackScreenRoot] 의 **마지막 자식**으로 그린다.
+ *
+ * 재생 바(제목·막대)와 세로로 이어 보이도록 같은 하단 정렬을 쓰되, 막대보다 조금 위에 앉힌다.
+ */
+@Composable
+fun BoxScope.MediaControlsLayer(
+    nowPlaying: NowPlaying,
+    tint: Color,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    bottomMargin: Dp = MediaBarBottomMargin,
+) {
+    val shift = rememberBurnInShift()
+    Row(
+        Modifier
+            .align(Alignment.BottomCenter)
+            .offset { shift }
+            // 재생 바(제목·부제·막대) 위에 얹는다. 막대 높이만큼 더 띄운다.
+            .padding(bottom = bottomMargin + 84.dp),
+        horizontalArrangement = Arrangement.spacedBy(28.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CtrlButton(enabled = nowPlaying.canPrev, tint = tint, onClick = onPrevious) { c, t ->
+            drawSkip(c, t, forward = false)
+        }
+        CtrlButton(enabled = true, tint = tint, onClick = onPlayPause) { c, t ->
+            if (nowPlaying.playing) drawPause(c, t) else drawPlay(c, t)
+        }
+        CtrlButton(enabled = nowPlaying.canNext, tint = tint, onClick = onNext) { c, t ->
+            drawSkip(c, t, forward = true)
+        }
+    }
+}
+
+@Composable
+private fun CtrlButton(
+    enabled: Boolean,
+    tint: Color,
+    onClick: () -> Unit,
+    draw: DrawScope.(size: Float, color: Color) -> Unit,
+) {
+    val color = if (enabled) tint else tint.copy(alpha = 0.3f)
+    Canvas(
+        Modifier
+            .size(44.dp)               // 접근성 권장 최소 터치 영역
+            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
+    ) { draw(size.minDimension, color) }
+}
+
+private fun DrawScope.drawPlay(s: Float, c: Color) {
+    val p = Path().apply {
+        moveTo(s * 0.34f, s * 0.28f); lineTo(s * 0.34f, s * 0.72f); lineTo(s * 0.72f, s * 0.5f); close()
+    }
+    drawPath(p, c)
+}
+private fun DrawScope.drawPause(s: Float, c: Color) {
+    val w = s * 0.11f; val top = s * 0.30f; val h = s * 0.40f
+    drawRect(c, Offset(s * 0.34f, top), Size(w, h))
+    drawRect(c, Offset(s * 0.55f, top), Size(w, h))
+}
+/** 다음/이전. 삼각형 두 개 + 끝의 세로 막대. forward=false 면 좌우를 뒤집는다. */
+private fun DrawScope.drawSkip(s: Float, c: Color, forward: Boolean) {
+    val cap = StrokeCap.Butt
+    fun tri(cx: Float, dir: Int) {
+        val p = Path().apply {
+            moveTo(cx - dir * s * 0.12f, s * 0.30f)
+            lineTo(cx - dir * s * 0.12f, s * 0.70f)
+            lineTo(cx + dir * s * 0.12f, s * 0.5f); close()
+        }
+        drawPath(p, c)
+    }
+    val dir = if (forward) 1 else -1
+    tri(s * 0.34f, dir); tri(s * 0.56f, dir)
+    val barX = if (forward) s * 0.70f else s * 0.30f
+    drawLine(c, Offset(barX, s * 0.30f), Offset(barX, s * 0.70f), strokeWidth = s * 0.07f, cap = cap)
 }

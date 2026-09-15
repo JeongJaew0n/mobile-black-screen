@@ -18,6 +18,8 @@ data class NowPlaying(
     val positionMs: Long,
     val durationMs: Long,
     val playbackSpeed: Float,
+    val canNext: Boolean,
+    val canPrev: Boolean,
     /** `PlaybackState.lastPositionUpdateTime` — `SystemClock.elapsedRealtime()` 기준. */
     val updatedAtMs: Long,
     val playing: Boolean,
@@ -51,6 +53,9 @@ class MediaWatcher(private val context: Context) {
     val permissionLost: StateFlow<Boolean> = _permissionLost
 
     private var controllers: List<MediaController> = emptyList()
+
+    /** [refresh] 가 고른 세션. 제어 버튼이 이걸 조작한다. null 이면 제어할 것이 없다. */
+    private var selected: MediaController? = null
     private var started = false
 
     private val controllerCallback = object : MediaController.Callback() {
@@ -80,6 +85,7 @@ class MediaWatcher(private val context: Context) {
         runCatching { manager.removeOnActiveSessionsChangedListener(sessionsListener) }
         controllers.forEach { it.unregisterCallback(controllerCallback) }
         controllers = emptyList()
+        selected = null
         _nowPlaying.value = null
     }
 
@@ -106,8 +112,19 @@ class MediaWatcher(private val context: Context) {
         val paused = controllers.firstOrNull {
             it.playbackState?.state in setOf(PlaybackState.STATE_PAUSED, PlaybackState.STATE_BUFFERING)
         }
-        _nowPlaying.value = (playing ?: paused)?.let(::toNowPlaying)
+        selected = playing ?: paused
+        _nowPlaying.value = selected?.let(::toNowPlaying)
     }
+
+    // 제어는 선택된 세션의 전송 컨트롤로 보낸다. 상태 변화는 세션 콜백이 알려 주므로 여기서
+    // nowPlaying 을 직접 고치지 않는다 — 곧 onPlaybackStateChanged 가 온다.
+    fun playPause() {
+        val c = selected ?: return
+        if (c.playbackState?.state == PlaybackState.STATE_PLAYING) c.transportControls.pause()
+        else c.transportControls.play()
+    }
+    fun skipNext() { selected?.transportControls?.skipToNext() }
+    fun skipPrevious() { selected?.transportControls?.skipToPrevious() }
 
     private fun toNowPlaying(c: MediaController): NowPlaying? {
         val state = c.playbackState ?: return null
@@ -130,6 +147,8 @@ class MediaWatcher(private val context: Context) {
             durationMs = meta?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: -1L,
             playbackSpeed = if (state.playbackSpeed == 0f) 1f else state.playbackSpeed,
             updatedAtMs = state.lastPositionUpdateTime,
+            canNext = state.actions and PlaybackState.ACTION_SKIP_TO_NEXT != 0L,
+            canPrev = state.actions and PlaybackState.ACTION_SKIP_TO_PREVIOUS != 0L,
             playing = state.state == PlaybackState.STATE_PLAYING,
         )
     }
