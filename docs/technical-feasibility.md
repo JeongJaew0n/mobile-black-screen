@@ -279,3 +279,12 @@ iOS는 다른 앱 위에 무언가를 덮거나 백그라운드에서 임의로 
 
 구체적인 구현 설계·코드·함정 목록은 **[architecture.md](./architecture.md)** 에,
 전력 측정 방법과 추정치는 **[power-measurement.md](./power-measurement.md)** 에 있습니다.
+
+
+## 추가 (2026-09-15) — 화면 내장 지문 센서
+
+센서는 `BiometricPrompt` 세션이 살아 있는 동안만 켜진다. 일반 앱은 세션을 상시 유지할 수 없어
+"검은 화면에 손가락만 대면 풀림" 은 **무언가가 먼저 세션을 열어야** 가능하다. S23+(삼성 초음파)는
+접근성 오버레이가 터치를 삼켜도 HAL 이 손가락을 직접 읽었다. AOSP 광학 UDFPS 는 SystemUI 터치에
+의존해 같은 구조가 동작하지 않을 수 있다. 자세한 조사와 실험 절차는
+[plans/fingerprint-one-touch/](./plans/fingerprint-one-touch/).
