@@ -387,18 +387,25 @@ fun BoxScope.FingerprintUnlockLayer(
     // 글자는 화면 가운데(사용자 결정). 시계 블록은 가운데보다 위(bias -0.3)에, 재생 컨트롤은
     // 하단에 있어 어느 쪽과도 겹치지 않는다. 지문 무늬를 그려 봤는데 와이파이 아이콘처럼 보여서
     // 글자로 바꿨다 — "잠금 해제" 는 설명이 필요 없다.
+    // 맨 글자만 두면 눌리는 것인지 알 수 없고, 흐리게 하면 밝기 0.30 패널에서 더 죽는다.
+    // 알약 테두리 + 또렷한 흰 글자로 "버튼" 임을 말한다. 밀어서 잠금 해제 트랙과 같은 어법이다.
     val shift = rememberBurnInShift()
+    val shape = RoundedCornerShape(percent = 50)
     Box(
         Modifier
             .align(Alignment.Center)
             .offset { shift }
+            .clip(shape)
+            .border(1.dp, tint.copy(alpha = 0.45f), shape)
+            .background(tint.copy(alpha = 0.06f))
             .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) }
-            .padding(horizontal = 32.dp, vertical = 20.dp),   // 넉넉한 터치 영역
+            .padding(horizontal = 30.dp, vertical = 14.dp),
     ) {
         Text(
             text = stringResource(R.string.fingerprint_unlock_hint),
-            color = tint.copy(alpha = 0.6f),
-            fontSize = 15.sp,
+            color = tint,
+            fontSize = 17.sp,
+            letterSpacing = 1.sp,
         )
     }
 }
