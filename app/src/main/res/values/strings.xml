@@ -47,6 +47,7 @@
     <string name="gesture_slide_to_unlock">Slide to unlock</string>
     <string name="slide_to_unlock_hint">slide to unlock</string>
     <string name="gesture_fingerprint">Fingerprint</string>
+    <string name="fingerprint_unlock_hint">Unlock</string>
     <string name="biometric_title">Unlock Screen Off with fingerprint</string>
     <string name="biometric_cancel">Cancel</string>
 

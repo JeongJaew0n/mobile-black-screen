@@ -384,42 +384,21 @@ fun BoxScope.FingerprintUnlockLayer(
         )
         return
     }
-    // 아이콘은 센서 근처(하단 중앙)에 둔다. 실제 프롬프트도 여기 뜨므로 자연스럽다.
-    // 컨트롤(하단 72dp+)보다 아래라 겹치지 않는다.
+    // 글자는 화면 가운데(사용자 결정). 시계 블록은 가운데보다 위(bias -0.3)에, 재생 컨트롤은
+    // 하단에 있어 어느 쪽과도 겹치지 않는다. 지문 무늬를 그려 봤는데 와이파이 아이콘처럼 보여서
+    // 글자로 바꿨다 — "잠금 해제" 는 설명이 필요 없다.
     val shift = rememberBurnInShift()
     Box(
         Modifier
-            .align(Alignment.BottomCenter)
+            .align(Alignment.Center)
             .offset { shift }
-            .padding(bottom = 24.dp)
-            .size(72.dp)                          // 넉넉한 터치 영역
-            .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) },
-        contentAlignment = Alignment.Center,
+            .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) }
+            .padding(horizontal = 32.dp, vertical = 20.dp),   // 넉넉한 터치 영역
     ) {
-        FingerprintGlyph(tint = tint.copy(alpha = 0.5f), sizeDp = 34)
-    }
-}
-
-/** 지문 무늬 — 위로 볼록한 동심 호 몇 개. "여기 눌러 지문" 신호. */
-@Composable
-private fun FingerprintGlyph(tint: Color, sizeDp: Int) {
-    Canvas(Modifier.size(sizeDp.dp)) {
-        val s = size.minDimension
-        val cx = size.width / 2f
-        val cy = size.height / 2f + s * 0.08f
-        val sw = s * 0.06f
-        listOf(0.44f, 0.32f, 0.20f).forEach { r ->
-            drawArc(
-                color = tint,
-                startAngle = 195f,
-                sweepAngle = 150f,
-                useCenter = false,
-                topLeft = Offset(cx - s * r, cy - s * r),
-                size = Size(s * r * 2, s * r * 2),
-                style = Stroke(sw, cap = StrokeCap.Round),
-            )
-        }
-        // 중앙 점
-        drawCircle(tint, radius = sw, center = Offset(cx, cy))
+        Text(
+            text = stringResource(R.string.fingerprint_unlock_hint),
+            color = tint.copy(alpha = 0.6f),
+            fontSize = 15.sp,
+        )
     }
 }

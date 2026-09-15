@@ -46,6 +46,7 @@
     <string name="gesture_slide_to_unlock">밀어서 잠금 해제</string>
     <string name="slide_to_unlock_hint">밀어서 잠금 해제</string>
     <string name="gesture_fingerprint">지문으로 해제</string>
+    <string name="fingerprint_unlock_hint">잠금 해제</string>
     <string name="biometric_title">지문으로 Screen Off 해제</string>
     <string name="biometric_cancel">취소</string>
 
