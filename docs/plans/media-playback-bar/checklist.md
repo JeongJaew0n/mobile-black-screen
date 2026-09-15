@@ -1,17 +1,18 @@
 # checklist — media-playback-bar
 
-상태: **설계 검토 중.** 사용자 결정(spec 마지막 절 5개) 대기. 구현 미착수.
+상태: **설계 확정, 구현 미착수.** 재그림 주기만 확인 대기(제안 10초).
 
 ## 0. 결정 대기
-- [ ] 알림 접근 권한 추가에 동의
-- [ ] 1차 표시 전용(제어 없음)
-- [ ] 일시정지 표시 여부
-- [ ] 위치 (시계 아래 / 하단)
-- [ ] 재그림 주기 (10초 / 30초)
+- [x] 알림 접근 권한 추가 — 받는다. 권한 상실 감지 + 안내 문구 포함
+- [x] 1차 표시, 2차 제어 (레이아웃은 제어 자리 전제)
+- [x] 일시정지 표시 — 한다
+- [x] 위치 — 하단 고정
+- [ ] 재그림 주기 — 10초 제안, 확인 대기
 
 ## 1. 권한
 - [ ] `MediaListenerService` (콜백 비움) + 매니페스트
 - [ ] 권한 확인 + `ACTION_NOTIFICATION_LISTENER_SETTINGS` 이동 + `PermissionCard`
+- [ ] 권한 상실 감지 3지점(설정 RESUME / 차폐 표시 시 / SecurityException) + 차폐 하단 안내 문구
 - [ ] 검증 레시피: `cmd notification allow_listener`
 
 ## 2. 관찰
@@ -20,7 +21,7 @@
 - [ ] 수명: 차폐 뜰 때 start / 내릴 때 stop (접근성 서비스 소유)
 
 ## 3. 표시
-- [ ] `MediaBar` Composable — 제목·부제·막대·시간, 번인 궤도
+- [ ] `MediaBar` Composable — 하단 고정, 제목·부제·막대·시간, 자체 번인 궤도, 2차 제어 자리
 - [ ] 10초 루프는 playing 일 때만
 - [ ] 밝기 결정에 `nowPlaying` 합성 (`hasContent` 만으로는 부족)
 - [ ] 미리보기 상자에도
