@@ -136,8 +136,14 @@ fun BlackScreenRoot(
 /** 세로 -0.3 = 정중앙에서 위쪽으로 화면 높이의 15% 지점. */
 private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.3f)
 
-/** 지문 프롬프트 동안의 검정 알파. 아이콘이 보일 만큼만 비치고, 아래 앱은 여전히 어둡다. */
-private const val DimmedAlpha = 0.55f
+/**
+ * 인증 UI(지문 프롬프트·PIN 입력)가 떠 있는 동안의 검정 알파.
+ *
+ * 0.55 로는 PIN 입력 화면의 숫자가 잘 안 보였다. 탈출구는 **실제로 쓸 수 있어야** 의미가 있어
+ * 거의 투명하게 낮춘다. 인증하려는 사람은 폰 주인이고, 차폐는 보안이 아니라 "꺼진 것처럼
+ * 보이게" 하는 기능이라 이 몇 초 동안 아래가 드러나도 목적에 어긋나지 않는다.
+ */
+private const val DimmedAlpha = 0.12f
 
 /** 미리보기 상자 높이. 시계(64sp)와 문장 한 줄이 들어가는 최소치. */
 private val PreviewHeight = 180.dp

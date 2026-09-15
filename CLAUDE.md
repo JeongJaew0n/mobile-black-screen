@@ -287,6 +287,10 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   진행 상태는 원형 링으로 피드백한다.
 - **쓸어서 해제는 누적 경로가 아니라 시작점 대비 순 변위로 판정한다.** 누적으로 재면
   주머니 속 잔진동이 쌓여 풀린다. 순 변위는 왔다 갔다 하면 상쇄된다.
+- **해제 수단을 새로 만들 때는 "실패하면 어떻게 빠져나오는가" 를 먼저 답할 것.** 차폐는 상태바까지
+  덮어 시스템 UI 로 우회할 수 없다. 지문만 허용하고 PIN 대체를 막았다가 실제로 갇힌 적이 있다
+  (`docs/troubleshootings/project-specific/locked-out-when-fingerprint-fails.md`).
+  응급 탈출은 전원 버튼 길게 → 재시작, 또는 `adb shell am force-stop com.jjw.blackscreen`.
 - **볼륨 키 해제를 넣지 않는다.** Blackout 은 되지만 Overlay 는 `FLAG_NOT_FOCUSABLE`
   때문에 키 이벤트를 못 받아 모드 간 동작이 갈린다.
 - **부팅 후 자동 시작을 넣지 않는다.** Android 15+ 의 백그라운드 FGS 제약에 걸린다.

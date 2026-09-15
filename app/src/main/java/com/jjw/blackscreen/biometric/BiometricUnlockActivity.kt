@@ -28,6 +28,20 @@ class BiometricUnlockActivity : Activity() {
 
     private val cancel = CancellationSignal()
 
+    private companion object {
+        /**
+         * 다시 시도해도 소용없는 오류들 — 하드웨어 없음/사용 불가, 등록된 생체 없음,
+         * 영구 잠금. `BiometricPrompt.BIOMETRIC_ERROR_*` 와 같은 값이며 API 28 에서도 동일하다
+         * (상수가 public 이 된 것은 API 29 부터라 값으로 적는다).
+         */
+        val UNRECOVERABLE_ERRORS = setOf(
+            1,  // HW_UNAVAILABLE
+            9,  // LOCKOUT_PERMANENT
+            11, // NO_BIOMETRICS
+            12, // HW_NOT_PRESENT
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -41,11 +55,29 @@ class BiometricUnlockActivity : Activity() {
     private fun authenticate() {
         val builder = BiometricPrompt.Builder(this)
             .setTitle(getString(R.string.biometric_title))
-            .setNegativeButton(getString(R.string.biometric_cancel), mainExecutor) { _, _ -> finish() }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // 지문·얼굴 등 약한 생체까지. 기기 PIN 으로 대체하는 것은 허용하지 않는다 —
-            // "지문으로" 푸는 기능이고, PIN 화면은 차폐 아래에 가려져 조작할 수 없다.
-            builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        // **기기 PIN/패턴 대체를 허용한다.** 지문만 허용했더니 인식이 계속 실패할 때 빠져나올
+        // 길이 없어 차폐에 갇혔다(실제로 겪음). 지문이 주 수단이고 PIN 은 표준 탈출구다.
+        // PIN 화면이 차폐 아래 가려지는 문제는 [ScreenOffAccessibilityService.setBiometricPromptActive]
+        // 가 인증 중 차폐를 거의 투명하게 + 터치 통과로 바꿔서 푼다.
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
+                // DEVICE_CREDENTIAL 을 허용하면 setNegativeButton 을 쓸 수 없다(프레임워크가 예외).
+                // 시스템이 그 자리에 'PIN 사용' 버튼을 직접 넣는다.
+                builder.setAllowedAuthenticators(
+                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+                )
+
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ->
+                @Suppress("DEPRECATION")
+                builder.setDeviceCredentialAllowed(true)
+
+            // API 28 은 PIN 대체가 없다. 취소 버튼만 두고, 아래 onAuthenticationError 의
+            // 안전망(복구 불가 오류면 차폐 해제)이 갇힘을 막는다.
+            else -> builder.setNegativeButton(
+                getString(R.string.biometric_cancel),
+                mainExecutor,
+            ) { _, _ -> finish() }
         }
         ScreenOffAccessibilityService.instance?.setBiometricPromptActive(true)
         builder.build().authenticate(
@@ -58,7 +90,12 @@ class BiometricUnlockActivity : Activity() {
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    // 취소·시간 초과·잠금(시도 초과) 전부 여기로. 차폐는 그대로 두고 물러난다.
+                    // 사용자가 취소한 것이면 차폐를 그대로 둔다(정상 경로).
+                    // 그러나 **인증 수단 자체가 불가능한 오류**면 차폐를 풀어 준다 — 안 그러면
+                    // 화면을 되찾을 방법이 없다. 갇히는 것보다 열리는 쪽이 낫다.
+                    if (errorCode in UNRECOVERABLE_ERRORS) {
+                        ScreenOff.stop(this@BiometricUnlockActivity)
+                    }
                     finish()
                 }
 
