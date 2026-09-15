@@ -216,8 +216,19 @@ class ScreenOffAccessibilityService :
 
     fun setBiometricPromptActive(active: Boolean) {
         biometricPromptActive.value = active
-        // 프롬프트가 보여야 하니 표시 내용이 없어도 밝기를 올린다. 끝나면 원래 규칙으로.
-        applyBrightness()
+        val params = coverParams ?: return
+        // 프롬프트가 떠 있는 동안만 차폐를 터치 통과로 바꾼다. 지문 프롬프트는 접근성 오버레이
+        // **아래**에 그려지는데, 차폐가 터치를 삼키면 '취소' 버튼에 손가락이 닿지 못한다.
+        // (지문 아이콘은 센서가 하드웨어로 읽어 무관하다.) NOT_TOUCHABLE 을 상시 쓰지 말라는
+        // 함정은 "주머니 오작동 통과·해제 불가" 때문인데, 여기서는 프롬프트가 떠 있는 잠깐뿐이고
+        // 그동안 유일한 조작 대상이 그 프롬프트라 안전하다. 끝나면 도로 삼킨다.
+        params.flags = if (active) {
+            params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        } else {
+            params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        }
+        params.screenBrightness = effectiveBrightness()
+        runCatching { windowManager.updateViewLayout(coverView, params) }
     }
 
     fun hideCover() {

@@ -363,10 +363,63 @@ fun BoxScope.SlideToUnlockLayer(
  * 풀리므로 단일 탭 해제의 문제(주머니에서 풀림)는 없다.
  */
 @Composable
-fun BoxScope.FingerprintUnlockLayer(onTrigger: () -> Unit) {
+fun BoxScope.FingerprintUnlockLayer(
+    onTrigger: () -> Unit,
+    tint: Color,
+    /**
+     * true 면 화면 전체가 아니라 **하단 지문 아이콘 영역만** 프롬프트를 띄운다. 재생 컨트롤이
+     * 화면에 있을 때 켠다 — 그래야 컨트롤 근처 빈 곳을 스쳐도 프롬프트가 떠서 컨트롤을 가리지
+     * 않는다. 아이콘 밖 탭은 무시된다(차폐 창이 삼키고 아무 동작 안 함).
+     *
+     * false(순수 검정, 컨트롤 없음)면 화면 어디든 탭으로 연다 — 겹칠 것이 없고, 밝기 0 이라
+     * 어차피 아이콘을 그려도 안 보인다.
+     */
+    iconOnly: Boolean,
+) {
+    if (!iconOnly) {
+        Box(
+            Modifier
+                .matchParentSize()
+                .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) },
+        )
+        return
+    }
+    // 아이콘은 센서 근처(하단 중앙)에 둔다. 실제 프롬프트도 여기 뜨므로 자연스럽다.
+    // 컨트롤(하단 72dp+)보다 아래라 겹치지 않는다.
+    val shift = rememberBurnInShift()
     Box(
         Modifier
-            .matchParentSize()
+            .align(Alignment.BottomCenter)
+            .offset { shift }
+            .padding(bottom = 24.dp)
+            .size(72.dp)                          // 넉넉한 터치 영역
             .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) },
-    )
+        contentAlignment = Alignment.Center,
+    ) {
+        FingerprintGlyph(tint = tint.copy(alpha = 0.5f), sizeDp = 34)
+    }
+}
+
+/** 지문 무늬 — 위로 볼록한 동심 호 몇 개. "여기 눌러 지문" 신호. */
+@Composable
+private fun FingerprintGlyph(tint: Color, sizeDp: Int) {
+    Canvas(Modifier.size(sizeDp.dp)) {
+        val s = size.minDimension
+        val cx = size.width / 2f
+        val cy = size.height / 2f + s * 0.08f
+        val sw = s * 0.06f
+        listOf(0.44f, 0.32f, 0.20f).forEach { r ->
+            drawArc(
+                color = tint,
+                startAngle = 195f,
+                sweepAngle = 150f,
+                useCenter = false,
+                topLeft = Offset(cx - s * r, cy - s * r),
+                size = Size(s * r * 2, s * r * 2),
+                style = Stroke(sw, cap = StrokeCap.Round),
+            )
+        }
+        // 중앙 점
+        drawCircle(tint, radius = sw, center = Offset(cx, cy))
+    }
 }

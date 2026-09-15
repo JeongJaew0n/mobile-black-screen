@@ -649,7 +649,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 15. **위로 밀어 올리기 미제공** — `Gesture.available = false`. 밀어서 잠금 해제와 겹침. 코드·`SlideToDismissLayer` 는 남김
 17. **밀어서 잠금 해제 미제공** — 같은 장치. 트랙이 항상 그려져 '완전한 검정' 기본과 어긋남. 제공 제스처는 꾹 눌러 / 더블 탭 / 3회 탭 셋
 18. **버블 닫기는 일시적** — 겨냥 아래·알림 액션은 창만 지우고 옵션을 건드리지 않음. 앱을 열면 돌아옴. 계속 감추는 건 새 `버블 숨기기` 스위치
-19. **지문으로 해제** — 차폐 탭 → 투명 `BiometricUnlockActivity` 가 프레임워크 `BiometricPrompt`. 프롬프트가 접근성 오버레이 아래에 그려져 그동안 차폐를 알파 0.55 로 낮추고 밝기를 올림. API 28+ 에서만 목록에 뜸
+19. **지문으로 해제** — 차폐 탭 → 투명 `BiometricUnlockActivity` 가 프레임워크 `BiometricPrompt`. 프롬프트가 접근성 오버레이 아래에 그려져 그동안 차폐를 알파 0.55 로 낮추고 밝기를 올림. API 28+ 에서만 목록에 뜸. 프롬프트 동안 차폐를 FLAG_NOT_TOUCHABLE 로 바꿔 '취소' 버튼 터치를 통과시킨다(아이콘은 센서가 읽음). 재생 컨트롤이 켜져 있으면 지문 트리거를 하단 아이콘 영역으로 좁힌다 — 컨트롤 근처 탭이 프롬프트를 안 띄우게
 20. **재생 바** — 알림 접근 권한(`MediaListenerService`, 콜백 비움) + `MediaSessionManager`. 차폐 하단 고정, 표시 전용, 10초 재그림. 관찰은 차폐 수명에만. 밝기는 `effectiveBrightness()` 가 설정·재생·프롬프트를 합쳐 결정
 21. **재생 제어** — 이전·재생/일시정지·다음. 해제 레이어 위에서 탭 소비로 제스처와 분리. `transportControls`
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개

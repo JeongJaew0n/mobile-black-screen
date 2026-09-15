@@ -101,6 +101,9 @@ fun BlackScreenRoot(
                         )
                     }
                 },
+                tint = settings.textColor,
+                // 재생 컨트롤이 화면에 있을 때만 아이콘 영역으로 좁힌다.
+                iconOnly = settings.showMedia && nowPlaying != null,
             )
         } else if (settings.unlockGesture == Gesture.SLIDE_TO_UNLOCK) {
             SlideToUnlockLayer(
