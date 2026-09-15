@@ -28,6 +28,9 @@
     <string name="date_format">날짜 형식</string>
     <string name="close">닫기</string>
     <string name="show_battery">배터리 잔량 표시</string>
+    <string name="show_media">재생 중인 음악·동영상 표시</string>
+    <string name="show_media_desc">재생 중인 곡의 제목과 진행 상황을 화면 아래에 표시합니다. 재생 정보를 얻기 위해 알림 접근 권한을 쓰며, 이 앱은 알림 내용을 읽지 않습니다.</string>
+    <string name="media_permission_needed">이 기능을 사용하려면 알림 권한을 허용해주세요</string>
     <string name="sentence">문장</string>
     <string name="sentence_hint">비워 두면 표시하지 않습니다</string>
     <string name="content_preview_hint">실제 화면은 이보다 어둡습니다 — 패널 밝기를 0.30 으로 낮춥니다</string>

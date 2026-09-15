@@ -488,6 +488,25 @@ bubbleSuppressed  차폐 중이라 잠시 감췄는가
 
 ---
 
+### 4.9 재생 바
+
+음악·동영상이 재생 중이면 차폐 **하단**에 제목 · 아티스트/앱 · 진행 막대 · `1:23 / 4:56`.
+FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아래에서 계속 재생된다 — 그 상태를
+눈으로 확인하는 수단이다. 표시 전용(제어는 2차, 해제 제스처와 충돌해서).
+
+- **권한**: 알림 접근. `MediaSessionManager.getActiveSessions()` 가 `NotificationListenerService`
+  컴포넌트를 요구한다. `MediaListenerService` 는 콜백이 전부 비어 있다 — 알림을 읽지 않는다.
+  권한 없이 알 수 있는 것은 `AudioManager.isMusicActive()` 참/거짓뿐.
+- **관찰**(`MediaWatcher`)은 차폐가 떠 있고 설정이 켜져 있을 때만 산다. 폴링 없이 세션 콜백만.
+  세션 선택: 재생 중 > 일시정지·버퍼링, 정지는 숨김.
+- **위치**는 `PlaybackState` 의 `position + (now − lastUpdate) × speed` 로 로컬 계산. 막대는
+  **10초마다** 재그림(시계를 분 단위로 두는 것과 같은 이유). 곡 전환·일시정지는 콜백으로 즉시.
+- **밝기**: `Settings.hasContent` 는 설정값만 본다. 재생 중이거나 권한 안내를 띄울 때도 올려야
+  하므로 접근성 서비스의 `effectiveBrightness()` 가 설정·재생 상태·지문 프롬프트를 합쳐 정한다.
+  **밝기를 정하는 곳은 그 함수 하나다.**
+- **권한 상실 감지** 세 지점: 설정 RESUME(카드), 차폐 표시 시(재생 바 자리에 문구),
+  `getActiveSessions` 의 `SecurityException`(런타임). 문구는 `media_permission_needed` 하나.
+
 ## 5. 설정 항목
 
 ```kotlin
@@ -499,6 +518,7 @@ data class Settings(
     val showDate: Boolean = false,
     val dateStyle: DateStyle = MEDIUM,      // ICU 스켈레톤 6종. 패턴은 로케일이 정한다 (§5.1)
     val showBattery: Boolean = false,        // 배터리 브로드캐스트만 받는다. 폴링 없음
+    val showMedia: Boolean = false,          // 재생 바. hasContent 에 안 들어감 — 재생 상태는 런타임
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
@@ -624,6 +644,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 17. **밀어서 잠금 해제 미제공** — 같은 장치. 트랙이 항상 그려져 '완전한 검정' 기본과 어긋남. 제공 제스처는 꾹 눌러 / 더블 탭 / 3회 탭 셋
 18. **버블 닫기는 일시적** — 겨냥 아래·알림 액션은 창만 지우고 옵션을 건드리지 않음. 앱을 열면 돌아옴. 계속 감추는 건 새 `버블 숨기기` 스위치
 19. **지문으로 해제** — 차폐 탭 → 투명 `BiometricUnlockActivity` 가 프레임워크 `BiometricPrompt`. 프롬프트가 접근성 오버레이 아래에 그려져 그동안 차폐를 알파 0.55 로 낮추고 밝기를 올림. API 28+ 에서만 목록에 뜸
+20. **재생 바** — 알림 접근 권한(`MediaListenerService`, 콜백 비움) + `MediaSessionManager`. 차폐 하단 고정, 표시 전용, 10초 재그림. 관찰은 차폐 수명에만. 밝기는 `effectiveBrightness()` 가 설정·재생·프롬프트를 합쳐 결정
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.

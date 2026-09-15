@@ -29,6 +29,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jjw.blackscreen.accessibility.ScreenOffAccessibilityService
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
+import com.jjw.blackscreen.media.MediaPermission
+import com.jjw.blackscreen.media.MediaWatcher
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.service.ScreenCoverService
 import com.jjw.blackscreen.ui.settings.SettingsScreen
@@ -60,9 +62,20 @@ class MainActivity : ComponentActivity() {
                     var accessibilityEnabled by remember {
                         mutableStateOf(ScreenOffAccessibilityService.isEnabled)
                     }
+                    var notificationAccess by remember {
+                        mutableStateOf(MediaPermission.isGranted(this@MainActivity))
+                    }
+                    // 미리보기용 세션 관찰. 설정 화면이 RESUMED 이고 재생 바가 켜져 있을 때만.
+                    val mediaWatcher = remember { MediaWatcher(this@MainActivity) }
+                    LifecycleResumeEffect(settings.showMedia, notificationAccess) {
+                        if (settings.showMedia && notificationAccess) mediaWatcher.start()
+                        onPauseOrDispose { mediaWatcher.stop() }
+                    }
+                    val nowPlaying by mediaWatcher.nowPlaying.collectAsStateWithLifecycle()
                     LifecycleResumeEffect(Unit) {
                         canDrawOverlays = AndroidSettings.canDrawOverlays(this@MainActivity)
                         accessibilityEnabled = ScreenOffAccessibilityService.isEnabled
+                        notificationAccess = MediaPermission.isGranted(this@MainActivity)
                         onPauseOrDispose { }
                     }
 
@@ -111,6 +124,9 @@ class MainActivity : ComponentActivity() {
                         onStart = { start(settings.mode) },
                         canDrawOverlays = canDrawOverlays,
                         accessibilityEnabled = accessibilityEnabled,
+                        notificationAccess = notificationAccess,
+                        nowPlaying = nowPlaying,
+                        onRequestNotificationAccess = { MediaPermission.openSettings(this) },
                         onRequestOverlayPermission = ::openOverlaySettings,
                         onRequestAccessibility = { ScreenOff.openAccessibilitySettings(this) },
                         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),

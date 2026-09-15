@@ -167,6 +167,12 @@ data class Settings(
     val dateStyle: DateStyle = DateStyle.MEDIUM,
     /** 배터리 잔량. 밤새 켜 두는 앱이라 아침에 얼마 남았는지가 시계 다음으로 궁금한 정보다. */
     val showBattery: Boolean = false,
+    /**
+     * 재생 중인 음악·동영상의 재생 바. 알림 접근 권한이 필요하다.
+     * [hasContent] 에는 들어가지 않는다 — 실제로 재생 중일 때만 밝기를 올려야 하고, 그건 설정값이
+     * 아니라 런타임 상태다. 접근성 서비스가 재생 상태와 합쳐서 밝기를 정한다.
+     */
+    val showMedia: Boolean = false,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 

@@ -43,6 +43,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import com.jjw.blackscreen.data.DateStyle
+import com.jjw.blackscreen.media.NowPlaying
 import com.jjw.blackscreen.ui.rememberDateSample
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
@@ -83,8 +84,11 @@ fun SettingsScreen(
     onStart: () -> Unit,
     canDrawOverlays: Boolean,
     accessibilityEnabled: Boolean,
+    notificationAccess: Boolean,
+    nowPlaying: NowPlaying?,
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibility: () -> Unit,
+    onRequestNotificationAccess: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -266,6 +270,21 @@ fun SettingsScreen(
                 onCheckedChange = { on -> onChange { s -> s.copy(showBattery = on) } },
             )
 
+            SwitchRow(
+                label = stringResource(R.string.show_media),
+                description = stringResource(R.string.show_media_desc),
+                checked = settings.showMedia,
+                onCheckedChange = { on -> onChange { s -> s.copy(showMedia = on) } },
+            )
+            // 권한을 처음부터 안 줬거나 나중에 꺼 버린 경우. 문구는 차폐 화면 안내와 같다.
+            if (settings.showMedia && !notificationAccess) {
+                PermissionCard(
+                    message = stringResource(R.string.media_permission_needed),
+                    action = stringResource(R.string.grant_permission),
+                    onClick = onRequestNotificationAccess,
+                )
+            }
+
             OutlinedTextField(
                 value = settings.sentence,
                 onValueChange = { text -> onChange { s -> s.copy(sentence = text) } },
@@ -278,8 +297,14 @@ fun SettingsScreen(
 
             // 시계·문장을 켰을 때 실제로 어떻게 뜨는지. 차폐 화면과 같은 Composable 을 그린다.
             // 표시할 것이 없으면 상자도 없다 — 검은 사각형만 덜렁 있으면 고장으로 보인다.
-            if (settings.hasContent) {
-                BlackScreenPreview(settings, Modifier.padding(top = 16.dp))
+            val mediaPreview = settings.showMedia && (nowPlaying != null || !notificationAccess)
+            if (settings.hasContent || mediaPreview) {
+                BlackScreenPreview(
+                    settings,
+                    Modifier.padding(top = 16.dp),
+                    nowPlaying = nowPlaying,
+                    mediaPermissionMissing = settings.showMedia && !notificationAccess,
+                )
                 Text(
                     text = stringResource(R.string.content_preview_hint),
                     style = MaterialTheme.typography.bodySmall,

@@ -90,6 +90,9 @@ adb shell cmd locale set-app-locales com.jjw.blackscreen --user current --locale
 # Kotlin 안 한글 리터럴 (주석 제외). 0 이어야 한다
 grep -rn '"[^"]*[가-힣][^"]*"' app/src/main/java --include='*.kt' | grep -v ':[0-9]*:\s*\(//\|\*\|/\*\)'
 
+# 알림 접근(재생 바) 재활성화 — 접근성과 마찬가지로 재설치 뒤 꺼질 수 있다
+adb shell cmd notification allow_listener com.jjw.blackscreen/.media.MediaListenerService
+
 # 접근성 서비스 재활성화 (재설치·강제 종료 후마다 필요하다)
 SVC=com.jjw.blackscreen/.accessibility.ScreenOffAccessibilityService
 adb shell settings put secure enabled_accessibility_services $SVC
@@ -181,6 +184,11 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 
 ## 코드를 고칠 때 걸리는 함정
 
+- **밝기를 정하는 곳은 `ScreenOffAccessibilityService.effectiveBrightness()` 하나다.** 재생 바가
+  들어오면서 설정값(`hasContent`)만으로는 밝기를 못 정하게 됐다 — 재생 중·권한 안내·지문 프롬프트를
+  거기서 합친다. 다른 곳에서 `screenBrightness` 를 직접 쓰지 말 것.
+- **`MediaListenerService` 에 알림을 읽는 코드를 넣지 말 것.** 알림 접근은 모든 알림을 읽을 수
+  있는 권한이고, 콜백을 비워 두는 것이 "재생 정보만 쓴다" 는 유일한 약속이다.
 - **시계 패턴을 문자열로 쓰지 말 것.** `ClockStyle` 은 24/12 선택만 저장하고 패턴은 ICU
   `DateTimePatternGenerator` 가 로케일에서 만든다. `MATCH_HOUR_FIELD_LENGTH` 를 빼면 한국어
   `09:05` 가 `9:05` 로 바뀌고, `java.time` 으로 서식하면 일부 로케일의 `B` 문자에서 예외가 난다.

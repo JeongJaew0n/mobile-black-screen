@@ -34,6 +34,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.SHOW_DATE] = next.showDate
             prefs[Keys.DATE_STYLE] = next.dateStyle.name
             prefs[Keys.SHOW_BATTERY] = next.showBattery
+            prefs[Keys.SHOW_MEDIA] = next.showMedia
             prefs[Keys.SENTENCE] = next.sentence
             prefs[Keys.UNLOCK_GESTURE] = next.unlockGesture.name
             prefs[Keys.HOLD_MILLIS] = next.holdMillis
@@ -55,6 +56,7 @@ class SettingsRepository(context: Context) {
         val SHOW_DATE = booleanPreferencesKey("show_date")
         val DATE_STYLE = stringPreferencesKey("date_style")
         val SHOW_BATTERY = booleanPreferencesKey("show_battery")
+        val SHOW_MEDIA = booleanPreferencesKey("show_media")
 
         /** 구버전 키(패턴 문자열). 읽기 전용 — [ClockStyle.fromLegacyPattern] 로 옮긴다. */
         val CLOCK_FORMAT = stringPreferencesKey("clock_format")
@@ -84,6 +86,7 @@ class SettingsRepository(context: Context) {
             showDate = this[Keys.SHOW_DATE] ?: defaults.showDate,
             dateStyle = enumOrDefault(this[Keys.DATE_STYLE], defaults.dateStyle),
             showBattery = this[Keys.SHOW_BATTERY] ?: defaults.showBattery,
+            showMedia = this[Keys.SHOW_MEDIA] ?: defaults.showMedia,
             sentence = this[Keys.SENTENCE] ?: defaults.sentence,
             unlockGesture = Gesture.sanitize(enumOrDefault(this[Keys.UNLOCK_GESTURE], defaults.unlockGesture)),
             // 범위 밖 값이 들어와도 제스처가 먹통이 되지 않게 자른다.

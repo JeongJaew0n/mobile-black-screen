@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.graphics.PixelFormat
 import androidx.compose.runtime.mutableStateOf
 import com.jjw.blackscreen.data.CONTENT_BRIGHTNESS
+import com.jjw.blackscreen.media.MediaPermission
+import com.jjw.blackscreen.media.MediaWatcher
 import android.os.Build
 import android.view.Gravity
 import android.view.View
@@ -86,6 +88,14 @@ class ScreenOffAccessibilityService :
      */
     private val biometricPromptActive = mutableStateOf(false)
 
+    /**
+     * 재생 바용 세션 관찰. **차폐가 떠 있고 설정이 켜져 있을 때만** 산다 — [syncMediaWatcher].
+     * 밝기는 설정값만으로 못 정한다: 재생 중이거나 권한 안내를 띄울 때도 올라가야 한다.
+     * 그래서 [effectiveBrightness] 가 설정·재생 상태·프롬프트를 합친다.
+     */
+    private val mediaWatcher by lazy { MediaWatcher(this) }
+    private val mediaPermissionMissing = mutableStateOf(false)
+
     val isCovering: Boolean get() = coverView != null
 
     override fun onCreate() {
@@ -106,11 +116,16 @@ class ScreenOffAccessibilityService :
         newScope.launch {
             repository.settings.collect { settings ->
                 latestSettings = settings
-                val params = coverParams ?: return@collect
-                if (params.screenBrightness != settings.screenBrightness) {
-                    params.screenBrightness = settings.screenBrightness
-                    runCatching { windowManager.updateViewLayout(coverView, params) }
-                }
+                syncMediaWatcher()
+                applyBrightness()
+            }
+        }
+        // 재생 상태가 바뀌면 밝기도 따라간다 — 곡이 끝나 세션이 사라지면 다시 0 으로.
+        newScope.launch { mediaWatcher.nowPlaying.collect { applyBrightness() } }
+        newScope.launch {
+            mediaWatcher.permissionLost.collect { lost ->
+                if (lost) mediaPermissionMissing.value = true
+                applyBrightness()
             }
         }
     }
@@ -143,10 +158,13 @@ class ScreenOffAccessibilityService :
                 val settings by repository.settings.collectAsStateWithLifecycle(
                     initialValue = Settings(),
                 )
+                val nowPlaying by mediaWatcher.nowPlaying.collectAsStateWithLifecycle()
                 BlackScreenRoot(
                     settings = settings,
                     onUnlock = ::hideCover,
                     dimmed = biometricPromptActive.value,
+                    nowPlaying = nowPlaying,
+                    mediaPermissionMissing = mediaPermissionMissing.value,
                 )
             }
         }
@@ -157,24 +175,54 @@ class ScreenOffAccessibilityService :
             coverView = view
             coverParams = params
         }
+        syncMediaWatcher()
+        applyBrightness()
+    }
+
+    /** 차폐가 떠 있고 설정이 켜져 있으면 관찰, 아니면 중단. 권한이 없으면 안내 상태로. */
+    private fun syncMediaWatcher() {
+        val want = coverView != null && latestSettings.showMedia
+        if (!want) {
+            mediaWatcher.stop()
+            mediaPermissionMissing.value = false
+            return
+        }
+        val granted = MediaPermission.isGranted(this)
+        mediaPermissionMissing.value = !granted
+        if (granted) mediaWatcher.start() else mediaWatcher.stop()
+    }
+
+    /**
+     * 실제로 걸 밝기. 설정([Settings.screenBrightness])만으로는 부족하다 — 재생 중이거나 권한
+     * 안내를 띄울 때, 지문 프롬프트가 떠 있을 때도 올려야 한다. 밝기를 정하는 곳은 여기 하나다.
+     */
+    private fun effectiveBrightness(): Float {
+        val mediaVisible = latestSettings.showMedia &&
+            (mediaWatcher.nowPlaying.value != null || mediaPermissionMissing.value)
+        val base = if (mediaVisible) CONTENT_BRIGHTNESS else latestSettings.screenBrightness
+        return if (biometricPromptActive.value) maxOf(base, CONTENT_BRIGHTNESS) else base
+    }
+
+    private fun applyBrightness() {
+        val params = coverParams ?: return
+        val target = effectiveBrightness()
+        if (params.screenBrightness == target) return
+        params.screenBrightness = target
+        runCatching { windowManager.updateViewLayout(coverView, params) }
     }
 
     fun setBiometricPromptActive(active: Boolean) {
         biometricPromptActive.value = active
-        val params = coverParams ?: return
-        // 프롬프트가 보여야 하니 표시 내용이 없어도 밝기를 올린다. 끝나면 설정값으로 돌아간다.
-        params.screenBrightness = if (active) {
-            maxOf(latestSettings.screenBrightness, CONTENT_BRIGHTNESS)
-        } else {
-            latestSettings.screenBrightness
-        }
-        runCatching { windowManager.updateViewLayout(coverView, params) }
+        // 프롬프트가 보여야 하니 표시 내용이 없어도 밝기를 올린다. 끝나면 원래 규칙으로.
+        applyBrightness()
     }
 
     fun hideCover() {
         val view = coverView ?: return
         coverView = null
         coverParams = null
+        mediaWatcher.stop()
+        mediaPermissionMissing.value = false
         runCatching { windowManager.removeView(view) }
     }
 
@@ -202,7 +250,7 @@ class ScreenOffAccessibilityService :
             gravity = Gravity.TOP or Gravity.START
             x = 0
             y = 0
-            screenBrightness = latestSettings.screenBrightness
+            screenBrightness = effectiveBrightness()
             // 노치 영역까지 덮는다. ALWAYS 상수는 API 30 부터다.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 layoutInDisplayCutoutMode =

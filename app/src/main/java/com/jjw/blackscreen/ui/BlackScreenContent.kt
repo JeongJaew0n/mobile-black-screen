@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import com.jjw.blackscreen.biometric.BiometricUnlockActivity
+import com.jjw.blackscreen.media.NowPlaying
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,10 @@ fun BlackScreenRoot(
     modifier: Modifier = Modifier,
     /** 지문 프롬프트가 떠 있는 동안 true — 검정을 반투명으로 낮춰 아래 SystemUI 가 비친다. */
     dimmed: Boolean = false,
+    /** 재생 중인 것. 호출부(접근성 서비스)가 차폐 수명에 맞춰 관찰한다. */
+    nowPlaying: NowPlaying? = null,
+    /** 재생 바를 켰는데 알림 접근이 없다 — 재생 바 자리에 안내 문구를 띄운다. */
+    mediaPermissionMissing: Boolean = false,
 ) {
     var slideOffset by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableIntStateOf(0) }
@@ -64,6 +69,14 @@ fun BlackScreenRoot(
                 .background(Color.Black.copy(alpha = if (dimmed) DimmedAlpha else 1f)),
         ) {
             BlackScreenContent(settings)
+            if (settings.showMedia) {
+                MediaBarLayer(
+                    nowPlaying = nowPlaying,
+                    permissionMissing = mediaPermissionMissing,
+                    tint = settings.textColor,
+                    fontFamily = settings.clockFont.family,
+                )
+            }
         }
 
         if (settings.unlockGesture == Gesture.SWIPE) {
@@ -110,6 +123,7 @@ private const val DimmedAlpha = 0.55f
 
 /** 미리보기 상자 높이. 시계(64sp)와 문장 한 줄이 들어가는 최소치. */
 private val PreviewHeight = 180.dp
+private val PreviewHeightWithMedia = 300.dp
 
 /**
  * 설정 화면용 미리보기. **차폐 화면과 같은 [BlackScreenContent] 를 그대로 그린다.**
@@ -122,15 +136,31 @@ private val PreviewHeight = 180.dp
  * 그 사실을 캡션으로 알린다.
  */
 @Composable
-fun BlackScreenPreview(settings: Settings, modifier: Modifier = Modifier) {
+fun BlackScreenPreview(
+    settings: Settings,
+    modifier: Modifier = Modifier,
+    nowPlaying: NowPlaying? = null,
+    mediaPermissionMissing: Boolean = false,
+) {
+    val showBar = settings.showMedia && (nowPlaying != null || mediaPermissionMissing)
     Box(
         modifier
             .fillMaxWidth()
-            .height(PreviewHeight)
+            // 재생 바까지 보이려면 상자가 더 커야 한다. 시계 아래 여백에 겹치지 않게.
+            .height(if (showBar) PreviewHeightWithMedia else PreviewHeight)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Black),
     ) {
         BlackScreenContent(settings)
+        if (showBar) {
+            MediaBarLayer(
+                nowPlaying = nowPlaying,
+                permissionMissing = mediaPermissionMissing,
+                tint = settings.textColor,
+                fontFamily = settings.clockFont.family,
+                bottomMargin = 16.dp,
+            )
+        }
     }
 }
 
