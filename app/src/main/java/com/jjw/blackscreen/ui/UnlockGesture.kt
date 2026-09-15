@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -250,6 +251,9 @@ private val TrackKnob = 46.dp
 private val TrackInset = 5.dp
 private val TrackBottomMargin = 72.dp
 
+/** 지문 '잠금 해제' 버튼 위치. 세로 +0.25 = 위에서 62.5%. */
+private val UnlockButtonAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = 0.25f)
+
 /** 트랙 가로 비율. 넓으면 화면을 가로지르는 막대처럼 보여 답답하다. */
 private const val TrackWidthFraction = 0.66f
 
@@ -393,7 +397,9 @@ fun BoxScope.FingerprintUnlockLayer(
     val shape = RoundedCornerShape(percent = 50)
     Box(
         Modifier
-            .align(Alignment.Center)
+            // 정중앙보다 조금 아래(62%). 시계 블록(배터리 줄이 바닥, ~45%)과 재생 컨트롤(~78%)의
+            // 중간이다 — 어느 쪽에도 붙지 않고 셋이 고르게 놓인다.
+            .align(UnlockButtonAlignment)
             .offset { shift }
             .clip(shape)
             .border(1.dp, tint.copy(alpha = 0.45f), shape)
