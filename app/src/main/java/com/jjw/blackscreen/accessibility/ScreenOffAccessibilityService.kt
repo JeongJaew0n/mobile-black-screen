@@ -172,6 +172,20 @@ class ScreenOffAccessibilityService :
             }
         }
 
+        // 시스템이 창을 걷어갈 수 있다 — PIN/패턴 확인 같은 민감 화면이 뜨면 Android 가
+        // 오버레이를 강제로 떼어낸다(회피 불가, architecture.md F3). 그때 coverView 참조가
+        // 남아 있으면 showCover() 가 `coverView != null` 에서 되돌아가 **다음부터 차폐가 아예
+        // 뜨지 않는다.** 창이 떨어지는 순간 상태를 함께 비운다.
+        view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) = Unit
+            override fun onViewDetachedFromWindow(v: View) {
+                if (coverView === v) {
+                    coverView = null
+                    coverParams = null
+                }
+            }
+        })
+
         val params = coverLayoutParams()
         runCatching {
             windowManager.addView(view, params)

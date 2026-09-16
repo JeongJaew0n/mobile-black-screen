@@ -671,7 +671,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 |---|---|---|
 | F1 | Service 에서 `performRestore` 호출 순서 | `super.onCreate()` **이전** |
 | F2 | `startActivityAndCollapse(Intent)` API 34+ 예외 | `PendingIntent` 오버로드 |
-| F3 | 오버레이가 민감 화면에서 자동으로 숨겨짐 | 회피 불가 |
+| F3 | 오버레이가 민감 화면에서 자동으로 숨겨짐 (PIN 확인 등) | 회피 불가. **창이 떨어지면 `coverView` 도 비울 것** — 안 그러면 다음 차폐가 안 뜬다 |
 | F4 | Android 12+ 다른 앱이 `hideOverlayWindows()` 로 숨김 | 회피 불가 |
 | F5 | 제조사의 공격적 백그라운드 종료 | 배터리 최적화 예외 안내 |
 | F6 | 회전 시 재생성 → 깜빡임 | `configChanges`. **`screenOrientation` 은 Android 16+ 에서 무시됨** |
