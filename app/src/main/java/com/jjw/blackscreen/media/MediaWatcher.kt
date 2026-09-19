@@ -75,6 +75,11 @@ class MediaWatcher(private val context: Context) {
             reload(manager.getActiveSessions(component))
         } catch (e: SecurityException) {
             // 알림 접근이 없거나 사용자가 껐다. 조용히 실패하면 "왜 안 뜨지" 가 되니 표시로 넘긴다.
+            //
+            // ⚠️ add 가 성공한 뒤 getActiveSessions 에서 던질 수 있다. 그때 리스너를 회수하지
+            // 않으면 started=false 라 stop() 이 일찍 돌아가 영영 해제되지 않고, 다음 start()
+            // 에서 중복 등록된다. 등록 전에 던졌다면 remove 는 무해하다.
+            runCatching { manager.removeOnActiveSessionsChangedListener(sessionsListener) }
             _permissionLost.value = true
             started = false
         }
@@ -91,8 +96,13 @@ class MediaWatcher(private val context: Context) {
     }
 
     private fun reloadFromManager() {
-        val list = try { manager.getActiveSessions(component) } catch (e: SecurityException) {
-            _permissionLost.value = true; emptyList()
+        val list = try {
+            manager.getActiveSessions(component)
+        } catch (e: SecurityException) {
+            // 도중에 권한을 잃었다. 콜백을 남겨 둘 이유가 없으니 전부 정리하고 물러난다.
+            _permissionLost.value = true
+            stop()
+            return
         }
         reload(list)
     }

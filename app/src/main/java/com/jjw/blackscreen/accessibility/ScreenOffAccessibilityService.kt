@@ -132,6 +132,9 @@ class ScreenOffAccessibilityService :
 
     override fun onDestroy() {
         hideCover()
+        // hideCover() 는 창이 없으면 바로 돌아가므로 정리가 건너뛰어진다. 시스템이 창을
+        // 걷어간 뒤 서비스가 죽는 경로에서 리스너가 남지 않도록 여기서 한 번 더 부른다.
+        mediaWatcher.stop()
         scope?.cancel()
         scope = null
         instance = null
@@ -179,10 +182,13 @@ class ScreenOffAccessibilityService :
         view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
             override fun onViewAttachedToWindow(v: View) = Unit
             override fun onViewDetachedFromWindow(v: View) {
-                if (coverView === v) {
-                    coverView = null
-                    coverParams = null
-                }
+                if (coverView !== v) return   // hideCover() 가 이미 정리한 경로다
+                coverView = null
+                coverParams = null
+                // 창이 사라졌으면 세션 관찰도 멈춰야 한다. hideCover() 와 같은 정리를 해 주지
+                // 않으면 "차폐가 떠 있을 때만 관찰한다" 는 원칙이 깨지고, 차폐를 다시 띄우지
+                // 않는 한 세션 콜백이 등록된 채 남는다.
+                syncMediaWatcher()
             }
         })
 

@@ -57,6 +57,8 @@ fun BlackScreenRoot(
 ) {
     var slideOffset by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableIntStateOf(0) }
+    // 재생 바와 제어 버튼이 **같은** 궤도를 타야 한 덩어리로 움직인다. 시계 블록은 자기 궤도다.
+    val mediaShift = rememberBurnInShift()
 
     Box(
         modifier
@@ -78,6 +80,7 @@ fun BlackScreenRoot(
                     permissionMissing = mediaPermissionMissing,
                     tint = settings.textColor,
                     fontFamily = settings.clockFont.family,
+                    shift = mediaShift,
                 )
             }
         }
@@ -128,6 +131,7 @@ fun BlackScreenRoot(
                 onPlayPause = onMediaPlayPause,
                 onNext = onMediaNext,
                 onPrevious = onMediaPrevious,
+                shift = mediaShift,
             )
         }
     }
@@ -170,6 +174,7 @@ fun BlackScreenPreview(
     onMediaPrevious: () -> Unit = {},
 ) {
     val showBar = settings.showMedia && (nowPlaying != null || mediaPermissionMissing)
+    val mediaShift = rememberBurnInShift()
     Box(
         modifier
             .fillMaxWidth()
@@ -185,6 +190,7 @@ fun BlackScreenPreview(
                 permissionMissing = mediaPermissionMissing,
                 tint = settings.textColor,
                 fontFamily = settings.clockFont.family,
+                shift = mediaShift,
                 bottomMargin = 16.dp,
             )
             if (nowPlaying != null) {
@@ -194,6 +200,7 @@ fun BlackScreenPreview(
                     onPlayPause = onMediaPlayPause,
                     onNext = onMediaNext,
                     onPrevious = onMediaPrevious,
+                    shift = mediaShift,
                     bottomMargin = 16.dp,
                 )
             }

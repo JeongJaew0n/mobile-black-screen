@@ -35,6 +35,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.R
@@ -63,9 +66,14 @@ fun BoxScope.MediaBarLayer(
     permissionMissing: Boolean,
     tint: Color,
     fontFamily: FontFamily,
+    /**
+     * 번인 궤도. **제어 버튼과 같은 값을 받아야 한다** — 각자 `rememberBurnInShift()` 를 부르면
+     * 타이머가 따로 돌고, 컨트롤은 재생이 시작될 때 생기므로 위상이 어긋나 한 덩어리로 보여야 할
+     * 두 블록이 따로 흔들린다.
+     */
+    shift: IntOffset,
     bottomMargin: Dp = MediaBarBottomMargin,
 ) {
-    val shift = rememberBurnInShift()
     Column(
         Modifier
             .align(Alignment.BottomCenter)
@@ -181,15 +189,21 @@ fun BoxScope.MediaControlsLayer(
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
+    /** 재생 바와 **같은** 궤도값. [MediaBarLayer] 참조. */
+    shift: IntOffset,
     bottomMargin: Dp = MediaBarBottomMargin,
 ) {
-    val shift = rememberBurnInShift()
     Row(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { shift }
             // 재생 바(제목·부제·막대) 위에 얹는다. 막대 높이만큼 더 띄운다.
-            .padding(bottom = bottomMargin + 84.dp),
+            .padding(bottom = bottomMargin + 84.dp)
+            // 컨트롤 영역의 탭은 여기서 끝낸다. 비활성 버튼과 버튼 사이 간격은 자식이 소비하지
+            // 않아 그대로 아래 해제 제스처 레이어로 내려간다 — 그러면 흐린 이전/다음 버튼을
+            // 세 번 누르는 것만으로 3회 탭 해제가 발동한다. 자식이 소비한 탭은
+            // detectTapGestures 의 requireUnconsumed 때문에 여기까지 오지 않는다.
+            .pointerInput(Unit) { detectTapGestures { } },
         horizontalArrangement = Arrangement.spacedBy(28.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -216,7 +230,9 @@ private fun CtrlButton(
     Canvas(
         Modifier
             .size(44.dp)               // 접근성 권장 최소 터치 영역
-            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
+            // enabled=false 여도 clickable 을 붙여 둔다. 스크린리더에 '사용 불가 버튼' 으로
+            // 읽히고, 탭이 새는 것은 부모 Row 가 막는다.
+            .clickable(enabled = enabled, onClick = onClick),
     ) { draw(size.minDimension, color) }
 }
 

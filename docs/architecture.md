@@ -186,6 +186,18 @@ WindowManager.LayoutParams(
 
 ### 4.2 Overlay 모드
 
+> ⚠️ **미제공(`Mode.available = false`). 되살릴 때 갚아야 할 빚이 둘 있다** — 재생 바가 들어오면서
+> 생겼고, 지금은 이 경로가 죽어 있어 손대지 않았다(검증할 수 없는 코드를 고치는 셈이라).
+>
+> 1. `ScreenCoverService` 의 차폐 창이 밝기를 `settings.screenBrightness` 로 **직접** 정한다.
+>    밝기 결정은 `effectiveBrightness()` 한 곳이어야 한다는 규칙(CLAUDE.md)에 어긋나며, 이대로면
+>    재생 중이거나 권한 안내를 띄울 때 밝기가 0 에 머문다.
+> 2. 같은 파일의 `BlackScreenRoot(...)` 호출이 `nowPlaying`·`mediaPermissionMissing`·제어 콜백을
+>    넘기지 않아 Overlay 모드에서는 재생 바가 아예 뜨지 않는다(기본값이 null 이라 컴파일은 된다).
+>
+> FULL 이 유일한 제공 모드인 동안은 무해하지만, `available` 을 되돌리는 순간 기능 차이로 드러난다.
+
+
 **창 파라미터:**
 ```kotlin
 val params = WindowManager.LayoutParams(
