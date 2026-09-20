@@ -118,6 +118,7 @@ app/src/main/java/.../blackscreen/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
 │   ├─ Clock.kt                 분 경계 정렬 시계 — 패턴은 ICU 가 로케일에서 파생
 │   ├─ BurnInShift.kt           픽셀 시프트 로직
+│   └─ theme/Tokens.kt          디자인 토큰 — 두 곳 이상 반복되는 값만
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 피드백
 │   └─ settings/SettingsScreen.kt
 ├─ data/

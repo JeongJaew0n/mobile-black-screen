@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.ui.theme.FloatingContent
 import com.jjw.blackscreen.R
 
 /** 꾹 누른 채로 고른 방향. */
@@ -107,7 +108,7 @@ private fun AimChip(
         Text(icon, color = Color.White, fontSize = 16.sp)
         Text(
             label,
-            color = if (active) Color.White else Color(0xB3FFFFFF),
+            color = if (active) Color.White else FloatingContent,
             fontSize = 15.sp,
             fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
         )

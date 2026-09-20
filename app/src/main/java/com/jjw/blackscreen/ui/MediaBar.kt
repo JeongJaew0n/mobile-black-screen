@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.media.NowPlaying
+import com.jjw.blackscreen.ui.theme.SecondaryAlpha
 import kotlinx.coroutines.delay
 
 /**
@@ -116,7 +117,7 @@ fun BoxScope.MediaBarLayer(
         )
         Text(
             text = nowPlaying.subtitle,
-            color = tint.copy(alpha = 0.7f),
+            color = tint.copy(alpha = SecondaryAlpha),
             fontSize = 13.sp,
             fontFamily = fontFamily,
             maxLines = 1,
@@ -148,7 +149,7 @@ fun BoxScope.MediaBarLayer(
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = "${formatClock(position)} / ${formatClock(nowPlaying.durationMs)}",
-                    color = tint.copy(alpha = 0.7f),
+                    color = tint.copy(alpha = SecondaryAlpha),
                     fontSize = 12.sp,
                     fontFamily = fontFamily,
                 )
@@ -157,7 +158,7 @@ fun BoxScope.MediaBarLayer(
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = formatClock(position),
-                    color = tint.copy(alpha = 0.7f),
+                    color = tint.copy(alpha = SecondaryAlpha),
                     fontSize = 12.sp,
                     fontFamily = fontFamily,
                 )

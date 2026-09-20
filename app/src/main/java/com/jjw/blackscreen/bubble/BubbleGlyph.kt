@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.data.BubbleIcon
+import com.jjw.blackscreen.ui.theme.FloatingContent
 
 /** 기호는 버블 지름의 절반 안에 그린다. 가장자리까지 차면 테두리와 붙어 답답하다. */
 private const val GLYPH_FRACTION = 0.5f
@@ -33,7 +34,7 @@ fun BubbleGlyph(
     icon: BubbleIcon,
     sizeDp: Int,
     modifier: Modifier = Modifier,
-    tint: Color = Color(0xB3FFFFFF),
+    tint: Color = FloatingContent,
 ) {
     Canvas(
         modifier

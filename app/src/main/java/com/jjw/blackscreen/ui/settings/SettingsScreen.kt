@@ -43,6 +43,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import com.jjw.blackscreen.data.DateStyle
+import com.jjw.blackscreen.ui.theme.FloatingBorder
+import com.jjw.blackscreen.ui.theme.FloatingSurface
 import com.jjw.blackscreen.media.NowPlaying
 import com.jjw.blackscreen.ui.rememberDateSample
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -222,7 +224,7 @@ fun SettingsScreen(
                                 .background(Color.Black)
                                 .border(
                                     width = if (selected) 2.dp else 1.dp,
-                                    color = if (selected) MaterialTheme.colorScheme.primary else Color(0x33FFFFFF),
+                                    color = if (selected) MaterialTheme.colorScheme.primary else FloatingBorder,
                                     shape = RoundedCornerShape(12.dp),
                                 )
                                 .padding(horizontal = 8.dp, vertical = 10.dp)
@@ -396,10 +398,10 @@ fun SettingsScreen(
                             .padding(6.dp)
                             .size(52.dp)
                             .clip(CircleShape)
-                            .background(Color(0xE0141414))
+                            .background(FloatingSurface)
                             .border(
                                 width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) MaterialTheme.colorScheme.primary else Color(0x33FFFFFF),
+                                color = if (selected) MaterialTheme.colorScheme.primary else FloatingBorder,
                                 shape = CircleShape,
                             )
                             .semantics { contentDescription = name },

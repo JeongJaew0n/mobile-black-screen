@@ -29,6 +29,8 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.data.BubbleIcon
+import com.jjw.blackscreen.ui.theme.FloatingBorder
+import com.jjw.blackscreen.ui.theme.FloatingSurface
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -94,8 +96,8 @@ fun BubbleContent(
             .size(sizeDp.dp)
             .alpha(bubbleAlpha)
             .clip(CircleShape)
-            .background(Color(0xE0141414))
-            .border(1.dp, Color(0x33FFFFFF), CircleShape)
+            .background(FloatingSurface)
+            .border(1.dp, FloatingBorder, CircleShape)
             .pointerInput(Unit) {
                 val slop = viewConfiguration.touchSlop
                 val aimThreshold = AIM_THRESHOLD_DP.dp.toPx()
