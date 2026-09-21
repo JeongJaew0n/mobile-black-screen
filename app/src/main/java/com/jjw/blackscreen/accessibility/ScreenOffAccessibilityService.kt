@@ -5,6 +5,8 @@ import android.graphics.PixelFormat
 import androidx.compose.runtime.mutableStateOf
 import com.jjw.blackscreen.data.CONTENT_BRIGHTNESS
 import com.jjw.blackscreen.media.MediaPermission
+import com.jjw.blackscreen.audio.MediaVolumeController
+import kotlinx.coroutines.NonCancellable
 import com.jjw.blackscreen.media.MediaWatcher
 import android.os.Build
 import android.view.Gravity
@@ -96,6 +98,16 @@ class ScreenOffAccessibilityService :
     private val mediaWatcher by lazy { MediaWatcher(this) }
     private val mediaPermissionMissing = mutableStateOf(false)
 
+    private val volumeController by lazy { MediaVolumeController(this) }
+
+    /**
+     * 음소거하기 직전의 미디어 음량. null 이면 "우리가 음소거한 상태가 아님".
+     *
+     * DataStore 에도 같은 값을 쓴다([Settings.savedMediaVolume]) — 이건 즉시 복원용 메모리
+     * 사본이고, 저장 쪽은 서비스가 죽어 복원을 못 했을 때의 보험이다.
+     */
+    private var mutedVolume: Int? = null
+
     val isCovering: Boolean get() = coverView != null
 
     override fun onCreate() {
@@ -131,6 +143,9 @@ class ScreenOffAccessibilityService :
     }
 
     override fun onDestroy() {
+        // hideCover() 는 창이 없으면 조기 반환하므로 여기에 맡기지 않는다 — MediaWatcher 에서
+        // 이미 같은 함정을 밟았다(c161d3e).
+        restoreMediaVolume()
         hideCover()
         // hideCover() 는 창이 없으면 바로 돌아가므로 정리가 건너뛰어진다. 시스템이 창을
         // 걷어간 뒤 서비스가 죽는 경로에서 리스너가 남지 않도록 여기서 한 번 더 부른다.
@@ -185,6 +200,7 @@ class ScreenOffAccessibilityService :
                 if (coverView !== v) return   // hideCover() 가 이미 정리한 경로다
                 coverView = null
                 coverParams = null
+                restoreMediaVolume()
                 // 창이 사라졌으면 세션 관찰도 멈춰야 한다. hideCover() 와 같은 정리를 해 주지
                 // 않으면 "차폐가 떠 있을 때만 관찰한다" 는 원칙이 깨지고, 차폐를 다시 띄우지
                 // 않는 한 세션 콜백이 등록된 채 남는다.
@@ -200,6 +216,27 @@ class ScreenOffAccessibilityService :
         }
         syncMediaWatcher()
         applyBrightness()
+        applyMediaVolume()
+    }
+
+    /**
+     * 차폐를 켤 때 미디어 소리를 끈다. 이미 우리가 끈 상태면 아무것도 하지 않는다 —
+     * 안 그러면 0 을 "원래 음량" 으로 덮어써 복원이 무의미해진다.
+     */
+    private fun applyMediaVolume() {
+        if (mutedVolume != null) return
+        val saved = volumeController.applyOnCover(latestSettings.mediaVolumeAction) ?: return
+        mutedVolume = saved
+        scope?.launch { repository.update { it.copy(savedMediaVolume = saved) } }
+    }
+
+    /** 차폐가 사라지는 **모든** 경로에서 불러야 한다. 하나라도 빠지면 소리가 안 돌아온다. */
+    private fun restoreMediaVolume() {
+        val saved = mutedVolume ?: return
+        mutedVolume = null
+        volumeController.restore(saved)
+        // 서비스가 곧 죽을 수 있는 경로에서도 불리므로 스코프 취소에 휘둘리지 않게 한다.
+        scope?.launch(NonCancellable) { repository.update { it.copy(savedMediaVolume = -1) } }
     }
 
     /** 차폐가 떠 있고 설정이 켜져 있으면 관찰, 아니면 중단. 권한이 없으면 안내 상태로. */
@@ -253,6 +290,7 @@ class ScreenOffAccessibilityService :
 
     fun hideCover() {
         val view = coverView ?: return
+        restoreMediaVolume()
         coverView = null
         coverParams = null
         mediaWatcher.stop()

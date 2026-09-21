@@ -37,6 +37,14 @@
     <string name="content_preview_hint">The real screen is dimmer than this — the panel brightness is lowered to 0.30</string>
 
 
+    <string name="section_sound">Sound</string>
+    <string name="media_volume_none">Off</string>
+    <string name="media_volume_none_desc">Leaves media sound alone</string>
+    <string name="media_volume_mute">Mute while covered</string>
+    <string name="media_volume_mute_desc">Silences media only while the screen is covered. Your volume comes back when you unlock</string>
+    <string name="media_volume_zero">Set volume to 0</string>
+    <string name="media_volume_zero_desc">Turns media volume down to 0. It stays at 0 after you unlock</string>
+    <string name="media_volume_note">Only media sound is changed — notifications, calls and alarms are untouched. Not applied while you are listening over Bluetooth.</string>
     <string name="section_unlock">Unlock</string>
 
     <string name="gesture_long_press">Press and hold</string>

@@ -71,6 +71,7 @@ import com.jjw.blackscreen.data.MAX_HOLD_MILLIS
 import com.jjw.blackscreen.data.MIN_BUBBLE_DP
 import com.jjw.blackscreen.data.MIN_HOLD_MILLIS
 import com.jjw.blackscreen.data.Mode
+import com.jjw.blackscreen.data.MediaVolumeAction
 import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
 
@@ -418,6 +419,23 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
+            Section(stringResource(R.string.section_sound))
+
+            MediaVolumeAction.entries.forEach { action ->
+                ModeRow(
+                    label = stringResource(action.labelRes),
+                    description = stringResource(action.descriptionRes),
+                    selected = settings.mediaVolumeAction == action,
+                    onSelect = { onChange { s -> s.copy(mediaVolumeAction = action) } },
+                )
+            }
+            Text(
+                text = stringResource(R.string.media_volume_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+
             Section(stringResource(R.string.section_unlock))
 
             // 미제공 제스처(available = false)는 목록에서 빠진다. 코드는 남아 있다.
@@ -495,6 +513,20 @@ private val BubbleIcon.labelRes: Int
         BubbleIcon.RING -> R.string.bubble_icon_ring
         BubbleIcon.MOON -> R.string.bubble_icon_moon
         BubbleIcon.POWER -> R.string.bubble_icon_power
+    }
+
+private val MediaVolumeAction.labelRes: Int
+    get() = when (this) {
+        MediaVolumeAction.NONE -> R.string.media_volume_none
+        MediaVolumeAction.MUTE_WHILE_COVERED -> R.string.media_volume_mute
+        MediaVolumeAction.SET_TO_ZERO -> R.string.media_volume_zero
+    }
+
+private val MediaVolumeAction.descriptionRes: Int
+    get() = when (this) {
+        MediaVolumeAction.NONE -> R.string.media_volume_none_desc
+        MediaVolumeAction.MUTE_WHILE_COVERED -> R.string.media_volume_mute_desc
+        MediaVolumeAction.SET_TO_ZERO -> R.string.media_volume_zero_desc
     }
 
 private val Gesture.labelRes: Int

@@ -112,17 +112,20 @@ Android 는 출력 장치별로 미디어 볼륨을 따로 기억한다. 그래�
 되어야 옳은지도 분명하지 않다. 시작할 때 블루투스면 그 차폐 동안은 손대지 않는다.
 
 ```kotlin
-// API 31+ 는 "지금 미디어가 실제로 나가는 장치" 를 직접 물을 수 있다.
+// API 33+ 는 "지금 미디어가 실제로 나가는 장치" 를 직접 물을 수 있다.
 val media = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build()
 val routed = audioManager.getAudioDevicesForAttributes(media)
 val onBluetooth = routed.any { it.type in BLUETOOTH_TYPES }
-// 하위 버전 폴백: getDevices(GET_DEVICES_OUTPUTS) 로 "연결된" 장치를 본다.
+// 하위 버전(≤32) 폴백: getDevices(GET_DEVICES_OUTPUTS) 로 "연결된" 장치를 본다.
 //   연결됨 ≠ 재생 중인 라우팅이라 덜 정확하다. 대상 기기가 Android 16 이라 폴백은 보수적으로 —
 //   블루투스가 하나라도 연결돼 있으면 건너뛴다(끄지 않는 쪽이 안전한 실패다).
 ```
 
-`BLUETOOTH_TYPES` = `TYPE_BLUETOOTH_A2DP`, `TYPE_BLUETOOTH_SCO`, `TYPE_BLE_HEADSET`,
-`TYPE_BLE_SPEAKER`, `TYPE_BLE_BROADCAST`. 실험 3 에서 실제 값으로 확인한다.
+`BLUETOOTH_TYPES` = `TYPE_BLUETOOTH_A2DP`, `TYPE_BLUETOOTH_SCO`, `TYPE_BLE_HEADSET`(31+),
+`TYPE_BLE_SPEAKER`(31+), `TYPE_BLE_BROADCAST`(33+). 실험 3 에서 실제 값으로 확인한다.
+
+> ⚠️ `getAudioDevicesForAttributes` 를 API 31+ 로 적었다가 **lint 가 33+ 라고 잡았다.**
+> BLE 장치 타입 상수(31·33)와 이 메서드(33)의 도입 버전이 다르다 — 함께 묶어 외우지 말 것.
 
 > **안전한 실패 방향은 "끄지 않는 것"** 이다. 판단이 틀려 안 꺼지면 사용자가 볼륨 키를 내리면
 > 되지만, 틀려서 블루투스 소리가 꺼지면 듣던 것이 갑자기 멎는다.

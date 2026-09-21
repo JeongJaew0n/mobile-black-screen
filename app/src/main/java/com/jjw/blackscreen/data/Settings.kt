@@ -77,6 +77,23 @@ enum class BubbleIcon { BAR, DOT, RING, MOON, POWER }
 enum class ClockFont { LIGHT, BOLD, SERIF, MONO, CURSIVE }
 
 /**
+ * 차폐 중 미디어 소리를 어떻게 할 것인가. **되돌아오는가**로 갈린다.
+ *
+ * 라디오 3택인 이유: 스위치 두 개로 두면 둘 다 켰을 때 무엇이 이기는지 사용자가 알 수 없다.
+ * 기본은 [NONE] — 이 앱의 기본은 "아무것도 하지 않는 완전한 검정" 이고, 소리를 건드리는 것은
+ * 명시적으로 켜야 하는 동작이다.
+ */
+enum class MediaVolumeAction {
+    NONE,
+
+    /** 차폐 중에만 0. 풀면 원래 음량으로 되돌린다. */
+    MUTE_WHILE_COVERED,
+
+    /** 0 으로 내리고 **되돌리지 않는다.** 차폐를 풀어도 0 그대로다. */
+    SET_TO_ZERO,
+}
+
+/**
  * 날짜 표기. [ClockStyle] 과 같은 원칙 — **패턴이 아니라 ICU 스켈레톤**을 저장하고, 실제
  * 순서·구분자·조사는 로케일이 정한다. `yMMMd` 하나가 한국어 `2026년 9월 13일`, 영어
  * `Sep 13, 2026` 으로 갈린다. 패턴 문자열을 언어별로 번역했다면 이 표는 언어 수만큼 늘었다.
@@ -173,6 +190,16 @@ data class Settings(
      * 아니라 런타임 상태다. 접근성 서비스가 재생 상태와 합쳐서 밝기를 정한다.
      */
     val showMedia: Boolean = false,
+    /** 차폐 중 미디어 소리 처리. 미디어(`STREAM_MUSIC`)만이고 알림·전화·알람은 건드리지 않는다. */
+    val mediaVolumeAction: MediaVolumeAction = MediaVolumeAction.NONE,
+    /**
+     * [MediaVolumeAction.MUTE_WHILE_COVERED] 로 음소거하기 **직전의** 미디어 음량. 복원용이다.
+     * -1 은 "음소거 중이 아님".
+     *
+     * 메모리가 아니라 DataStore 에 두는 이유: 서비스가 죽으면 메모리 값은 사라지고 사용자는
+     * 소리가 없는 채로 남는다. 앱을 다시 열 때 이 값이 남아 있으면 복원하고 지운다.
+     */
+    val savedMediaVolume: Int = -1,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 

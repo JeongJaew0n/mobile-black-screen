@@ -36,6 +36,14 @@
     <string name="content_preview_hint">실제 화면은 이보다 어둡습니다 — 패널 밝기를 0.30 으로 낮춥니다</string>
 
 
+    <string name="section_sound">소리</string>
+    <string name="media_volume_none">끔</string>
+    <string name="media_volume_none_desc">미디어 소리를 건드리지 않습니다</string>
+    <string name="media_volume_mute">일시 음소거</string>
+    <string name="media_volume_mute_desc">차폐 중에만 소리를 끕니다. 풀면 원래 음량으로 돌아옵니다</string>
+    <string name="media_volume_zero">볼륨 0 으로</string>
+    <string name="media_volume_zero_desc">미디어 음량을 0 으로 내립니다. 차폐를 풀어도 0 그대로입니다</string>
+    <string name="media_volume_note">미디어 소리만 조절합니다 — 알림·전화·알람은 그대로입니다. 블루투스로 듣는 중에는 적용되지 않습니다.</string>
     <string name="section_unlock">해제</string>
 
     <string name="gesture_long_press">꾹 눌러 해제</string>

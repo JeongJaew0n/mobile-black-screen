@@ -27,6 +27,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jjw.blackscreen.accessibility.ScreenOffAccessibilityService
+import androidx.compose.runtime.LaunchedEffect
+import com.jjw.blackscreen.audio.MediaVolumeController
 import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.media.MediaPermission
@@ -77,6 +79,18 @@ class MainActivity : ComponentActivity() {
                         accessibilityEnabled = ScreenOffAccessibilityService.isEnabled
                         notificationAccess = MediaPermission.isGranted(this@MainActivity)
                         onPauseOrDispose { }
+                    }
+
+                    // 서비스가 복원하지 못하고 죽었을 때의 보험. 차폐가 떠 있지 않은데 저장값이
+                    // 남아 있으면 복원을 놓친 것이다 — 볼륨은 물리 키로도 되돌릴 수 있지만
+                    // 사용자가 왜 소리가 없는지 모르는 상태로 두지 않는다.
+                    LaunchedEffect(Unit) {
+                        val s = repository.settings.first()
+                        val covering = ScreenOffAccessibilityService.instance?.isCovering == true
+                        if (s.savedMediaVolume > 0 && !covering) {
+                            MediaVolumeController(this@MainActivity).restore(s.savedMediaVolume)
+                            repository.update { it.copy(savedMediaVolume = -1) }
+                        }
                     }
 
                     val notificationPermission = rememberLauncherForActivityResult(
