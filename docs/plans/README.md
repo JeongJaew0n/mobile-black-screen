@@ -18,6 +18,7 @@
 | 4 | [i18n](./i18n/) — 다국어 도입 | 완료 (en + ko). RTL 은 범위 밖 |
 | 5 | [fingerprint-one-touch](./fingerprint-one-touch/) — 지문 한 동작 해제 | **조사만.** 구현 보류, 실험 절차 문서화 |
 | 6 | [media-playback-bar](./media-playback-bar/) — 재생 중 음악·동영상 재생 바 | 구현 완료. 실기기 검증 대기 |
+| 7 | [media-volume-control](./media-volume-control/) — 차폐 중 미디어 소리 끄기 | **설계 완료.** 실험·결정 2건 대기 |
 
 ## 왜 과거 문서를 고쳐 쓰지 않는가
 
