@@ -526,6 +526,37 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
   결과 상태는 세션 콜백이 다시 알려 준다.
   `getActiveSessions` 의 `SecurityException`(런타임). 문구는 `media_permission_needed` 하나.
 
+### 4.10 미디어 소리 끄기
+
+차폐를 켤 때 **미디어 음량(`STREAM_MUSIC`)만** 건드리는 선택 항목. 기본은 끔 —
+소리를 건드리는 것은 사용자가 명시적으로 켜야 하는 동작이다.
+
+| 선택 | 차폐를 켤 때 | 해제할 때 |
+|---|---|---|
+| 끔 (기본) | 아무것도 안 한다 | — |
+| 일시 음소거 | 직전 음량을 저장하고 0 | 저장한 음량으로 되돌린다 |
+| 볼륨 0 | 0 으로 내린다 | **그대로 둔다** |
+
+두 기능의 차이는 "되돌아오는가" 하나뿐이고, 그래서 같은 한 자리에서 3택으로 고른다.
+
+- **새 권한이 없다.** `setStreamVolume(STREAM_MUSIC, …)` 은 권한 없이 된다. `flags = 0`
+  이면 볼륨 팝업도 안 뜬다 (실측: 차폐 직후 밝은 픽셀 1526개 — 표시 내용 수준).
+- **블루투스로 듣는 중이면 건너뛴다.** 화면을 덮는 것과 이어폰 소리를 끊는 것은 사용자에게
+  다른 일이다. 판단(`isOnBluetooth()`)이 실패하면 **끄지 않는 쪽**으로 기운다 — 안 꺼지면
+  볼륨 키로 내리면 되지만, 잘못 꺼지면 듣던 소리가 이유 없이 멎는다.
+- **저장은 메모리와 DataStore 양쪽에.** 메모리(`mutedVolume`)는 즉시 복원용이고,
+  `Settings.savedMediaVolume` 은 서비스가 복원하지 못하고 죽었을 때의 보험이다.
+  앱을 다시 열 때 값이 남아 있고 차폐 중이 아니면 그때 되돌리고 지운다.
+- **복원은 차폐가 사라지는 모든 경로에 건다**: `hideCover()` / 창 detach
+  (시스템이 PIN 화면에서 걷어감) / `onDestroy()`. `onDestroy` 에서 `hideCover()` 에
+  맡기지 않는다 — 창이 이미 없으면 조기 반환해 복원이 통째로 빠진다.
+- **Overlay 모드에는 아직 훅이 없다.** 지금은 `Mode.available = false` 로 미제공이라
+  문제가 되지 않지만, 되살린다면 네 지점에 같은 호출을 넣어야 한다.
+
+실측(S23+ / Android 16): 끔 7→7 · 일시 음소거 7→0→해제 후 7 · 볼륨 0 은 7→0→해제 후에도 0.
+`force-stop` 은 `onDestroy` 를 부르지 않아 0 이 남았고, 앱을 다시 열자 DataStore 보험이
+되돌렸다. **블루투스 경로는 기기가 없어 검증하지 못했다** (스피커 라우팅만 확인).
+
 ## 5. 설정 항목
 
 ```kotlin
@@ -546,6 +577,8 @@ data class Settings(
     val bubbleIcon: BubbleIcon = BAR,       // BAR / DOT / RING / MOON / POWER
     val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
     val bubbleYRatio: Float = 0.5f,
+    val mediaVolumeAction: MediaVolumeAction = NONE,  // NONE | MUTE_WHILE_COVERED | SET_TO_ZERO (§4.10)
+    val savedMediaVolume: Int = -1,          // 일시 음소거의 보험. 서비스가 죽어도 앱 시작 때 되돌린다
 )
 ```
 
@@ -674,6 +707,8 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 자동 종료 타이머, 근접센서 포켓 모드, 문장 여러 개 순환, 홈 화면 위젯,
 제조사별 배터리 최적화 안내, 부팅 후 자동 복원.
 
+Overlay 모드에 미디어 소리 끄기 훅(§4.10) — 그 모드를 되살릴 때 함께 해야 한다.
+
 ---
 
 ## 8. 함정 목록
@@ -710,6 +745,8 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 | F26 | `consume()` 뒤의 `positionChange()` 는 `Zero` → 버블 드래그가 죽음 | delta 를 **소비 전에** 읽는다 |
 | F27 | `lifecycleScope.launch { 저장 }` 직후 `stopSelf()` → onDestroy 가 스코프를 취소해 저장이 안 됨 | 저장 코루틴 **안에서** `stopSelf()`, 또는 `launch(NonCancellable)` |
 | F28 | `collectAsStateWithLifecycle` 는 STOPPED 동안 수집을 멈춰 RESUME 직후 옛 스냅샷 | RESUME 에서 결정할 값은 `repository.settings.first()` 로 다시 읽는다 |
+| F29 | `getAudioDevicesForAttributes` 를 API 31+ 로 알고 씀 (실제 **33+**) | BLE 장치 타입 상수(31·33)와 이 메서드(33)는 도입 버전이 다르다. lint 가 잡아 줬다 |
+| F30 | `onDestroy` 에서 `hideCover()` 에 복원을 맡김 → 창이 없으면 조기 반환해 볼륨이 0 으로 남음 | 되돌리는 코드는 조기 반환하는 함수 **밖에서** 직접 부른다 |
 
 ### 실기기 검증 시 속기 쉬운 것
 

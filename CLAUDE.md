@@ -52,7 +52,8 @@ Compose 안에 `Text("한글")` 을 직접 쓰지 말 것 — lint 가 못 잡�
 echo "sdk.dir=/opt/homebrew/share/android-commandlinetools" > local.properties
 
 ./gradlew assembleDebug
-./gradlew lintDebug          # 0 errors 를 유지할 것. 경고는 OldTargetApi 1건만 정상
+./gradlew lintDebug          # 0 errors 를 유지할 것. 코드 경고는 OldTargetApi 1건만 정상
+                             # (네트워크가 되면 의존성 최신 버전 경고가 몇 건 더 붙는다 — 코드와 무관)
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -191,6 +192,14 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   `ACTION_PAUSE`/`ACTION_PLAY` 를 지원 안 하고 `PLAY_PAUSE` 토글만 준다(곰오디오 actions=0x204).
   그런 앱에 `pause()` 를 보내면 조용히 무시된다 — "버튼이 안 먹는다" 로 보인다. 잠금화면 버튼과
   같은 `dispatchMediaButtonEvent(KEYCODE_MEDIA_PLAY_PAUSE)` 가 호환성이 넓다. 실측으로 확인.
+- **미디어 음량을 되돌리는 코드를 `hideCover()` 에만 두지 말 것.** `onDestroy` 에서 `hideCover()` 를
+  부르면 창이 이미 없어 조기 반환하고, 볼륨이 0 인 채 남는다. 되돌리기는 조기 반환하는 함수 밖에서
+  직접 부르고, 차폐가 사라지는 경로 전부(해제·창 detach·onDestroy)에 건다. `force-stop` 은 아예
+  `onDestroy` 를 안 부르므로 DataStore 에 저장해 두고 앱 시작 때 되돌린다.
+- **소리를 건드리는 판단이 실패하면 "끄지 않는" 쪽으로 기울일 것.** 블루투스 라우팅 판단
+  (`isOnBluetooth()`)은 실패 시 true 를 돌려준다 — 안 꺼지면 사용자가 볼륨 키로 내리면 되지만,
+  잘못 꺼지면 듣던 소리가 이유 없이 멎는다. `getAudioDevicesForAttributes` 는 **API 33+** 다
+  (BLE 장치 타입 상수는 31·33 으로 갈려 있어 함께 외우면 틀린다).
 - **`MediaListenerService` 에 알림을 읽는 코드를 넣지 말 것.** 알림 접근은 모든 알림을 읽을 수
   있는 권한이고, 콜백을 비워 두는 것이 "재생 정보만 쓴다" 는 유일한 약속이다.
 - **시계 패턴을 문자열로 쓰지 말 것.** `ClockStyle` 은 24/12 선택만 저장하고 패턴은 ICU
