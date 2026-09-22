@@ -49,19 +49,17 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.Gesture
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import com.jjw.blackscreen.ui.theme.Comp
+import com.jjw.blackscreen.ui.theme.Sys
 
 
 /** 밀어 올려 해제하는 데 필요한 거리. 화면 높이 대비 비율이라 기기를 안 탄다. */
 private const val SlideDismissFraction = 0.28f
 private const val TapWindowMillis = 400L
-private val RingSize = 64.dp
-private val RingStroke = 3.dp
 
 /**
  * 차폐 해제 제스처를 받는 레이어.
@@ -133,13 +131,13 @@ fun BoxScope.UnlockGestureLayer(
         Canvas(
             Modifier
                 .align(Alignment.Center)
-                .offset { IntOffset(0, (containerHeight * 0.28f).toInt()) }
-                .size(RingSize),
+                .offset { IntOffset(0, (containerHeight * Comp.UnlockRing.verticalOffsetFraction).toInt()) }
+                .size(Comp.UnlockRing.size),
         ) {
-            val stroke = RingStroke.toPx()
+            val stroke = Comp.UnlockRing.stroke.toPx()
             drawArc(
                 // 진행 초반에도 보이도록 알파를 살짝 앞당겨 올린다.
-                color = ringColor.copy(alpha = (progress * 1.4f).coerceAtMost(1f)),
+                color = ringColor.copy(alpha = (progress * Comp.UnlockRing.fadeInBoost).coerceAtMost(1f)),
                 startAngle = -90f,
                 sweepAngle = 360f * progress,
                 useCenter = false,
@@ -220,7 +218,7 @@ fun BoxScope.SlideToDismissLayer(
                                 animate(
                                     initialValue = from,
                                     targetValue = -containerHeight.toFloat(),
-                                    animationSpec = tween(durationMillis = 160),
+                                    animationSpec = tween(durationMillis = Comp.SlideDismiss.duration),
                                 ) { v, _ -> onOffsetChange(v) }
                                 onUnlock()
                             } else {
@@ -245,17 +243,9 @@ fun BoxScope.SlideToDismissLayer(
     )
 }
 
-/** 밀어서 잠금 해제 트랙의 치수. */
-private val TrackHeight = 56.dp
-private val TrackKnob = 46.dp
-private val TrackInset = 5.dp
-private val TrackBottomMargin = 72.dp
-
-/** 지문 '잠금 해제' 버튼 위치. 세로 +0.25 = 위에서 62.5%. */
-private val UnlockButtonAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = 0.25f)
-
-/** 트랙 가로 비율. 넓으면 화면을 가로지르는 막대처럼 보여 답답하다. */
-private const val TrackWidthFraction = 0.66f
+/** 지문 '잠금 해제' 버튼 위치. 근거는 토큰(`comp.fingerprintButton.verticalBias`)에. */
+private val UnlockButtonAlignment =
+    BiasAlignment(horizontalBias = 0f, verticalBias = Comp.FingerprintButton.verticalBias)
 
 /** 손잡이가 이 비율까지 가면 해제한다. 끝까지 딱 붙이지 않아도 되게 약간 여유를 둔다. */
 private const val SlideUnlockAt = 0.92f
@@ -278,8 +268,8 @@ fun BoxScope.SlideToUnlockLayer(
 ) {
     val burnInOffset = rememberBurnInShift()
     val density = LocalDensity.current
-    val knobPx = with(density) { TrackKnob.toPx() }
-    val insetPx = with(density) { TrackInset.toPx() }
+    val knobPx = with(density) { Comp.SlideTrack.knob.toPx() }
+    val insetPx = with(density) { Comp.SlideTrack.inset.toPx() }
 
     var trackWidth by remember { mutableIntStateOf(0) }
     var knobX by remember { mutableFloatStateOf(0f) }
@@ -288,17 +278,17 @@ fun BoxScope.SlideToUnlockLayer(
     val maxTravel = (trackWidth - knobPx - insetPx * 2).coerceAtLeast(0f)
     val progress = if (maxTravel > 0f) (knobX / maxTravel).coerceIn(0f, 1f) else 0f
 
-    val shape = RoundedCornerShape(percent = 50)
+    val shape = RoundedCornerShape(percent = Sys.Radius.pill)
 
     Box(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { burnInOffset }
-            .padding(bottom = TrackBottomMargin)
-            .fillMaxWidth(TrackWidthFraction)
-            .height(TrackHeight)
+            .padding(bottom = Comp.SlideTrack.bottomMargin)
+            .fillMaxWidth(Comp.SlideTrack.widthFraction)
+            .height(Comp.SlideTrack.height)
             .clip(shape)
-            .border(1.dp, tint.copy(alpha = 0.22f), shape)
+            .border(Sys.Stroke.hairline, tint.copy(alpha = Comp.SlideTrack.borderOpacity), shape)
             .onSizeChanged { trackWidth = it.width }
             .pointerInput(maxTravel) {
                 detectHorizontalDragGestures(
@@ -333,25 +323,27 @@ fun BoxScope.SlideToUnlockLayer(
                 // 손잡이가 나아갈수록 안내 문구는 물러난다.
                 Text(
                     text = stringResource(R.string.slide_to_unlock_hint),
-                    color = tint.copy(alpha = (1f - progress * 1.6f).coerceAtLeast(0f) * 0.55f),
-                    fontSize = 15.sp,
+                    color = tint.copy(
+                        alpha = (1f - progress * Comp.SlideTrack.hintFade).coerceAtLeast(0f) * Comp.SlideTrack.hintOpacity,
+                    ),
+                    fontSize = Comp.SlideTrack.hintSize,
                     modifier = Modifier.align(Alignment.Center),
                 )
 
                 Box(
                     Modifier
                         .offset { IntOffset((insetPx + knobX).roundToInt(), 0) }
-                        .size(TrackKnob)
+                        .size(Comp.SlideTrack.knob)
                         .clip(CircleShape)
-                        .background(tint.copy(alpha = 0.85f)),
+                        .background(tint.copy(alpha = Comp.SlideTrack.knobOpacity)),
                     contentAlignment = Alignment.Center,
                 ) {
                     // 앱의 가로 막대 모티프. 화살표를 쓰면 다른 아이콘 언어가 하나 더 생긴다.
                     Box(
                         Modifier
-                            .width(14.dp)
-                            .height(2.dp)
-                            .background(Color.Black.copy(alpha = 0.55f)),
+                            .width(Comp.SlideTrack.knobMarkWidth)
+                            .height(Comp.SlideTrack.knobMarkHeight)
+                            .background(Sys.Color.canvas.copy(alpha = Comp.SlideTrack.knobMarkOpacity)),
                     )
                 }
             }
@@ -394,7 +386,7 @@ fun BoxScope.FingerprintUnlockLayer(
     // 맨 글자만 두면 눌리는 것인지 알 수 없고, 흐리게 하면 밝기 0.30 패널에서 더 죽는다.
     // 알약 테두리 + 또렷한 흰 글자로 "버튼" 임을 말한다. 밀어서 잠금 해제 트랙과 같은 어법이다.
     val shift = rememberBurnInShift()
-    val shape = RoundedCornerShape(percent = 50)
+    val shape = RoundedCornerShape(percent = Sys.Radius.pill)
     Box(
         Modifier
             // 정중앙보다 조금 아래(62%). 시계 블록(배터리 줄이 바닥, ~45%)과 재생 컨트롤(~78%)의
@@ -402,16 +394,16 @@ fun BoxScope.FingerprintUnlockLayer(
             .align(UnlockButtonAlignment)
             .offset { shift }
             .clip(shape)
-            .border(1.dp, tint.copy(alpha = 0.45f), shape)
-            .background(tint.copy(alpha = 0.06f))
+            .border(Sys.Stroke.hairline, tint.copy(alpha = Comp.FingerprintButton.borderOpacity), shape)
+            .background(tint.copy(alpha = Comp.FingerprintButton.fillOpacity))
             .pointerInput(Unit) { detectTapGestures(onTap = { onTrigger() }) }
-            .padding(horizontal = 30.dp, vertical = 14.dp),
+            .padding(horizontal = Comp.FingerprintButton.paddingHorizontal, vertical = Comp.FingerprintButton.paddingVertical),
     ) {
         Text(
             text = stringResource(R.string.fingerprint_unlock_hint),
             color = tint,
-            fontSize = 17.sp,
-            letterSpacing = 1.sp,
+            fontSize = Comp.FingerprintButton.fontSize,
+            letterSpacing = Comp.FingerprintButton.letterSpacing,
         )
     }
 }

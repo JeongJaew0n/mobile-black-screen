@@ -54,6 +54,8 @@ echo "sdk.dir=/opt/homebrew/share/android-commandlinetools" > local.properties
 ./gradlew assembleDebug
 ./gradlew lintDebug          # 0 errors 를 유지할 것. 코드 경고는 OldTargetApi 1건만 정상
                              # (네트워크가 되면 의존성 최신 버전 경고가 몇 건 더 붙는다 — 코드와 무관)
+python3 design/tokens/build.py --check   # Tokens.kt 가 tokens.json 과 일치하는지. 커밋 전에
+python3 design/tokens/build.py           # JSON 을 고쳤으면 다시 생성
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -264,10 +266,14 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   필요하다. 불투명이면 컴포지터가 합성 한 단계를 아끼지만, 아래 앱이 그리는 비용은
   어차피 계속 든다. 합성 한 단계는 그에 비하면 작다.
 
-- **디자인 토큰은 `ui/theme/Tokens.kt` 에 두되, 두 곳 이상 반복되는 값만 넣는다.**
-  한 곳에서만 쓰는 값(겨냥 목표의 빨강·파랑, 시계 64sp, 번인 궤도 8dp×28dp)은 쓰이는 자리에
-  남긴다 — 그 값들은 "왜 이 값인가" 가 옆 주석에 붙어 있어야 읽히고, 토큰으로 빼면 근거가
-  코드에서 멀어진다. 차폐 화면의 규칙이 "검정 바탕에 흰 글자" 하나뿐이라 큰 팔레트가 필요 없다.
+- **시각 값은 `design/tokens/tokens.json` 에만 쓴다. `ui/theme/Tokens.kt` 는 생성물이다 — 손으로 고치지 말 것.**
+  색·불투명도·dp·sp·ms 리터럴을 코드에 새로 쓰지 않는다. JSON 에 넣고 `python3 design/tokens/build.py`
+  로 생성한다. "왜 이 값인가" 는 `$description` 에 적는다 — KDoc 이 되어 토큰과 함께 이동한다.
+  층 규칙: `Sys` 는 `Ref` 만, `Comp` 는 `Sys`·`Ref` 만 가리킨다(생성기가 막는다). 다른 제품에 가져가는
+  것은 ref+sys 라 `sys` 이름은 이 앱을 몰라도 읽혀야 한다(`canvas` ○, `mediaBarTint` ×).
+  **토큰이 아닌 것**: 제스처 임계값·번인 궤도·패널 밝기 0.30·기호 내부 비율·설정 기본값. 동작과
+  하드웨어 상수라 코드에 남긴다. (2026-09-13 의 "두 곳 이상 반복되는 값만" 규칙은 이걸로 대체됐다 —
+  "값만 고쳐 다른 디자인" 이 되려면 한 곳에서 쓰는 값도 토큰이어야 한다.)
 - **기본값은 아무것도 표시하지 않는 완전한 검정이다.** 시계와 문장은 옵션이다.
 - **밝기는 상수 하나다 (`CONTENT_BRIGHTNESS = 0.30`).** 조절 슬라이더는 없앴다 — 실측에서
   패널 0.30 과 0.00 의 소모가 눈금 하나도 차이 나지 않아 조절할 이유가 없었다

@@ -14,13 +14,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.data.BubbleIcon
-import com.jjw.blackscreen.ui.theme.FloatingContent
-
-/** 기호는 버블 지름의 절반 안에 그린다. 가장자리까지 차면 테두리와 붙어 답답하다. */
-private const val GLYPH_FRACTION = 0.5f
-
-/** 선 굵기. 버블 크기에 비례시키지 않는다 — 16dp 에서도 2dp 는 보이고, 96dp 에서 8dp 는 둔하다. */
-private val GlyphStroke = 2.dp
+import com.jjw.blackscreen.ui.theme.Comp
 
 /**
  * 버블 안의 기호. **실제 버블과 설정 미리보기가 이 함수 하나를 쓴다.**
@@ -34,16 +28,16 @@ fun BubbleGlyph(
     icon: BubbleIcon,
     sizeDp: Int,
     modifier: Modifier = Modifier,
-    tint: Color = FloatingContent,
+    tint: Color = Comp.Bubble.content,
 ) {
     Canvas(
         modifier
-            .size((sizeDp * GLYPH_FRACTION).dp)
+            .size((sizeDp * Comp.Bubble.glyphFraction).dp)
             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
     ) {
         val s = size.minDimension
         val c = center
-        val sw = GlyphStroke.toPx()
+        val sw = Comp.Bubble.glyphStroke.toPx()
 
         when (icon) {
             // 퀵 설정 타일과 같은 모티프. 길이는 예전 구현(버블 지름의 35%)과 같다.

@@ -26,8 +26,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.jjw.blackscreen.ui.theme.Comp
+import com.jjw.blackscreen.ui.theme.Sys
 
 data class BatteryStatus(val percent: Int, val charging: Boolean)
 
@@ -73,12 +73,12 @@ fun BatteryLine(
     modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        BatteryGlyph(status, tint, Modifier.size(width = 30.dp, height = 14.dp))
-        Spacer(Modifier.width(8.dp))
+        BatteryGlyph(status, tint, Modifier.size(width = Comp.Battery.glyphWidth, height = Comp.Battery.glyphHeight))
+        Spacer(Modifier.width(Comp.Battery.gap))
         Text(
             text = "${status.percent}%",
             color = tint,
-            fontSize = 22.sp,
+            fontSize = Comp.Battery.fontSize,
             fontFamily = fontFamily,
         )
     }
@@ -87,7 +87,7 @@ fun BatteryLine(
 @Composable
 private fun BatteryGlyph(status: BatteryStatus, tint: Color, modifier: Modifier) {
     Canvas(modifier) {
-        val stroke = 1.5.dp.toPx()
+        val stroke = Comp.Battery.glyphStroke.toPx()
         val capW = size.width * 0.08f
         val bodyW = size.width - capW
         val inset = stroke / 2
@@ -124,7 +124,7 @@ private fun BatteryGlyph(status: BatteryStatus, tint: Color, modifier: Modifier)
                 lineTo(cx - h * 0.02f, h * 0.45f)
                 close()
             }
-            drawPath(bolt, Color.Black)
+            drawPath(bolt, Sys.Color.canvas)
         }
     }
 }

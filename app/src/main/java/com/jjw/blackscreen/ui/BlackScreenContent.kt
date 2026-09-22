@@ -25,14 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.data.Gesture
 import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
+import com.jjw.blackscreen.ui.theme.Comp
+import com.jjw.blackscreen.ui.theme.Sys
 
 /**
  * Blackout 모드와 Overlay 모드가 공유하는 차폐 화면.
@@ -71,7 +71,7 @@ fun BlackScreenRoot(
             Modifier
                 .fillMaxSize()
                 .offset { IntOffset(0, slideOffset.roundToInt()) }
-                .background(Color.Black.copy(alpha = if (dimmed) DimmedAlpha else 1f)),
+                .background(Sys.Color.canvas.copy(alpha = if (dimmed) Comp.DimmedScrim.opacity else 1f)),
         ) {
             BlackScreenContent(settings)
             if (settings.showMedia) {
@@ -137,21 +137,7 @@ fun BlackScreenRoot(
     }
 }
 
-/** 세로 -0.3 = 정중앙에서 위쪽으로 화면 높이의 15% 지점. */
-private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.3f)
-
-/**
- * 인증 UI(지문 프롬프트·PIN 입력)가 떠 있는 동안의 검정 알파.
- *
- * 0.55 로는 PIN 입력 화면의 숫자가 잘 안 보였다. 탈출구는 **실제로 쓸 수 있어야** 의미가 있어
- * 거의 투명하게 낮춘다. 인증하려는 사람은 폰 주인이고, 차폐는 보안이 아니라 "꺼진 것처럼
- * 보이게" 하는 기능이라 이 몇 초 동안 아래가 드러나도 목적에 어긋나지 않는다.
- */
-private const val DimmedAlpha = 0.12f
-
-/** 미리보기 상자 높이. 시계(64sp)와 문장 한 줄이 들어가는 최소치. */
-private val PreviewHeight = 180.dp
-private val PreviewHeightWithMedia = 300.dp
+private val ContentAlignment = BiasAlignment(horizontalBias = 0f, verticalBias = Comp.Content.verticalBias)
 
 /**
  * 설정 화면용 미리보기. **차폐 화면과 같은 [BlackScreenContent] 를 그대로 그린다.**
@@ -179,9 +165,9 @@ fun BlackScreenPreview(
         modifier
             .fillMaxWidth()
             // 재생 바까지 보이려면 상자가 더 커야 한다. 시계 아래 여백에 겹치지 않게.
-            .height(if (showBar) PreviewHeightWithMedia else PreviewHeight)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.Black),
+            .height(if (showBar) Comp.Preview.heightWithMedia else Comp.Preview.height)
+            .clip(RoundedCornerShape(Comp.Preview.radius))
+            .background(Sys.Color.canvas),
     ) {
         BlackScreenContent(settings)
         if (showBar) {
@@ -191,7 +177,7 @@ fun BlackScreenPreview(
                 tint = settings.textColor,
                 fontFamily = settings.clockFont.family,
                 shift = mediaShift,
-                bottomMargin = 16.dp,
+                bottomMargin = Comp.Preview.mediaBottomMargin,
             )
             if (nowPlaying != null) {
                 MediaControlsLayer(
@@ -201,7 +187,7 @@ fun BlackScreenPreview(
                     onNext = onMediaNext,
                     onPrevious = onMediaPrevious,
                     shift = mediaShift,
-                    bottomMargin = 16.dp,
+                    bottomMargin = Comp.Preview.mediaBottomMargin,
                 )
             }
         }
@@ -225,7 +211,7 @@ private fun BlackScreenContent(settings: Settings) {
                 Text(
                     text = rememberClockText(settings.clockStyle),
                     color = settings.textColor,
-                    fontSize = 64.sp,
+                    fontSize = Comp.Content.clockSize,
                     fontFamily = settings.clockFont.family,
                     fontWeight = settings.clockFont.weight,
                 )
@@ -235,9 +221,9 @@ private fun BlackScreenContent(settings: Settings) {
                 Text(
                     text = rememberDateText(settings.dateStyle),
                     color = settings.textColor,
-                    fontSize = 22.sp,
+                    fontSize = Comp.Content.dateSize,
                     fontFamily = settings.clockFont.family,
-                    modifier = Modifier.padding(top = if (settings.showClock) 8.dp else 0.dp),
+                    modifier = Modifier.padding(top = if (settings.showClock) Comp.Content.gapSmall else 0.dp),
                 )
             }
             if (settings.showBattery) {
@@ -245,18 +231,18 @@ private fun BlackScreenContent(settings: Settings) {
                     status = rememberBatteryStatus(),
                     tint = settings.textColor,
                     fontFamily = settings.clockFont.family,
-                    modifier = Modifier.padding(top = if (settings.showClock || settings.showDate) 8.dp else 0.dp),
+                    modifier = Modifier.padding(top = if (settings.showClock || settings.showDate) Comp.Content.gapSmall else 0.dp),
                 )
             }
             if (settings.sentence.isNotBlank()) {
                 Text(
                     text = settings.sentence,
                     color = settings.textColor,
-                    fontSize = 18.sp,
+                    fontSize = Comp.Content.sentenceSize,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .padding(horizontal = 40.dp)
-                        .padding(top = if (settings.showClock || settings.showDate || settings.showBattery) 24.dp else 0.dp),
+                        .padding(horizontal = Comp.Content.sentenceInset)
+                        .padding(top = if (settings.showClock || settings.showDate || settings.showBattery) Comp.Content.gapLarge else 0.dp),
                 )
             }
         }

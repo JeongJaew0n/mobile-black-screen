@@ -2,7 +2,6 @@ package com.jjw.blackscreen.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.data.ClockFont
 import com.jjw.blackscreen.ui.family
 import com.jjw.blackscreen.ui.weight
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import com.jjw.blackscreen.bubble.BubbleGlyph
 import com.jjw.blackscreen.data.BubbleIcon
 import androidx.compose.foundation.layout.Column
@@ -43,8 +41,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import com.jjw.blackscreen.data.DateStyle
-import com.jjw.blackscreen.ui.theme.FloatingBorder
-import com.jjw.blackscreen.ui.theme.FloatingSurface
+import com.jjw.blackscreen.ui.theme.Comp
+import com.jjw.blackscreen.ui.theme.Sys
 import com.jjw.blackscreen.media.NowPlaying
 import com.jjw.blackscreen.ui.rememberDateSample
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -101,15 +99,15 @@ fun SettingsScreen(
         // 제목·시작 버튼·권한 카드는 탭 위에 고정한다. 주 동작을 탭 안에 숨기지 않는다.
         Column(
             Modifier
-                .padding(horizontal = 20.dp)
-                .padding(top = 20.dp),
+                .padding(horizontal = Comp.Settings.screenPadding)
+                .padding(top = Comp.Settings.screenPadding),
         ) {
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(Sys.Spacing.xl))
 
             Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.start_blackout))
@@ -151,7 +149,7 @@ fun SettingsScreen(
         // 한 화면에 다 있으면 미리보기 상자 때문에 버블·해제 설정이 한참 아래로 밀린다.
         // 선택한 탭은 회전을 넘겨 살리고 앱을 다시 열면 첫 탭으로 — 저장할 만한 상태는 아니다.
         var tab by rememberSaveable { mutableIntStateOf(0) }
-        TabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 16.dp)) {
+        TabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = Sys.Spacing.lg)) {
             Tab(
                 selected = tab == 0,
                 onClick = { tab = 0 },
@@ -168,7 +166,7 @@ fun SettingsScreen(
             Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = Comp.Settings.screenPadding),
         ) {
             if (tab == 0) {
 
@@ -182,7 +180,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(R.string.clock_format),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = Sys.Spacing.sm),
                 )
                 ClockStyle.entries.forEach { style ->
                     RadioRow(
@@ -200,7 +198,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(R.string.clock_font),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = Sys.Spacing.md),
                 )
                 // 글꼴 이름이 아니라 그 글꼴로 찍은 숫자를 보여준다. 이름을 읽고 상상하게 하면
                 // 고르고 나서 실망한다. 오전/오후 표기는 한글 글꼴로 떨어져 차이가 없으니 뺀다.
@@ -210,7 +208,7 @@ fun SettingsScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = Sys.Spacing.sm),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ClockFont.entries.forEach { font ->
@@ -218,24 +216,27 @@ fun SettingsScreen(
                         val name = stringResource(font.labelRes)
                         Box(
                             Modifier
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(Comp.Settings.fontChipRadius))
                                 .selectable(selected = selected, role = Role.RadioButton) {
                                     onChange { s -> s.copy(clockFont = font) }
                                 }
-                                .background(Color.Black)
+                                .background(Sys.Color.canvas)
                                 .border(
-                                    width = if (selected) 2.dp else 1.dp,
-                                    color = if (selected) MaterialTheme.colorScheme.primary else FloatingBorder,
-                                    shape = RoundedCornerShape(12.dp),
+                                    width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
+                                    color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
+                                    shape = RoundedCornerShape(Comp.Settings.fontChipRadius),
                                 )
-                                .padding(horizontal = 8.dp, vertical = 10.dp)
+                                .padding(
+                                    horizontal = Comp.Settings.fontChipPaddingHorizontal,
+                                    vertical = Comp.Settings.fontChipPaddingVertical,
+                                )
                                 .semantics { contentDescription = name },
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = digits,
-                                color = Color.White,
-                                fontSize = 18.sp,
+                                color = Sys.Color.onCanvas,
+                                fontSize = Comp.Settings.fontChipSample,
                                 fontFamily = font.family,
                                 fontWeight = font.weight,
                             )
@@ -298,7 +299,7 @@ fun SettingsScreen(
                 placeholder = { Text(stringResource(R.string.sentence_hint)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = Sys.Spacing.md),
             )
 
             // 시계·문장을 켰을 때 실제로 어떻게 뜨는지. 차폐 화면과 같은 Composable 을 그린다.
@@ -307,7 +308,7 @@ fun SettingsScreen(
             if (settings.hasContent || mediaPreview) {
                 BlackScreenPreview(
                     settings,
-                    Modifier.padding(top = 16.dp),
+                    Modifier.padding(top = Sys.Spacing.lg),
                     nowPlaying = nowPlaying,
                     mediaPermissionMissing = settings.showMedia && !notificationAccess,
                     onMediaPlayPause = onMediaPlayPause,
@@ -318,7 +319,7 @@ fun SettingsScreen(
                     text = stringResource(R.string.content_preview_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 6.dp),
+                    modifier = Modifier.padding(top = Comp.Settings.captionGap),
                 )
             }
 
@@ -350,7 +351,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(R.string.bubble_size_value, settings.bubbleSizeDp),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = Sys.Spacing.sm),
                 )
                 Slider(
                     value = settings.bubbleSizeDp.toFloat(),
@@ -373,7 +374,7 @@ fun SettingsScreen(
             Text(
                 text = stringResource(R.string.bubble_icon),
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(top = 12.dp),
+                modifier = Modifier.padding(top = Sys.Spacing.md),
             )
             // 버블을 꺼 둔 상태에서도 고를 수 있게 스위치 밖에 둔다 — 켰을 때 어떤 모양이 뜰지
             // 미리 정해 두는 용도다. 미리보기는 실제 버블과 같은 BubbleGlyph 를 같은 배경 위에 그린다.
@@ -382,7 +383,7 @@ fun SettingsScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = Sys.Spacing.sm),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 BubbleIcon.entries.forEach { icon ->
@@ -396,19 +397,19 @@ fun SettingsScreen(
                             .selectable(selected = selected, role = Role.RadioButton) {
                                 onChange { s -> s.copy(bubbleIcon = icon) }
                             }
-                            .padding(6.dp)
-                            .size(52.dp)
+                            .padding(Comp.Settings.swatchPadding)
+                            .size(Comp.Settings.swatchSize.dp)
                             .clip(CircleShape)
-                            .background(FloatingSurface)
+                            .background(Sys.Color.floatingSurface)
                             .border(
-                                width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) MaterialTheme.colorScheme.primary else FloatingBorder,
+                                width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
+                                color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
                                 shape = CircleShape,
                             )
                             .semantics { contentDescription = name },
                         contentAlignment = Alignment.Center,
                     ) {
-                        BubbleGlyph(icon = icon, sizeDp = 52)
+                        BubbleGlyph(icon = icon, sizeDp = Comp.Settings.swatchSize)
                     }
                 }
             }
@@ -433,7 +434,7 @@ fun SettingsScreen(
                 text = stringResource(R.string.media_volume_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = Sys.Spacing.sm),
             )
 
             Section(stringResource(R.string.section_unlock))
@@ -453,7 +454,7 @@ fun SettingsScreen(
                     // 숫자 서식과 단위 어순은 리소스가 정한다 (독일어는 1,5 / 한국어는 뒤에 '초').
                     text = stringResource(R.string.hold_duration_value, settings.holdMillis / 1000f),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = Sys.Spacing.sm),
                 )
                 Slider(
                     value = settings.holdMillis.toFloat(),
@@ -471,7 +472,7 @@ fun SettingsScreen(
 
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(Sys.Spacing.xxxl))
         }
     }
 }
@@ -541,13 +542,13 @@ private val Gesture.labelRes: Int
 
 @Composable
 private fun Section(title: String) {
-    Spacer(Modifier.height(24.dp))
+    Spacer(Modifier.height(Sys.Spacing.xxl))
     HorizontalDivider()
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+        modifier = Modifier.padding(top = Sys.Spacing.md, bottom = Sys.Spacing.xs),
     )
 }
 
@@ -561,7 +562,7 @@ private fun SwitchRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = Sys.Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -594,15 +595,15 @@ private fun PermissionCard(message: String, action: String, onClick: () -> Unit)
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 12.dp),
+            .padding(top = Sys.Spacing.md),
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(Sys.Spacing.lg)) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Sys.Spacing.sm))
             Button(onClick = onClick) { Text(action) }
         }
     }
@@ -620,10 +621,10 @@ private fun ModeRow(
         Modifier
             .fillMaxWidth()
             .selectable(selected = selected, onClick = onSelect)
-            .padding(vertical = 8.dp),
+            .padding(vertical = Sys.Spacing.sm),
     ) {
         RadioButton(selected = selected, onClick = null)
-        Column(Modifier.padding(start = 8.dp)) {
+        Column(Modifier.padding(start = Sys.Spacing.sm)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             Text(
                 text = description,
@@ -640,9 +641,9 @@ private fun ValueRow(label: String, value: String, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(Comp.Settings.rowRadius))
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 4.dp),
+            .padding(vertical = Sys.Spacing.md, horizontal = Sys.Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -691,7 +692,7 @@ private fun RadioRow(label: String, selected: Boolean, onSelect: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .selectable(selected = selected, onClick = onSelect)
-            .padding(vertical = 6.dp),
+            .padding(vertical = Comp.Settings.rowPaddingVertical),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(selected = selected, onClick = null)
@@ -699,7 +700,7 @@ private fun RadioRow(label: String, selected: Boolean, onSelect: () -> Unit) {
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Start,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = Sys.Spacing.sm),
         )
     }
 }

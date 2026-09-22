@@ -21,10 +21,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jjw.blackscreen.ui.theme.FloatingContent
 import com.jjw.blackscreen.R
+import com.jjw.blackscreen.ui.theme.Comp
+import com.jjw.blackscreen.ui.theme.Sys
 
 /** 꾹 누른 채로 고른 방향. */
 enum class BubbleAim { NONE, UP, DOWN }
@@ -37,9 +36,6 @@ enum class BubbleAim { NONE, UP, DOWN }
  * 올렸다가 다시 내리면 순 변위는 상쇄되므로 마음을 바꿀 수 있다.
  */
 const val AIM_THRESHOLD_DP = 44
-
-/** 화면 위아래 끝에서 띄우는 거리. */
-private const val AIM_EDGE_DP = 112
 
 /** 겨냥하는 동안만 띄우는 표시용 창이라 터치를 받지 않는다 — 터치는 버블 창이 계속 쥔다. */
 internal fun aimTargetsLayoutParams(): WindowManager.LayoutParams =
@@ -66,19 +62,19 @@ fun AimTargets(aim: BubbleAim) {
             icon = "▲",
             label = stringResource(R.string.aim_open_app),
             active = aim == BubbleAim.UP,
-            activeColor = Color(0xF02F6FA8),
+            activeColor = Comp.AimChip.surfaceUp,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = AIM_EDGE_DP.dp),
+                .padding(top = Comp.AimChip.edgeMargin),
         )
         AimChip(
             icon = "✕",
             label = stringResource(R.string.aim_remove_bubble),
             active = aim == BubbleAim.DOWN,
-            activeColor = Color(0xF0C0392B),
+            activeColor = Comp.AimChip.surfaceDown,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = AIM_EDGE_DP.dp),
+                .padding(bottom = Comp.AimChip.edgeMargin),
         )
     }
 }
@@ -92,24 +88,24 @@ private fun AimChip(
     modifier: Modifier = Modifier,
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (active) 1.12f else 1f,
-        animationSpec = tween(durationMillis = 150),
+        targetValue = if (active) Comp.AimChip.activeScale else 1f,
+        animationSpec = tween(durationMillis = Comp.AimChip.scaleDuration),
         label = "aimChipScale",
     )
     Row(
         modifier
             .scale(scale)
-            .clip(RoundedCornerShape(percent = 50))
-            .background(if (active) activeColor else Color(0xC0202020))
-            .padding(horizontal = 18.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .clip(RoundedCornerShape(percent = Sys.Radius.pill))
+            .background(if (active) activeColor else Comp.AimChip.surfaceIdle)
+            .padding(horizontal = Comp.AimChip.paddingHorizontal, vertical = Comp.AimChip.paddingVertical),
+        horizontalArrangement = Arrangement.spacedBy(Comp.AimChip.gap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(icon, color = Color.White, fontSize = 16.sp)
+        Text(icon, color = Comp.AimChip.contentActive, fontSize = Comp.AimChip.iconSize)
         Text(
             label,
-            color = if (active) Color.White else FloatingContent,
-            fontSize = 15.sp,
+            color = if (active) Comp.AimChip.contentActive else Comp.AimChip.contentIdle,
+            fontSize = Comp.AimChip.labelSize,
             fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
         )
     }

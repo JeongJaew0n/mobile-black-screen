@@ -118,7 +118,7 @@ app/src/main/java/.../blackscreen/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
 │   ├─ Clock.kt                 분 경계 정렬 시계 — 패턴은 ICU 가 로케일에서 파생
 │   ├─ BurnInShift.kt           픽셀 시프트 로직
-│   └─ theme/Tokens.kt          디자인 토큰 — 두 곳 이상 반복되는 값만
+│   └─ theme/Tokens.kt          디자인 토큰 — **생성물.** 원본은 design/tokens/tokens.json (§4.11)
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 피드백
 │   └─ settings/SettingsScreen.kt
 ├─ data/
@@ -556,6 +556,29 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
 실측(S23+ / Android 16): 끔 7→7 · 일시 음소거 7→0→해제 후 7 · 볼륨 0 은 7→0→해제 후에도 0.
 `force-stop` 은 `onDestroy` 를 부르지 않아 0 이 남았고, 앱을 다시 열자 DataStore 보험이
 되돌렸다. **블루투스 경로는 기기가 없어 검증하지 못했다** (스피커 라우팅만 확인).
+
+### 4.11 디자인 토큰
+
+시각 값 — 색·불투명도·치수·글자 크기·시간 — 은 전부 `design/tokens/tokens.json`(W3C DTCG 형식)에
+있고, `ui/theme/Tokens.kt` 는 `design/tokens/build.py` 가 거기서 **생성**한다. Kotlin 을 손으로
+고치면 다음 생성에서 사라진다. `build.py --check` 가 어긋남을 잡는다.
+
+세 층이다. **sys 는 ref 만, comp 는 sys·ref 만 가리킨다.** 생성기가 검사한다.
+
+| 층 | 무엇 | 예 | 누가 쓰나 |
+|---|---|---|---|
+| `Ref` | 원시값. 이름에 의도가 없다 | `Palette.ink900` `Dimension.d8` `Opacity.o70` | sys 만 |
+| `Sys` | 의도 | `Color.canvas` `Color.floatingSurface` `Opacity.secondary` `Typography.display` `Spacing.md` | comp, 그리고 레이아웃 간격처럼 부품에 속하지 않는 자리 |
+| `Comp` | 부품 | `Bubble.surface` `MediaBar.lift` `UnlockRing.size` | 그 부품 코드 |
+
+다른 제품에 가져가는 것은 `ref`+`sys` 다. 규칙과 형식은 `design/tokens/README.md`.
+
+**토큰이 아닌 것** — 제스처 임계값(44dp·400ms·0.28·0.92), 번인 궤도, 패널 밝기 0.30, 기호 내부
+비율, 사용자 설정 기본값. 디자이너가 바꾸는 값이 아니라 동작·하드웨어·설정이다. 코드에 남아 있다.
+
+추출(2026-09-23)은 **시각 변화 0** 인 리팩터링이었다. 값이 갈라진 자리(0.22 vs 0.25, 150 vs 160ms,
+13/14/15sp)는 통합하지 않고 `docs/plans/design-tokens/checklist.md` 에 후보로 남겼다 — 통합은
+눈으로 보고 정할 디자인 결정이다.
 
 ## 5. 설정 항목
 

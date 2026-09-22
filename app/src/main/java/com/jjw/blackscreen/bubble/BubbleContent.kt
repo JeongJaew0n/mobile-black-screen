@@ -29,14 +29,9 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.jjw.blackscreen.data.BubbleIcon
-import com.jjw.blackscreen.ui.theme.FloatingBorder
-import com.jjw.blackscreen.ui.theme.FloatingSurface
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
-
-/** 이 시간 동안 손대지 않으면 흐려진다. */
-private const val IDLE_DELAY_MS = 3_000L
-private const val IDLE_ALPHA = 0.4f
+import com.jjw.blackscreen.ui.theme.Comp
 
 /** 손을 대고 나서 무엇을 하려는 것인지 갈리는 지점. */
 private enum class Intent { TAP, DRAG, AIM, CANCEL }
@@ -79,15 +74,15 @@ fun BubbleContent(
 
     LaunchedEffect(touchTick) {
         idle = false
-        delay(IDLE_DELAY_MS)
+        delay(Comp.Bubble.idleDelay.toLong())
         idle = true
     }
 
     // 유휴 상태 전환은 알파 애니메이션 한 번으로 끝낸다. 상시 프레임 루프를 돌리면
     // 다른 앱 위에서 계속 전력을 먹는다 (차폐 화면의 번인 시프트와 같은 이유).
     val bubbleAlpha by animateFloatAsState(
-        targetValue = if (idle) IDLE_ALPHA else 1f,
-        animationSpec = tween(durationMillis = 400),
+        targetValue = if (idle) Comp.Bubble.idleOpacity else 1f,
+        animationSpec = tween(durationMillis = Comp.Bubble.fadeDuration),
         label = "bubbleAlpha",
     )
 
@@ -96,8 +91,8 @@ fun BubbleContent(
             .size(sizeDp.dp)
             .alpha(bubbleAlpha)
             .clip(CircleShape)
-            .background(FloatingSurface)
-            .border(1.dp, FloatingBorder, CircleShape)
+            .background(Comp.Bubble.surface)
+            .border(Comp.Bubble.borderWidth, Comp.Bubble.border, CircleShape)
             .pointerInput(Unit) {
                 val slop = viewConfiguration.touchSlop
                 val aimThreshold = AIM_THRESHOLD_DP.dp.toPx()

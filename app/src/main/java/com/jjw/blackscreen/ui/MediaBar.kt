@@ -38,21 +38,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jjw.blackscreen.R
 import com.jjw.blackscreen.media.NowPlaying
-import com.jjw.blackscreen.ui.theme.SecondaryAlpha
 import kotlinx.coroutines.delay
+import com.jjw.blackscreen.ui.theme.Comp
 
 /**
  * 진행 막대를 다시 그리는 주기. 시계를 분 단위로만 갱신하는 것과 같은 이유 — 초마다 그리면
  * 8시간 내내 1Hz 로 깨어 있는 셈이다. 곡 전환·일시정지는 이 주기와 무관하게 콜백으로 즉시 온다.
  */
 private const val ProgressRedrawMillis = 10_000L
-
-/** 하단 여백. 예전 밀어서 잠금 해제 트랙이 있던 자리다. 2차 제어 버튼은 이 아래에 들어간다. */
-val MediaBarBottomMargin = 72.dp
 
 /**
  * 재생 바 — 화면 하단 고정. 제목 · 아티스트/앱 · 진행 막대 · `1:23 / 4:56`. 표시 전용.
@@ -73,22 +68,22 @@ fun BoxScope.MediaBarLayer(
      * 두 블록이 따로 흔들린다.
      */
     shift: IntOffset,
-    bottomMargin: Dp = MediaBarBottomMargin,
+    bottomMargin: Dp = Comp.MediaBar.bottomMargin,
 ) {
     Column(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { shift }
             .padding(bottom = bottomMargin)
-            .fillMaxWidth(0.8f),
+            .fillMaxWidth(Comp.MediaBar.widthFraction),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (nowPlaying == null) {
             if (permissionMissing) {
                 Text(
                     text = stringResource(R.string.media_permission_needed),
-                    color = tint.copy(alpha = 0.55f),
-                    fontSize = 14.sp,
+                    color = tint.copy(alpha = Comp.MediaBar.permissionHintOpacity),
+                    fontSize = Comp.MediaBar.permissionHintSize,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -109,7 +104,7 @@ fun BoxScope.MediaBarLayer(
         Text(
             text = nowPlaying.title,
             color = tint,
-            fontSize = 16.sp,
+            fontSize = Comp.MediaBar.titleSize,
             fontFamily = fontFamily,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -117,17 +112,17 @@ fun BoxScope.MediaBarLayer(
         )
         Text(
             text = nowPlaying.subtitle,
-            color = tint.copy(alpha = SecondaryAlpha),
-            fontSize = 13.sp,
+            color = tint.copy(alpha = Comp.MediaBar.subtitleOpacity),
+            fontSize = Comp.MediaBar.subtitleSize,
             fontFamily = fontFamily,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 2.dp),
+            modifier = Modifier.padding(top = Comp.MediaBar.subtitleGap),
         )
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp),
+                .padding(top = Comp.MediaBar.barGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (nowPlaying.durationMs > 0) {
@@ -135,22 +130,22 @@ fun BoxScope.MediaBarLayer(
                 Box(
                     Modifier
                         .weight(1f)
-                        .height(2.dp)
-                        .background(tint.copy(alpha = 0.25f)),
+                        .height(Comp.MediaBar.barHeight)
+                        .background(tint.copy(alpha = Comp.MediaBar.trackOpacity)),
                 ) {
                     val fraction = (position.toFloat() / nowPlaying.durationMs).coerceIn(0f, 1f)
                     Box(
                         Modifier
                             .fillMaxWidth(fraction)
-                            .height(2.dp)
+                            .height(Comp.MediaBar.barHeight)
                             .background(tint),
                     )
                 }
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(Comp.MediaBar.timeGap))
                 Text(
                     text = "${formatClock(position)} / ${formatClock(nowPlaying.durationMs)}",
-                    color = tint.copy(alpha = SecondaryAlpha),
-                    fontSize = 12.sp,
+                    color = tint.copy(alpha = Comp.MediaBar.timeOpacity),
+                    fontSize = Comp.MediaBar.timeSize,
                     fontFamily = fontFamily,
                 )
             } else {
@@ -158,8 +153,8 @@ fun BoxScope.MediaBarLayer(
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = formatClock(position),
-                    color = tint.copy(alpha = SecondaryAlpha),
-                    fontSize = 12.sp,
+                    color = tint.copy(alpha = Comp.MediaBar.timeOpacity),
+                    fontSize = Comp.MediaBar.timeSize,
                     fontFamily = fontFamily,
                 )
             }
@@ -192,20 +187,20 @@ fun BoxScope.MediaControlsLayer(
     onPrevious: () -> Unit,
     /** 재생 바와 **같은** 궤도값. [MediaBarLayer] 참조. */
     shift: IntOffset,
-    bottomMargin: Dp = MediaBarBottomMargin,
+    bottomMargin: Dp = Comp.MediaBar.bottomMargin,
 ) {
     Row(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { shift }
             // 재생 바(제목·부제·막대) 위에 얹는다. 막대 높이만큼 더 띄운다.
-            .padding(bottom = bottomMargin + 84.dp)
+            .padding(bottom = bottomMargin + Comp.MediaControls.lift)
             // 컨트롤 영역의 탭은 여기서 끝낸다. 비활성 버튼과 버튼 사이 간격은 자식이 소비하지
             // 않아 그대로 아래 해제 제스처 레이어로 내려간다 — 그러면 흐린 이전/다음 버튼을
             // 세 번 누르는 것만으로 3회 탭 해제가 발동한다. 자식이 소비한 탭은
             // detectTapGestures 의 requireUnconsumed 때문에 여기까지 오지 않는다.
             .pointerInput(Unit) { detectTapGestures { } },
-        horizontalArrangement = Arrangement.spacedBy(28.dp),
+        horizontalArrangement = Arrangement.spacedBy(Comp.MediaControls.gap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CtrlButton(enabled = nowPlaying.canPrev, tint = tint, onClick = onPrevious) { c, t ->
@@ -227,10 +222,10 @@ private fun CtrlButton(
     onClick: () -> Unit,
     draw: DrawScope.(size: Float, color: Color) -> Unit,
 ) {
-    val color = if (enabled) tint else tint.copy(alpha = 0.3f)
+    val color = if (enabled) tint else tint.copy(alpha = Comp.MediaControls.disabledOpacity)
     Canvas(
         Modifier
-            .size(44.dp)               // 접근성 권장 최소 터치 영역
+            .size(Comp.MediaControls.buttonSize)
             // enabled=false 여도 clickable 을 붙여 둔다. 스크린리더에 '사용 불가 버튼' 으로
             // 읽히고, 탭이 새는 것은 부모 Row 가 막는다.
             .clickable(enabled = enabled, onClick = onClick),

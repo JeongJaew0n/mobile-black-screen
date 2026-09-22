@@ -1,6 +1,7 @@
 package com.jjw.blackscreen.data
 
 import androidx.compose.ui.graphics.Color
+import com.jjw.blackscreen.ui.theme.Sys
 
 /**
  * Screen Off 방식.
@@ -246,7 +247,7 @@ data class Settings(
      *
      * 그래서 밝기 손잡이는 [screenBrightness] 하나로 통일했다. 여기는 건드리지 말 것.
      */
-    val textColor: Color get() = Color.White
+    val textColor: Color get() = Sys.Color.onCanvas
 
     /**
      * 창 밝기 오버라이드(0..1). 이 앱에서 밝기를 조절하는 **유일한** 값이다.
