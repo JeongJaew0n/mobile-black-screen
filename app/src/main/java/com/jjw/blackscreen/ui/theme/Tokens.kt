@@ -79,8 +79,8 @@ object Ref {
         /** 먹색 88%. 뒤가 살짝 비쳐 '떠 있다' 는 인상. */
         val wash700a88 = androidx.compose.ui.graphics.Color(0xE04A4A4A)
 
-        /** 먹색 75%. 더 비친다 — 뒤로 물러나 보여야 하는 표면. */
-        val wash700a75 = androidx.compose.ui.graphics.Color(0xC04A4A4A)
+        /** 짙은 먹 94%. 뒤로 물러나되 뒤 글자가 비치지 않는 표면. 75% 로는 설정 화면 위에서 라벨이 뒤 글자와 섞였다(실기기, 2026-09-28). */
+        val wash800a94 = androidx.compose.ui.graphics.Color(0xF02A2A2A)
 
         val slate700a94 = androidx.compose.ui.graphics.Color(0xF04C5D70)
 
@@ -221,8 +221,11 @@ object Sys {
         /** 다른 앱 위에 떠 있는 UI 의 표면 — 버블, 설정의 버블 견본. */
         val floatingSurface = Ref.Palette.wash700a88
 
-        /** 떠 있는 UI 중 뒤로 물러나 보여야 하는 것 — 겨냥 칩의 비활성 상태. */
-        val floatingSurfaceMuted = Ref.Palette.wash700a75
+        /**
+         * 떠 있는 UI 중 뒤로 물러나 보여야 하는 것 — 겨냥 칩의 비활성 상태. 물러남은 투명도가 아니라 어둠으로 낸다 — 투명하면 뒤 글자가 라벨과 섞인다.
+         * 라벨(wash300) 대비 8.8:1.
+         */
+        val floatingSurfaceMuted = Ref.Palette.wash800a94
 
         /** 떠 있는 표면의 얇은 테두리. 항상 stroke.hairline 굵기로 쓴다. */
         val floatingBorder = Ref.Palette.paper20

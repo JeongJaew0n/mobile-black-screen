@@ -9,7 +9,7 @@
     <color name="sys_color_canvas">#FF000000</color>
     <color name="sys_color_on_canvas">#FFFFFFE3</color>
     <color name="sys_color_floating_surface">#E04A4A4A</color>
-    <color name="sys_color_floating_surface_muted">#C04A4A4A</color>
+    <color name="sys_color_floating_surface_muted">#F02A2A2A</color>
     <color name="sys_color_floating_border">#33FFFFE3</color>
     <color name="sys_color_floating_content">#FFCBCBCB</color>
     <color name="sys_color_accent_positive">#F04C5D70</color>
@@ -46,7 +46,7 @@
     <color name="comp_bubble_surface">#E04A4A4A</color>
     <color name="comp_bubble_border">#33FFFFE3</color>
     <color name="comp_bubble_content">#FFCBCBCB</color>
-    <color name="comp_aim_chip_surface_idle">#C04A4A4A</color>
+    <color name="comp_aim_chip_surface_idle">#F02A2A2A</color>
     <color name="comp_aim_chip_surface_up">#F04C5D70</color>
     <color name="comp_aim_chip_surface_down">#F0C0392B</color>
     <color name="comp_aim_chip_content_active">#FFFFFFE3</color>

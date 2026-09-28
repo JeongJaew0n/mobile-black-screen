@@ -8,6 +8,7 @@ import android.provider.Settings as AndroidSettings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.WindowInsets
@@ -42,7 +43,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // 앱은 기기 테마와 상관없이 항상 어둡다(BlackScreenTheme). 기본 enableEdgeToEdge() 는 시스템 테마를
+        // 따라 바 스타일을 고르므로, 기기가 라이트 모드면 어두운 화면 위에 어두운 아이콘 + 밝은 내비바가
+        // 나온다(실기기, 2026-09-28). 바도 항상 어두운 쪽으로 고정한다.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        )
 
         val repository = SettingsRepository(this)
 

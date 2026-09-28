@@ -128,6 +128,9 @@ adb shell dumpsys accessibility | grep -c "label=검은 화면"   # 1 이어야 
 - **adb 로는 비공개 서비스를 시작할 수 없다.** `am start-foreground-service … STOP_BUBBLE` 은
   `Requires permission not exported` 로 거부된다. 알림 액션 경로를 검증하려면 같은 액션을 쓰는
   설정 스위치를 탭한다. 이걸 모르고 "STOP_BUBBLE 이 안 먹는다" 로 오진한 적이 있다.
+- **차폐를 켜기 전에 `media_volume_action` 저장값부터 볼 것.** `SET_TO_ZERO` 면 테스트로 한 번 켜기만 해도
+  미디어 볼륨이 0 이 되고 **해제해도 안 돌아온다.** 사용자가 설정을 바꿔 둔 줄 모르고 켰다가 8 → 0 으로
+  내린 적이 있다(`dumpsys audio | grep setStreamVolume` 로 원래 값을 찾아 되돌렸다).
 - **사용자가 폰을 쓰는 중일 수 있다.** `am start` 가 앱을 앞으로 못 가져온 채 탭을
   보내면 그 입력이 사용자가 보던 앱에 그대로 들어간다. 실제로 카카오톡 대화 화면에
   탭을 넣은 적이 있다. **탭 직전 스크린샷으로 우리 앱이 최상단인지 확인할 것.**
@@ -252,6 +255,8 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 - **`LayoutParams.y` 는 픽셀이다.** dp 숫자를 그대로 넣는 실수를 이미 한 번 했다.
 - **코루틴 안에서 창을 붙일 때는 동기 플래그로 중복을 막을 것.** `addBubble()` 은
   저장된 위치를 읽느라 코루틴 안에서 `addView` 하는데, 그 사이 재호출되면 창이 두 개 생긴다.
+- **`enableEdgeToEdge()` 를 인자 없이 부르지 말 것.** 기본값은 앱 테마가 아니라 기기 다크 모드를 따라, 기기가
+  라이트 모드면 항상 어두운 이 앱 위에 어두운 아이콘과 밝은 내비바가 나온다. `SystemBarStyle.dark` 로 고정한다.
 - **`android.builtInKotlin` 을 끄지 말 것.** 외부 `org.jetbrains.kotlin.android`
   플러그인은 AGP 9 의 새 DSL 이 `BaseExtension` 을 제거해 `ClassCastException` 으로
   실패한다. `kotlin.plugin.compose` 만 적용한다.
