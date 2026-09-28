@@ -573,6 +573,11 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
 
 다른 제품에 가져가는 것은 `ref`+`sys` 다. 규칙과 형식은 `design/tokens/README.md`.
 
+**팔레트는 수묵화**(Figma Ink wash, 2026-09-28 — `docs/plans/ink-wash-palette/`). 차폐 바탕은 `#000000`,
+글자는 `paper #FFFFE3`, 떠 있는 표면은 먹색 `#4A4A4A`. `Sys.Color` 에는 Material 3 색 역할(surface,
+primary, outline…)도 있어 설정 화면의 `colorScheme` 을 채울 수 있다 — **아직 `MainActivity` 는
+`darkColorScheme()` 기본값이다.**
+
 **토큰이 아닌 것** — 제스처 임계값(44dp·400ms·0.28·0.92), 번인 궤도, 패널 밝기 0.30, 기호 내부
 비율, 사용자 설정 기본값. 디자이너가 바꾸는 값이 아니라 동작·하드웨어·설정이다. 코드에 남아 있다.
 

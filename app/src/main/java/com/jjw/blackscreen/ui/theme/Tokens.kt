@@ -14,33 +14,75 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object Ref {
+    /**
+     * 수묵화(Figma 'Ink wash' — #4A4A4A · #CBCBCB · #FFFFE3 · #6D8196)를 이 앱에 맞게 펼친 팔레트. 피그마 원색 넷은
+     * 설명에 '원색' 으로 표시했고, 나머지는 그 사이·양 끝을 메운 톤이다.
+     */
     object Palette {
+        /** 차폐 바탕. AMOLED 에서 발광하지 않는다 — 이 앱의 존재 이유라 팔레트가 바뀌어도 그대로다. */
         val black = androidx.compose.ui.graphics.Color(0xFF000000)
 
-        val white = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
+        /** 원색. 한지색. 흰색 대비 98.6% 밝기라 패널 0.30 에서도 흰 글자와 같이 읽히면서 푸른 기가 빠진다. */
+        val paper = androidx.compose.ui.graphics.Color(0xFFFFFFE3)
 
-        /** 떠 있는 표면의 바탕색. 순검정보다 한 톤 밝아 검은 앱 위에서도 윤곽이 잡힌다. */
-        val ink900 = androidx.compose.ui.graphics.Color(0xFF141414)
+        val wash200 = androidx.compose.ui.graphics.Color(0xFFDEDEDA)
 
-        val ink850 = androidx.compose.ui.graphics.Color(0xFF202020)
+        /** 원색. 옅은 먹. 어두운 표면 위의 기호·보조 텍스트. */
+        val wash300 = androidx.compose.ui.graphics.Color(0xFFCBCBCB)
 
-        val blue500 = androidx.compose.ui.graphics.Color(0xFF2F6FA8)
+        val wash400 = androidx.compose.ui.graphics.Color(0xFF9E9E9E)
 
+        val wash500 = androidx.compose.ui.graphics.Color(0xFF7C7C7C)
+
+        val wash600 = androidx.compose.ui.graphics.Color(0xFF616161)
+
+        /** 원색. 먹색. 떠 있는 표면. */
+        val wash700 = androidx.compose.ui.graphics.Color(0xFF4A4A4A)
+
+        val wash750 = androidx.compose.ui.graphics.Color(0xFF363636)
+
+        val wash800 = androidx.compose.ui.graphics.Color(0xFF2A2A2A)
+
+        val wash850 = androidx.compose.ui.graphics.Color(0xFF1F1F1F)
+
+        /** 설정 화면의 바탕. 순검정보다 한 톤 위라 카드·시트가 떠 보인다. */
+        val wash900 = androidx.compose.ui.graphics.Color(0xFF161616)
+
+        val wash950 = androidx.compose.ui.graphics.Color(0xFF0E0E0E)
+
+        val slate200 = androidx.compose.ui.graphics.Color(0xFFC9D3DE)
+
+        /** 어두운 바탕 위 강조(Material primary). 먹색 계열 위에서 8.7:1. */
+        val slate300 = androidx.compose.ui.graphics.Color(0xFFA7B6C6)
+
+        /** 원색. 청회색. 스케일의 기준 톤. 흰 글자를 얹으면 4.0:1 로 모자라 강조 표면으로는 slate700 을 쓴다. */
+        val slate500 = androidx.compose.ui.graphics.Color(0xFF6D8196)
+
+        val slate700 = androidx.compose.ui.graphics.Color(0xFF4C5D70)
+
+        val slate800 = androidx.compose.ui.graphics.Color(0xFF2C3845)
+
+        val slate900 = androidx.compose.ui.graphics.Color(0xFF1E2630)
+
+        val red200 = androidx.compose.ui.graphics.Color(0xFFF2B8B0)
+
+        /** 지우기·닫기. 수묵화에 경고색이 없어 이전 팔레트의 값을 그대로 둔다 — '열기' 와 헷갈리면 안 된다. */
         val red500 = androidx.compose.ui.graphics.Color(0xFFC0392B)
 
-        /** 흰색 20%. 어두운 표면의 얇은 테두리. */
-        val white20 = androidx.compose.ui.graphics.Color(0x33FFFFFF)
+        val red800 = androidx.compose.ui.graphics.Color(0xFF7A2419)
 
-        /** 흰색 70%. 어두운 표면 위의 기호·라벨 — 100% 면 표면에서 뜬다. */
-        val white70 = androidx.compose.ui.graphics.Color(0xB3FFFFFF)
+        val red900 = androidx.compose.ui.graphics.Color(0xFF5C1A12)
 
-        /** ink900 88%. 뒤가 살짝 비쳐 '떠 있다' 는 인상. 불투명하면 화면에 붙은 딱지처럼 보인다. */
-        val ink900a88 = androidx.compose.ui.graphics.Color(0xE0141414)
+        /** paper 20%. 어두운 표면의 얇은 테두리. */
+        val paper20 = androidx.compose.ui.graphics.Color(0x33FFFFE3)
 
-        /** ink850 75%. ink900a88 보다 밝고 더 비친다 — 뒤로 물러나 보여야 하는 표면. */
-        val ink850a75 = androidx.compose.ui.graphics.Color(0xC0202020)
+        /** 먹색 88%. 뒤가 살짝 비쳐 '떠 있다' 는 인상. */
+        val wash700a88 = androidx.compose.ui.graphics.Color(0xE04A4A4A)
 
-        val blue500a94 = androidx.compose.ui.graphics.Color(0xF02F6FA8)
+        /** 먹색 75%. 더 비친다 — 뒤로 물러나 보여야 하는 표면. */
+        val wash700a75 = androidx.compose.ui.graphics.Color(0xC04A4A4A)
+
+        val slate700a94 = androidx.compose.ui.graphics.Color(0xF04C5D70)
 
         val red500a94 = androidx.compose.ui.graphics.Color(0xF0C0392B)
     }
@@ -171,28 +213,95 @@ object Sys {
         val canvas = Ref.Palette.black
 
         /**
-         * 캔버스 위의 글자·기호. 항상 흰색이다 — 보이는 밝기는 프레임버퍼 값 × 패널 밝기라, 글자를 회색으로 낮추면 패널 밝기 0.30 에서 읽히지 않는다.
-         * 실제로 세 번 그랬다.
+         * 캔버스 위의 글자·기호. 거의 흰색이어야 한다 — 보이는 밝기는 프레임버퍼 값 × 패널 밝기라, 회색으로 낮추면 패널 0.30 에서 읽히지 않는다.
+         * 실제로 세 번 그랬다. 흑백 대비 19:1 미만은 여기 쓰지 말 것.
          */
-        val onCanvas = Ref.Palette.white
+        val onCanvas = Ref.Palette.paper
 
         /** 다른 앱 위에 떠 있는 UI 의 표면 — 버블, 설정의 버블 견본. */
-        val floatingSurface = Ref.Palette.ink900a88
+        val floatingSurface = Ref.Palette.wash700a88
 
         /** 떠 있는 UI 중 뒤로 물러나 보여야 하는 것 — 겨냥 칩의 비활성 상태. */
-        val floatingSurfaceMuted = Ref.Palette.ink850a75
+        val floatingSurfaceMuted = Ref.Palette.wash700a75
 
         /** 떠 있는 표면의 얇은 테두리. 항상 stroke.hairline 굵기로 쓴다. */
-        val floatingBorder = Ref.Palette.white20
+        val floatingBorder = Ref.Palette.paper20
 
-        /** 떠 있는 표면 위의 기호·라벨. */
-        val floatingContent = Ref.Palette.white70
+        /** 떠 있는 표면 위의 기호·라벨. 먹색 위 5.5:1. */
+        val floatingContent = Ref.Palette.wash300
 
-        /** '열기·진행' 계열 강조. 겨냥 위(앱 열기). */
-        val accentPositive = Ref.Palette.blue500a94
+        /** '열기·진행' 계열 강조. 겨냥 위(앱 열기). paper 글자 대비 6.7:1. */
+        val accentPositive = Ref.Palette.slate700a94
 
         /** '지우기·닫기' 계열 강조. 겨냥 아래(버블 닫기). */
         val accentDestructive = Ref.Palette.red500a94
+
+        /** 여기부터는 앱 화면(설정)의 역할. 이름은 Material 3 색 역할과 같다 — colorScheme 에 그대로 꽂힌다. */
+        val background = Ref.Palette.wash900
+
+        val onBackground = Ref.Palette.paper
+
+        val surface = Ref.Palette.wash900
+
+        /** surface 위 17.8:1. */
+        val onSurface = Ref.Palette.paper
+
+        val surfaceVariant = Ref.Palette.wash800
+
+        /** 설명 문구·보조 텍스트. surface 위 11.2:1. */
+        val onSurfaceVariant = Ref.Palette.wash300
+
+        val surfaceContainerLowest = Ref.Palette.wash950
+
+        val surfaceContainerLow = Ref.Palette.wash900
+
+        val surfaceContainer = Ref.Palette.wash850
+
+        val surfaceContainerHigh = Ref.Palette.wash800
+
+        val surfaceContainerHighest = Ref.Palette.wash750
+
+        /** 버튼·선택 표시·스위치. surface 위 8.7:1. */
+        val primary = Ref.Palette.slate300
+
+        val onPrimary = Ref.Palette.slate900
+
+        val primaryContainer = Ref.Palette.slate800
+
+        val onPrimaryContainer = Ref.Palette.slate200
+
+        val secondary = Ref.Palette.wash300
+
+        val onSecondary = Ref.Palette.wash800
+
+        /** 선택된 탭·칩의 바탕. */
+        val secondaryContainer = Ref.Palette.wash750
+
+        val onSecondaryContainer = Ref.Palette.wash200
+
+        /** 입력칸·라디오 테두리. surface 위 4.3:1 — 비텍스트 기준 3:1 을 넘는다. */
+        val outline = Ref.Palette.wash500
+
+        /** 구분선. */
+        val outlineVariant = Ref.Palette.wash750
+
+        val error = Ref.Palette.red200
+
+        val onError = Ref.Palette.red900
+
+        /** 권한 안내 카드의 바탕. */
+        val errorContainer = Ref.Palette.red800
+
+        val onErrorContainer = Ref.Palette.red200
+
+        /** 스낵바. */
+        val inverseSurface = Ref.Palette.wash200
+
+        val inverseOnSurface = Ref.Palette.wash850
+
+        val inversePrimary = Ref.Palette.slate700
+
+        val scrim = Ref.Palette.black
     }
 
     /** 글자색(tint)에 곱하는 상대 불투명도. 이 앱의 글자색은 설정이 정하므로 색을 고정할 수 없고 '몇 %' 로만 단계를 둘 수 있다. */
