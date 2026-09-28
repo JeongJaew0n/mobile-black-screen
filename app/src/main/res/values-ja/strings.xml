@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  日本語.
+
+  ⚠️ OS の設定項目名を引用する文字列: overlay_permission_needed, bubble_permission_note,
+  accessibility_needed, accessibility_open, media_permission_needed, show_media_desc.
+  直訳せず、日本語版 Android の表記をそのまま使うこと。でないとユーザーが項目を見つけられない。
+  いま使っているのは AOSP の表記(他のアプリの上に重ねて表示 / ユーザー補助 / 通知へのアクセス)。
+  Samsung One UI の日本語表記と一致するかは未確認 — docs/plans/i18n-ja/checklist.md
+
+  「Screen Off」はこのアプリの機能名なので訳さない(韓国語版と同じ)。
+-->
+<resources>
+    <string name="app_name">黒い画面</string>
+    <string name="tile_label">黒い画面</string>
+
+    <string name="tab_display">表示</string>
+    <string name="tab_settings">設定</string>
+    <string name="start_blackout">Screen Off を開始</string>
+    <string name="show_clock">時計を表示</string>
+    <string name="clock_format">時計の形式</string>
+    <string name="clock_24h">24時間表示</string>
+    <string name="clock_12h">午前・午後</string>
+    <string name="clock_style_label">%1$s(%2$s)</string>
+    <string name="clock_font">時計のフォント</string>
+    <string name="clock_font_light">細字</string>
+    <string name="clock_font_bold">太字</string>
+    <string name="clock_font_serif">明朝</string>
+    <string name="clock_font_mono">等幅</string>
+    <string name="clock_font_cursive">手書き風</string>
+    <string name="show_date">日付を表示</string>
+    <string name="date_format">日付の形式</string>
+    <string name="close">閉じる</string>
+    <string name="show_battery">電池残量を表示</string>
+    <string name="show_media">再生中の音楽・動画を表示</string>
+    <string name="show_media_desc">再生中の曲のタイトルと進行状況を画面の下に表示します。再生情報を取得するために「通知へのアクセス」を使いますが、このアプリは通知の内容を読みません。</string>
+    <string name="media_permission_needed">この機能を使うには「通知へのアクセス」を許可してください</string>
+    <string name="sentence">メッセージ</string>
+    <string name="sentence_hint">空欄にすると何も表示しません</string>
+    <string name="content_preview_hint">実際の画面はこれより暗くなります — パネルの明るさを 0.30 まで下げるためです</string>
+
+
+    <string name="section_sound">サウンド</string>
+    <string name="media_volume_none">オフ</string>
+    <string name="media_volume_none_desc">メディアの音量は変更しません</string>
+    <string name="media_volume_mute">画面を覆っている間だけミュート</string>
+    <string name="media_volume_mute_desc">覆っている間だけメディアの音を消します。解除すると元の音量に戻ります</string>
+    <string name="media_volume_zero">音量を 0 にする</string>
+    <string name="media_volume_zero_desc">メディアの音量を 0 にします。解除しても 0 のままです</string>
+    <string name="media_volume_note">変更するのはメディアの音量だけです — 通知・通話・アラームはそのままです。Bluetooth で聴いているときは適用されません。</string>
+    <string name="section_unlock">解除</string>
+
+    <string name="gesture_long_press">長押し</string>
+    <string name="hold_duration_value">長押しの時間 %1$.1f 秒</string>
+    <string name="gesture_double_tap">ダブルタップ</string>
+    <string name="gesture_triple_tap">3回タップ</string>
+    <string name="gesture_swipe">上にスワイプ</string>
+    <string name="gesture_slide_to_unlock">スライドで解除</string>
+    <string name="slide_to_unlock_hint">スライドで解除</string>
+    <string name="gesture_fingerprint">指紋</string>
+    <string name="fingerprint_unlock_hint">ロック解除</string>
+    <string name="biometric_title">指紋で Screen Off を解除</string>
+    <string name="biometric_cancel">キャンセル</string>
+
+    <string name="section_mode">Screen Off の方式</string>
+    <string name="mode_blackout">完全な黒</string>
+    <string name="mode_blackout_desc">ステータスバーも隠します。権限は不要です。他のアプリの描画は止まりますが、音楽やダウンロードなどのバックグラウンド処理は続きます。</string>
+    <string name="mode_overlay">オーバーレイ</string>
+    <string name="mode_overlay_desc">他のアプリは描画を続けますが、ステータスバーとナビゲーションバーは覆えず表示されたままです。</string>
+    <string name="overlay_permission_needed">「他のアプリの上に重ねて表示」の権限が必要です</string>
+    <string name="grant_permission">権限を許可</string>
+
+    <string name="overlay_channel">Screen Off の状態</string>
+    <string name="overlay_running">Screen Off 中</string>
+    <string name="overlay_running_desc">設定した操作で解除するか、下のボタンをタップしてください</string>
+    <string name="overlay_stop">解除</string>
+
+    <string name="section_bubble">バブル</string>
+    <string name="bubble_enabled">他のアプリの上にバブルを表示</string>
+    <string name="bubble_size_value">バブルのサイズ %1$d dp</string>
+    <string name="bubble_icon">バブルの記号</string>
+    <string name="bubble_icon_bar">棒</string>
+    <string name="bubble_icon_dot">点</string>
+    <string name="bubble_icon_ring">円</string>
+    <string name="bubble_icon_moon">月</string>
+    <string name="bubble_icon_power">電源</string>
+    <string name="bubble_enabled_desc">他のアプリを使っている間も、押すとすぐに Screen Off にできる小さなボタンです。長押ししたまま上にスライドするとこの設定画面が開き、下にスライドするとバブルが閉じます(アプリを開くと戻ります)。ドラッグすると移動できます。アプリを閉じても残ります。</string>
+    <string name="bubble_hidden">バブルを隠す</string>
+    <string name="bubble_hidden_desc">オンにすると、アプリを開いてもバブルは表示されません。しばらく片付けておきたいときに使います。長押しして下にスライドで閉じるのは一時的で、アプリを開くと戻ります。</string>
+    <string name="bubble_permission_note">バブルには Screen Off の方式とは別に「他のアプリの上に重ねて表示」の権限が必要です。</string>
+    <string name="bubble_running">バブルを表示中</string>
+    <string name="bubble_running_desc">タップで Screen Off · 長押しして上でアプリ、下で閉じる</string>
+    <string name="bubble_stop">バブルを閉じる</string>
+    <string name="aim_open_app">アプリを開く</string>
+    <string name="aim_remove_bubble">バブルを閉じる</string>
+
+    <string name="accessibility_description">画面全体を覆うために必要です。ステータスバーとナビゲーションバーの上にウィンドウを表示できるのはユーザー補助サービスだけです。このアプリは画面の内容を読みません。</string>
+
+    <string name="mode_full">全画面</string>
+    <string name="mode_full_desc">使っていたアプリはそのままで、ステータスバーとナビゲーションバーを含む画面全体を黒くします。「ユーザー補助」の権限が必要です。</string>
+    <string name="accessibility_needed">「ユーザー補助」の権限が必要です</string>
+    <string name="accessibility_open">ユーザー補助の設定を開く</string>
+</resources>

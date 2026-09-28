@@ -671,16 +671,20 @@ DateTimePatternGenerator.getInstance(locale)
 ```
 res/values/strings.xml       영어 — 기본 폴백. 목록에 없는 언어는 여기를 본다
 res/values-ko/strings.xml    한국어
+res/values-ja/strings.xml    일본어 (2026-09-28)
 res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig 생성에 쓴다)
 ```
 
 - 언어 추가 = `values-xx/strings.xml` 하나. `generateLocaleConfig = true` 라 Android 13+
   앱별 언어 목록에 자동으로 오른다. lint `MissingTranslation` 은 끄지 않는다.
-- **OS 용어를 인용하는 문자열 4건**(`overlay_permission_needed`, `bubble_permission_note`,
-  `accessibility_needed`, `accessibility_open`)은 각 언어의 Android 표기를 써야 한다.
+- **OS 용어를 인용하는 문자열**(`overlay_permission_needed`, `bubble_permission_note`,
+  `accessibility_needed`, `accessibility_open`, 그리고 ja 에서는 `media_permission_needed`·`show_media_desc`)은
+  각 언어의 Android 표기를 써야 한다. ja 는 AOSP 표기이고 **삼성 One UI 일본어와 같은지는 미확인**이다.
   직역하면 사용자가 그 설정 항목을 못 찾는다. 각 `strings.xml` 상단 주석에 적어 두었다.
 - 앱 안 언어 선택은 없다. Android 13+ 는 시스템 설정에 항목이 생기고, 12 이하는 기기
   언어를 따른다. appcompat 을 들이지 않기 위한 선택이다.
+- **"Screen Off" 는 어느 언어에서도 번역하지 않는다** — 기능 이름이다.
+- 지원 언어는 **en · ko · ja** 로 정했다(사용자 결정, 2026-09-28). 추가는 파일 하나지만 OS 표기 확인이 따라온다.
 - 앱별 언어가 닿지 않는 곳(F24)과 서비스 창의 로케일 고정(F25)은 함정 표 참조.
 - RTL: 설정 화면은 Compose 가 뒤집는다. **밀어서 잠금 해제 트랙은 `LocalLayoutDirection`
   을 `Ltr` 로 고정**했다 — 물리 제스처인데 `CenterStart`/`offset` 은 뒤집히고 드래그 delta

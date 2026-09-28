@@ -14,8 +14,8 @@ Android 에 임의 시점에 화면을 끄는 공개 API가 없고, 물리적으
 (cover)로 부른다 — `ScreenCoverService`, `coverView`, "차폐 창" 등. 둘은 같은 것을 가리킨다.
 UI 문자열(`strings.xml`)에 `차폐` 를 새로 넣지 말 것.
 
-**문자열의 기본 로케일은 영어다** (`values/`). 한국어는 `values-ko/`. 새 UI 문자열은
-**두 파일에 함께** 넣는다 — 한쪽만 넣으면 lint `MissingTranslation` 이 에러로 막는다.
+**문자열의 기본 로케일은 영어다** (`values/`). 한국어는 `values-ko/`, 일본어는 `values-ja/`. 새 UI 문자열은
+**세 파일에 함께** 넣는다 — 한쪽만 넣으면 lint `MissingTranslation` 이 에러로 막는다.
 Compose 안에 `Text("한글")` 을 직접 쓰지 말 것 — lint 가 못 잡는다(XML 전용 검사).
 
 ## 프로젝트 규칙 (my-app-init, 2026-09-13 확정)

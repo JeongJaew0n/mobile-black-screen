@@ -68,7 +68,7 @@
 
     <string name="overlay_channel">Screen Off 상태</string>
     <string name="overlay_running">Screen Off 중</string>
-    <string name="overlay_running_desc">길게 눌러 해제하거나 아래 버튼을 누르세요</string>
+    <string name="overlay_running_desc">설정한 방법으로 해제하거나 아래 버튼을 누르세요</string>
     <string name="overlay_stop">해제</string>
 
     <string name="section_bubble">버블</string>

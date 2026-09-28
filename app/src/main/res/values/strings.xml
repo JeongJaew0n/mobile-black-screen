@@ -69,7 +69,7 @@
 
     <string name="overlay_channel">Screen Off status</string>
     <string name="overlay_running">Screen Off is on</string>
-    <string name="overlay_running_desc">Long-press to unlock, or tap the button below</string>
+    <string name="overlay_running_desc">Unlock with your chosen gesture, or tap the button below</string>
     <string name="overlay_stop">Unlock</string>
 
     <string name="section_bubble">Bubble</string>
