@@ -16,6 +16,7 @@ import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.service.ScreenCoverService
 import com.jjw.blackscreen.ui.BlackScreenRoot
+import com.jjw.blackscreen.ui.theme.BlackScreenTheme
 
 /**
  * Blackout 모드 — 풀스크린 Activity 로 화면 전체를 덮는다.
@@ -60,7 +61,7 @@ class BlackoutActivity : ComponentActivity() {
                 }
             }
 
-            BlackScreenRoot(settings = settings, onUnlock = ::finish)
+            BlackScreenTheme { BlackScreenRoot(settings = settings, onUnlock = ::finish) }
         }
     }
 

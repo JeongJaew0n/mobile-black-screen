@@ -645,6 +645,22 @@ object Comp {
         val mediaBottomMargin = Sys.Spacing.lg
     }
 
+    /** 런처 아이콘 — 검은 바탕 위 어두운 사각 틀과 가로 막대. 앱 목록에서 '꺼진 화면' 처럼 조용해야 해서 밝은 톤을 쓰지 않는다. */
+    object LauncherIcon {
+        val background = Sys.Color.canvas
+
+        /** 예전 #2E2E2E 에 가장 가까운 먹 톤. */
+        val frame = Ref.Palette.wash800
+
+        /** 예전 #5A5A5A 에 가장 가까운 먹 톤. */
+        val mark = Ref.Palette.wash600
+    }
+
+    object Notification {
+        /** 상시 알림의 강조색(아이콘 원·액션). 설정 화면의 primary 와 같다. */
+        val accent = Sys.Color.primary
+    }
+
     /** 설정 화면. 색·글꼴은 Material 이 정하고 여기는 우리 고유 요소만. */
     object Settings {
         val screenPadding = Sys.Spacing.xl

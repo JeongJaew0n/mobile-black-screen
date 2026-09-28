@@ -49,6 +49,7 @@ import com.jjw.blackscreen.ui.BlackScreenRoot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.jjw.blackscreen.ui.theme.BlackScreenTheme
 
 /**
  * 오버레이 창들을 소유하는 단일 포그라운드 서비스.
@@ -476,7 +477,7 @@ class ScreenCoverService :
                 val settings by repository.settings.collectAsStateWithLifecycle(
                     initialValue = Settings(),
                 )
-                content(settings)
+                BlackScreenTheme { content(settings) }
             }
         }
 
@@ -531,6 +532,7 @@ class ScreenCoverService :
 
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_tile)
+            .setColor(getColor(R.color.comp_notification_accent))
             .setContentTitle(getString(title))
             .setContentText(getString(text))
             .setContentIntent(openApp)

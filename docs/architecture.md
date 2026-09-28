@@ -119,6 +119,7 @@ app/src/main/java/.../blackscreen/
 │   ├─ Clock.kt                 분 경계 정렬 시계 — 패턴은 ICU 가 로케일에서 파생
 │   ├─ BurnInShift.kt           픽셀 시프트 로직
 │   └─ theme/Tokens.kt          디자인 토큰 — **생성물.** 원본은 design/tokens/tokens.json (§4.11)
+│   └─ theme/Theme.kt           BlackScreenTheme — 수묵화 토큰으로 채운 Material colorScheme
 │   ├─ UnlockGesture.kt         해제 제스처 + 진행 피드백
 │   └─ settings/SettingsScreen.kt
 ├─ data/
@@ -575,8 +576,12 @@ FULL 모드는 아래 앱을 멈추지 않으므로 유튜브는 검은 창 아�
 
 **팔레트는 수묵화**(Figma Ink wash, 2026-09-28 — `docs/plans/ink-wash-palette/`). 차폐 바탕은 `#000000`,
 글자는 `paper #FFFFE3`, 떠 있는 표면은 먹색 `#4A4A4A`. `Sys.Color` 에는 Material 3 색 역할(surface,
-primary, outline…)도 있어 설정 화면의 `colorScheme` 을 채울 수 있다 — **아직 `MainActivity` 는
-`darkColorScheme()` 기본값이다.**
+primary, outline…)가 있고, `ui/theme/Theme.kt` 의 `BlackScreenTheme` 이 그걸로 `colorScheme` 을 채운다.
+**Compose 루트 네 곳(설정·Blackout·차폐 창·버블 창)이 전부 이 테마로 감싼다.**
+
+Compose 밖의 색 — 창 배경·시스템 바(`themes.xml`), 런처 아이콘, 알림 강조색 — 은 생성기가 함께 내는
+`res/values/tokens_colors.xml` 을 쓴다. sys·comp 색만, alias 를 풀어 `sys_color_canvas` 식 이름으로 낸다.
+XML 에도 hex 리터럴을 쓰지 않는다. 예외는 `ic_tile.xml` 의 흰색 — 시스템이 `tint` 로 덮어 칠하는 마스크다.
 
 **토큰이 아닌 것** — 제스처 임계값(44dp·400ms·0.28·0.92), 번인 궤도, 패널 밝기 0.30, 기호 내부
 비율, 사용자 설정 기본값. 디자이너가 바꾸는 값이 아니라 동작·하드웨어·설정이다. 코드에 남아 있다.

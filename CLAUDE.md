@@ -266,7 +266,9 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   필요하다. 불투명이면 컴포지터가 합성 한 단계를 아끼지만, 아래 앱이 그리는 비용은
   어차피 계속 든다. 합성 한 단계는 그에 비하면 작다.
 
-- **시각 값은 `design/tokens/tokens.json` 에만 쓴다. `ui/theme/Tokens.kt` 는 생성물이다 — 손으로 고치지 말 것.**
+- **시각 값은 `design/tokens/tokens.json` 에만 쓴다. `ui/theme/Tokens.kt` 와 `res/values/tokens_colors.xml` 은
+  생성물이다 — 손으로 고치지 말 것.** XML(테마·아이콘·알림)은 `@color/sys_color_*`·`@color/comp_*` 를 쓴다.
+  새 Compose 루트는 반드시 `BlackScreenTheme { }` 로 감쌀 것 — 안 감싸면 Material 기본 보라가 새어 나온다.
   색·불투명도·dp·sp·ms 리터럴을 코드에 새로 쓰지 않는다. JSON 에 넣고 `python3 design/tokens/build.py`
   로 생성한다. "왜 이 값인가" 는 `$description` 에 적는다 — KDoc 이 되어 토큰과 함께 이동한다.
   층 규칙: `Sys` 는 `Ref` 만, `Comp` 는 `Sys`·`Ref` 만 가리킨다(생성기가 막는다). 다른 제품에 가져가는

@@ -2,7 +2,8 @@
 
 `tokens.json` 이 이 앱의 모든 시각 값 — 색·불투명도·치수·글자 크기·시간 — 의 **유일한 원본**이다.
 형식은 [W3C Design Tokens(DTCG)](https://tr.designtokens.org/format/). Kotlin 쪽
-`app/src/main/java/com/jjw/blackscreen/ui/theme/Tokens.kt` 는 `build.py` 가 여기서 만든다.
+`app/src/main/java/com/jjw/blackscreen/ui/theme/Tokens.kt` 와 `app/src/main/res/values/tokens_colors.xml`
+(Compose 밖에서 쓰는 색 리소스 — sys·comp 색만, alias 를 풀어서)은 `build.py` 가 여기서 만든다.
 
 ```bash
 python3 design/tokens/build.py            # tokens.json → Tokens.kt

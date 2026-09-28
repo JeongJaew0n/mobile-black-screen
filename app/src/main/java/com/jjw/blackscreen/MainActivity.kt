@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -27,6 +25,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jjw.blackscreen.accessibility.ScreenOffAccessibilityService
+import com.jjw.blackscreen.ui.theme.BlackScreenTheme
 import androidx.compose.runtime.LaunchedEffect
 import com.jjw.blackscreen.audio.MediaVolumeController
 import com.jjw.blackscreen.data.Mode
@@ -48,8 +47,8 @@ class MainActivity : ComponentActivity() {
         val repository = SettingsRepository(this)
 
         setContent {
-            // 이 앱은 항상 어두운 팔레트로 간다. 설정 화면이 눈부시면 용도와 어긋난다.
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            // 수묵화 팔레트. 항상 어두운 쪽 하나다 — 설정 화면이 눈부시면 용도와 어긋난다.
+            BlackScreenTheme {
                 Surface(Modifier.fillMaxSize()) {
                     val scope = rememberCoroutineScope()
                     val settings by repository.settings.collectAsStateWithLifecycle(

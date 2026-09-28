@@ -24,6 +24,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).with_name("tokens.json")
 TARGET = ROOT / "app/src/main/java/com/jjw/blackscreen/ui/theme/Tokens.kt"
+# Compose 밖(테마 XML·런처 아이콘·알림)에서 쓰는 색. 색 토큰만, alias 를 끝까지 풀어서 낸다.
+TARGET_XML = ROOT / "app/src/main/res/values/tokens_colors.xml"
 
 LAYER_MAY_REFERENCE = {"ref": set(), "sys": {"ref"}, "comp": {"ref", "sys"}}
 ALIAS = re.compile(r"^\{([A-Za-z0-9_.]+)\}$")
@@ -180,6 +182,42 @@ def validate(tokens):
             raise TokenError(f"{'.'.join(path)}: {layer} 층의 {ttype} 리터럴. ref 를 가리킬 것 (리터럴은 number 만)")
 
 
+def resolve(tokens, path):
+    """alias 를 끝까지 따라가 리터럴 값을 돌려준다."""
+    seen = set()
+    ttype, value, _ = tokens[path]
+    while isinstance(value, str) and ALIAS.match(value):
+        if path in seen:
+            raise TokenError(f"{'.'.join(path)}: alias 순환")
+        seen.add(path)
+        path = tuple(ALIAS.match(value).group(1).split("."))
+        ttype, value, _ = tokens[path]
+    return value
+
+
+def emit_xml(tokens):
+    """sys·comp 의 색 토큰 → <color name="sys_color_canvas">#AARRGGBB</color>. ref 는 내지 않는다 — XML 도 의도 이름으로 쓴다."""
+    lines = [
+        '<?xml version="1.0" encoding="utf-8"?>',
+        "<!--",
+        "  ⚠️ 생성된 파일이다. 손으로 고치지 말 것.",
+        "  원본: design/tokens/tokens.json · 생성: python3 design/tokens/build.py",
+        "  Compose 밖(테마 XML·런처 아이콘·알림)에서 쓰는 색. sys·comp 의 색 토큰만, alias 를 풀어서 낸다.",
+        "-->",
+        "<!-- 전부 내보내므로 XML 에서 안 쓰는 색이 대부분이다. 미사용 경고는 의도된 것. -->",
+        '<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">',
+    ]
+    for path, (ttype, _, desc) in tokens.items():
+        if ttype != "color" or path[0] == "ref":
+            continue
+        hexv = resolve(tokens, path)
+        rgb, alpha = hexv[1:7].upper(), (hexv[7:9] or "FF").upper()
+        name = "_".join(re.sub(r"(?<!^)(?=[A-Z])", "_", seg).lower() for seg in path)
+        lines.append(f'    <color name="{name}">#{alpha}{rgb}</color>')
+    lines.append("</resources>")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv):
     data = json.loads(SOURCE.read_text(encoding="utf-8"))
     tokens, groups = {}, {}
@@ -187,18 +225,22 @@ def main(argv):
         if layer in data:
             collect(data[layer], [layer], None, tokens, groups)
     validate(tokens)
-    text = emit(tokens, groups)
+    outputs = {TARGET: emit(tokens, groups), TARGET_XML: emit_xml(tokens)}
 
     if "--check" in argv:
-        current = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
-        if current != text:
-            print(f"어긋남: {TARGET.relative_to(ROOT)} 가 tokens.json 과 다르다. build.py 를 돌릴 것.", file=sys.stderr)
+        bad = [t for t, text in outputs.items()
+               if (t.read_text(encoding="utf-8") if t.exists() else "") != text]
+        for t in bad:
+            print(f"어긋남: {t.relative_to(ROOT)} 가 tokens.json 과 다르다. build.py 를 돌릴 것.", file=sys.stderr)
+        if bad:
             return 1
-        print(f"일치: {TARGET.relative_to(ROOT)} ({len(tokens)} 토큰)")
+        print(f"일치: {', '.join(str(t.relative_to(ROOT)) for t in outputs)} ({len(tokens)} 토큰)")
         return 0
 
-    TARGET.write_text(text, encoding="utf-8")
-    print(f"생성: {TARGET.relative_to(ROOT)} ({len(tokens)} 토큰)")
+    for t, text in outputs.items():
+        t.write_text(text, encoding="utf-8")
+        print(f"생성: {t.relative_to(ROOT)}")
+    print(f"({len(tokens)} 토큰)")
     return 0
 
 

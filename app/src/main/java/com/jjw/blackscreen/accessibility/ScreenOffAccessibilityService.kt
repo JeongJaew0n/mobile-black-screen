@@ -30,6 +30,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.jjw.blackscreen.data.Settings
 import com.jjw.blackscreen.data.SettingsRepository
 import com.jjw.blackscreen.ui.BlackScreenRoot
+import com.jjw.blackscreen.ui.theme.BlackScreenTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -177,16 +178,18 @@ class ScreenOffAccessibilityService :
                     initialValue = Settings(),
                 )
                 val nowPlaying by mediaWatcher.nowPlaying.collectAsStateWithLifecycle()
-                BlackScreenRoot(
-                    settings = settings,
-                    onUnlock = ::hideCover,
-                    dimmed = biometricPromptActive.value,
-                    nowPlaying = nowPlaying,
-                    mediaPermissionMissing = mediaPermissionMissing.value,
-                    onMediaPlayPause = mediaWatcher::playPause,
-                    onMediaNext = mediaWatcher::skipNext,
-                    onMediaPrevious = mediaWatcher::skipPrevious,
-                )
+                BlackScreenTheme {
+                    BlackScreenRoot(
+                        settings = settings,
+                        onUnlock = ::hideCover,
+                        dimmed = biometricPromptActive.value,
+                        nowPlaying = nowPlaying,
+                        mediaPermissionMissing = mediaPermissionMissing.value,
+                        onMediaPlayPause = mediaWatcher::playPause,
+                        onMediaNext = mediaWatcher::skipNext,
+                        onMediaPrevious = mediaWatcher::skipPrevious,
+                    )
+                }
             }
         }
 

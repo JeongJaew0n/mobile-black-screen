@@ -4,9 +4,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#2E2E2E"
+        android:fillColor="@color/comp_launcher_icon_frame"
         android:pathData="M34,30h40a4,4 0,0 1,4 4v40a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-40a4,4 0,0 1,4 -4z" />
     <path
-        android:fillColor="#5A5A5A"
+        android:fillColor="@color/comp_launcher_icon_mark"
         android:pathData="M44,52h20v4h-20z" />
 </vector>
