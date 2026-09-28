@@ -2,6 +2,7 @@ package com.jjw.blackscreen
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import android.provider.Settings as AndroidSettings
 import androidx.core.net.toUri
 import com.jjw.blackscreen.accessibility.ScreenOffAccessibilityService
@@ -65,7 +66,12 @@ object ScreenOff {
         if (Mode.OVERLAY.available) ScreenCoverService.stopCover(context)
     }
 
+    /**
+     * 접근성 설정을 연다. **왜 열리는지 먼저 말한다** — 타일·버블에서 켰는데 설정 화면이 불쑥 뜨면
+     * 고장으로 보인다. 재설치·강제 종료 뒤 접근성이 꺼져 흔히 겪는다.
+     */
     fun openAccessibilitySettings(context: Context) {
+        Toast.makeText(context, R.string.toast_accessibility_needed, Toast.LENGTH_LONG).show()
         context.startActivity(
             Intent(AndroidSettings.ACTION_ACCESSIBILITY_SETTINGS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),

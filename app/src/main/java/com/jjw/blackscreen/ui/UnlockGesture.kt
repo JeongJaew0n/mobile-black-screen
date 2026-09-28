@@ -62,6 +62,19 @@ private const val SlideDismissFraction = 0.28f
 private const val TapWindowMillis = 400L
 
 /**
+ * 해제 제스처의 첫 동작에 띄울 안내. 해제는 일부러 단일 탭이 아니라(주머니) 화면에 단서가 없다 —
+ * 처음 쓰는 사람은 무엇을 해야 하는지 모른다. 새 제스처를 만들지 않고 **해제 제스처의 첫 동작 자체**를
+ * 안내 트리거로 쓰니 해제와 충돌하지 않는다(`docs/ux-research.md` §1).
+ */
+sealed interface UnlockHint {
+    /** 연속 탭이 [remaining] 번 더 필요하다. */
+    data class Taps(val remaining: Int) : UnlockHint
+
+    /** 꾹 누르기인데 짧게 떼었다. */
+    data object Hold : UnlockHint
+}
+
+/**
  * 차폐 해제 제스처를 받는 레이어.
  *
  * 단일 탭 해제는 주머니 안에서 그대로 풀려 버리므로 선택지에 두지 않는다.
@@ -78,6 +91,7 @@ fun BoxScope.UnlockGestureLayer(
     ringColor: Color,
     holdMillis: Int,
     onUnlock: () -> Unit,
+    onHint: (UnlockHint) -> Unit = {},
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var pressing by remember { mutableStateOf(false) }
@@ -111,11 +125,13 @@ fun BoxScope.UnlockGestureLayer(
                             pressing = true
                             tryAwaitRelease()
                             pressing = false
+                            // 다 채우기 전에 뗐다 — 꾹 눌러야 한다는 것을 모르는 경우다.
+                            if (progress < 1f) onHint(UnlockHint.Hold)
                         },
                     )
 
-                    Gesture.DOUBLE_TAP -> detectTapCount(required = 2, onUnlock = onUnlock)
-                    Gesture.TRIPLE_TAP -> detectTapCount(required = 3, onUnlock = onUnlock)
+                    Gesture.DOUBLE_TAP -> detectTapCount(required = 2, onUnlock = onUnlock, onHint = onHint)
+                    Gesture.TRIPLE_TAP -> detectTapCount(required = 3, onUnlock = onUnlock, onHint = onHint)
 
                     // 밀어 올리기는 화면이 손가락을 따라 움직여야 해서 표면 전체를
                     // 다뤄야 한다. BlackScreenRoot 의 SlideToDismissLayer 가 맡는다.
@@ -153,6 +169,7 @@ fun BoxScope.UnlockGestureLayer(
 private suspend fun PointerInputScope.detectTapCount(
     required: Int,
     onUnlock: () -> Unit,
+    onHint: (UnlockHint) -> Unit,
 ) {
     var count = 0
     var lastTapAt = 0L
@@ -164,6 +181,8 @@ private suspend fun PointerInputScope.detectTapCount(
             if (count >= required) {
                 count = 0
                 onUnlock()
+            } else {
+                onHint(UnlockHint.Taps(required - count))
             }
         },
     )

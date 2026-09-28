@@ -3,7 +3,7 @@
   한국어.
 
   ⚠️ OS 용어를 인용하는 문자열: overlay_permission_needed, bubble_permission_note,
-  accessibility_needed, accessibility_open. 시스템 설정 항목 이름이므로 이 언어의
+  accessibility_needed, accessibility_open, restricted_help. 시스템 설정 항목 이름이므로 이 언어의
   Android 표기를 그대로 써야 한다. 직역하면 사용자가 그 항목을 찾지 못한다.
 -->
 <resources>
@@ -96,4 +96,32 @@
     <string name="mode_full_desc">쓰던 앱은 그대로 두고 화면 전체가 검어집니다. 상태바와 내비게이션 바까지 덮습니다. 접근성 권한이 필요합니다.</string>
     <string name="accessibility_needed">접근성 권한이 필요합니다</string>
     <string name="accessibility_open">접근성 설정 열기</string>
+    <!-- 해제 안내 · 자동 끄기 · 제한된 설정 (docs/plans/ux-improvements) -->
+    <string name="start_hint_triple_tap">3번 탭하면 풀립니다</string>
+    <string name="start_hint_double_tap">2번 탭하면 풀립니다</string>
+    <string name="start_hint_long_press">꾹 누르면 풀립니다</string>
+    <string name="start_hint_fingerprint">지문으로 풀립니다</string>
+    <string name="start_hint_slide">밀어서 풀립니다</string>
+    <string name="start_hint_swipe">위로 밀면 풀립니다</string>
+    <string name="start_hint_mute">미디어는 음소거됩니다</string>
+    <string name="start_hint_zero">미디어 볼륨을 0 으로 내립니다</string>
+    <string name="start_hint_separator">" · "</string>
+    <plurals name="start_hint_timer">
+        <item quantity="other">%1$d분 뒤 화면이 꺼집니다</item>
+    </plurals>
+    <plurals name="unlock_hint_taps">
+        <item quantity="other">%1$d번 더 탭하면 풀립니다</item>
+    </plurals>
+    <string name="section_auto_off">자동 끄기</string>
+    <string name="auto_off_never">사용 안 함</string>
+    <plurals name="auto_off_minutes">
+        <item quantity="other">%1$d분</item>
+    </plurals>
+    <plurals name="auto_off_hours">
+        <item quantity="other">%1$d시간</item>
+    </plurals>
+    <string name="auto_off_desc">시간이 되면 Screen Off 를 풀고 화면을 실제로 끕니다(잠금). 재생 중인 미디어는 계속됩니다.</string>
+    <string name="restricted_help">‘제한된 설정’ 안내가 뜨면 닫은 뒤, 앱 정보 → ⋮ → ‘제한된 설정 허용’ 을 누르고 다시 켜 주세요.</string>
+    <string name="open_app_info">앱 정보 열기</string>
+    <string name="toast_accessibility_needed">Screen Off 를 쓰려면 접근성 권한을 켜 주세요</string>
 </resources>

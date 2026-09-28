@@ -72,6 +72,11 @@ import com.jjw.blackscreen.data.Mode
 import com.jjw.blackscreen.data.MediaVolumeAction
 import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
+import android.content.pm.ApplicationInfo
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.material3.OutlinedButton
+import com.jjw.blackscreen.data.AUTO_OFF_CHOICES
 
 /**
  * @param onChange 저장된 값에 적용할 **변환 함수**를 넘긴다. 화면이 들고 있는 스냅샷을
@@ -90,6 +95,9 @@ fun SettingsScreen(
     onRequestOverlayPermission: () -> Unit,
     onRequestAccessibility: () -> Unit,
     onRequestNotificationAccess: () -> Unit,
+    /** 사이드로딩 + Android 13+ — '제한된 설정' 에 걸렸을 가능성. 권한 카드에 푸는 법을 덧붙인다. */
+    mayBeRestricted: Boolean,
+    onOpenAppInfo: () -> Unit,
     onMediaPlayPause: () -> Unit,
     onMediaNext: () -> Unit,
     onMediaPrevious: () -> Unit,
@@ -112,6 +120,17 @@ fun SettingsScreen(
             Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.start_blackout))
             }
+            // 누르기 직전에 읽히는 자리. 해제 방법은 차폐 화면에 단서가 없어 여기서 먼저 말한다.
+            // 되돌아오지 않는 부수 효과(볼륨 0)와 자동 끄기도 같은 줄에 — 켜져 있는 줄 모르고 누르지 않게.
+            Text(
+                text = startHint(settings),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Sys.Spacing.sm),
+            )
 
             // 고를 수 있는 모드가 하나뿐이면 라디오는 소음이다. 섹션째 감춘다.
             // Mode.available 을 되돌리면 이 UI 도 그대로 돌아온다.
@@ -133,6 +152,8 @@ fun SettingsScreen(
                     message = stringResource(R.string.accessibility_needed),
                     action = stringResource(R.string.accessibility_open),
                     onClick = onRequestAccessibility,
+                    restrictedHelp = mayBeRestricted,
+                    onOpenAppInfo = onOpenAppInfo,
                 )
             }
             if (settings.mode == Mode.OVERLAY && !canDrawOverlays) {
@@ -289,6 +310,8 @@ fun SettingsScreen(
                     message = stringResource(R.string.media_permission_needed),
                     action = stringResource(R.string.grant_permission),
                     onClick = onRequestNotificationAccess,
+                    restrictedHelp = mayBeRestricted,
+                    onOpenAppInfo = onOpenAppInfo,
                 )
             }
 
@@ -470,11 +493,67 @@ fun SettingsScreen(
                 )
             }
 
+            Section(stringResource(R.string.section_auto_off))
+            autoOffChoices().forEach { minutes ->
+                RadioRow(
+                    label = autoOffLabel(minutes),
+                    selected = settings.autoOffMinutes == minutes,
+                    onSelect = { onChange { s -> s.copy(autoOffMinutes = minutes) } },
+                )
+            }
+            Text(
+                text = stringResource(R.string.auto_off_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = Sys.Spacing.sm),
+            )
             }
 
             Spacer(Modifier.height(Sys.Spacing.xxxl))
         }
     }
+}
+
+/** 시작 버튼 아래 한 줄 — 해제 방법 · 소리 · 자동 끄기. 켜진 것만 잇는다. */
+@Composable
+private fun startHint(settings: Settings): String {
+    val parts = buildList {
+        add(
+            stringResource(
+                when (settings.unlockGesture) {
+                    Gesture.TRIPLE_TAP -> R.string.start_hint_triple_tap
+                    Gesture.DOUBLE_TAP -> R.string.start_hint_double_tap
+                    Gesture.LONG_PRESS -> R.string.start_hint_long_press
+                    Gesture.FINGERPRINT -> R.string.start_hint_fingerprint
+                    Gesture.SLIDE_TO_UNLOCK -> R.string.start_hint_slide
+                    Gesture.SWIPE -> R.string.start_hint_swipe
+                },
+            ),
+        )
+        when (settings.mediaVolumeAction) {
+            MediaVolumeAction.NONE -> Unit
+            MediaVolumeAction.MUTE_WHILE_COVERED -> add(stringResource(R.string.start_hint_mute))
+            MediaVolumeAction.SET_TO_ZERO -> add(stringResource(R.string.start_hint_zero))
+        }
+        if (settings.autoOffMinutes > 0) {
+            add(pluralStringResource(R.plurals.start_hint_timer, settings.autoOffMinutes, settings.autoOffMinutes))
+        }
+    }
+    return parts.joinToString(stringResource(R.string.start_hint_separator))
+}
+
+/** 디버그 빌드에는 시험용 1분을 앞에 붙인다 — 15분을 기다리지 않고 타이머를 확인하려고. */
+@Composable
+private fun autoOffChoices(): List<Int> {
+    val debuggable = LocalContext.current.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    return if (debuggable) listOf(AUTO_OFF_CHOICES.first(), 1) + AUTO_OFF_CHOICES.drop(1) else AUTO_OFF_CHOICES
+}
+
+@Composable
+private fun autoOffLabel(minutes: Int): String = when {
+    minutes <= 0 -> stringResource(R.string.auto_off_never)
+    minutes % 60 == 0 -> pluralStringResource(R.plurals.auto_off_hours, minutes / 60, minutes / 60)
+    else -> pluralStringResource(R.plurals.auto_off_minutes, minutes, minutes)
 }
 
 /** 패턴 문자열을 그대로 보여주면 알아보기 어렵다. 예시가 들어간 문구로 바꾼다. */
@@ -588,7 +667,14 @@ private fun SwitchRow(
  */
 
 @Composable
-private fun PermissionCard(message: String, action: String, onClick: () -> Unit) {
+private fun PermissionCard(
+    message: String,
+    action: String,
+    onClick: () -> Unit,
+    /** '제한된 설정' 푸는 법. 켜려는데 막혀 있으면 이 순서를 모르고는 못 푼다 — 경고를 먼저 봐야 메뉴가 생긴다. */
+    restrictedHelp: Boolean = false,
+    onOpenAppInfo: () -> Unit = {},
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -603,8 +689,21 @@ private fun PermissionCard(message: String, action: String, onClick: () -> Unit)
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
+            if (restrictedHelp) {
+                Text(
+                    text = stringResource(R.string.restricted_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(top = Sys.Spacing.sm),
+                )
+            }
             Spacer(Modifier.height(Sys.Spacing.sm))
-            Button(onClick = onClick) { Text(action) }
+            Row(horizontalArrangement = Arrangement.spacedBy(Sys.Spacing.sm)) {
+                Button(onClick = onClick) { Text(action) }
+                if (restrictedHelp) {
+                    OutlinedButton(onClick = onOpenAppInfo) { Text(stringResource(R.string.open_app_info)) }
+                }
+            }
         }
     }
 }

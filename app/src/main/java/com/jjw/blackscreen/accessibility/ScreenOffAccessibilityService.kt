@@ -36,6 +36,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * 화면 전체를 덮는 창을 올리기 위한 접근성 서비스.
@@ -108,6 +111,12 @@ class ScreenOffAccessibilityService :
      * 사본이고, 저장 쪽은 서비스가 죽어 복원을 못 했을 때의 보험이다.
      */
     private var mutedVolume: Int? = null
+
+    /** 해제 안내가 떠 있는가. 떠 있는 동안만 밝기를 올린다([effectiveBrightness]). */
+    private var unlockHintVisible = false
+
+    /** 자동 끄기. 차폐를 켤 때 시작하고 풀 때 취소한다. */
+    private var autoOffJob: Job? = null
 
     val isCovering: Boolean get() = coverView != null
 
@@ -188,6 +197,10 @@ class ScreenOffAccessibilityService :
                         onMediaPlayPause = mediaWatcher::playPause,
                         onMediaNext = mediaWatcher::skipNext,
                         onMediaPrevious = mediaWatcher::skipPrevious,
+                        onHintVisibleChange = { visible ->
+                            unlockHintVisible = visible
+                            applyBrightness()
+                        },
                     )
                 }
             }
@@ -204,6 +217,8 @@ class ScreenOffAccessibilityService :
                 coverView = null
                 coverParams = null
                 restoreMediaVolume()
+                cancelAutoOff()
+                unlockHintVisible = false
                 // 창이 사라졌으면 세션 관찰도 멈춰야 한다. hideCover() 와 같은 정리를 해 주지
                 // 않으면 "차폐가 떠 있을 때만 관찰한다" 는 원칙이 깨지고, 차폐를 다시 띄우지
                 // 않는 한 세션 콜백이 등록된 채 남는다.
@@ -220,6 +235,34 @@ class ScreenOffAccessibilityService :
         syncMediaWatcher()
         applyBrightness()
         applyMediaVolume()
+        startAutoOff()
+    }
+
+    /**
+     * 설정한 시간이 지나면 차폐를 풀고 **화면을 실제로 끈다**(잠금). 차폐만 풀면 기기 꺼짐 시간이
+     * 이어받는데, 그게 길면 밝은 화면이 켜진 채 남아 타이머가 없느니만 못하다.
+     *
+     * 새 탈출구가 아니라 기존 탈출구에 하나를 더하는 것이다 — 서비스가 죽어 타이머가 안 돌아도
+     * 해제 제스처는 그대로다. 실패 방향이 안전하다.
+     */
+    private fun startAutoOff() {
+        cancelAutoOff()
+        val minutes = latestSettings.autoOffMinutes
+        if (minutes <= 0) return
+        autoOffJob = scope?.launch {
+            delay(minutes * 60_000L)
+            autoOffJob = null
+            hideCover()   // 볼륨 복원도 여기서 된다
+            // 화면 끄기는 잠금뿐이다. API 27 이하는 이 동작이 없어 차폐만 푼다.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+            }
+        }
+    }
+
+    private fun cancelAutoOff() {
+        autoOffJob?.cancel()
+        autoOffJob = null
     }
 
     /**
@@ -263,7 +306,8 @@ class ScreenOffAccessibilityService :
         val mediaVisible = latestSettings.showMedia &&
             (mediaWatcher.nowPlaying.value != null || mediaPermissionMissing.value)
         val base = if (mediaVisible) CONTENT_BRIGHTNESS else latestSettings.screenBrightness
-        return if (biometricPromptActive.value) maxOf(base, CONTENT_BRIGHTNESS) else base
+        // 지문 프롬프트와 해제 안내는 설정과 무관하게 읽혀야 한다. 0.30 과 0 은 실측 전력이 같다.
+        return if (biometricPromptActive.value || unlockHintVisible) maxOf(base, CONTENT_BRIGHTNESS) else base
     }
 
     private fun applyBrightness() {
@@ -294,6 +338,8 @@ class ScreenOffAccessibilityService :
     fun hideCover() {
         val view = coverView ?: return
         restoreMediaVolume()
+        cancelAutoOff()
+        unlockHintVisible = false
         coverView = null
         coverParams = null
         mediaWatcher.stop()
@@ -355,8 +401,17 @@ class ScreenOffAccessibilityService :
         @Suppress("StaticFieldLeak")
         @Volatile
         var instance: ScreenOffAccessibilityService? = null
-            private set
+            private set(value) {
+                field = value
+                connected.value = value != null
+            }
 
         val isEnabled: Boolean get() = instance != null
+
+        /**
+         * 연결 상태를 **관찰**하는 쪽. 재설치 직후처럼 서비스가 앱보다 몇 초 늦게 붙으면, 앱이 켤 때 한 번
+         * 읽은 [isEnabled] 는 false 로 남아 켜져 있는데도 '권한이 필요합니다' 카드가 떠 있었다(실기기).
+         */
+        val connected = MutableStateFlow(false)
     }
 }

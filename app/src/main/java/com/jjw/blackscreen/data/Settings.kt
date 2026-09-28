@@ -198,6 +198,14 @@ data class Settings(
      * 소리가 없는 채로 남는다. 앱을 다시 열 때 이 값이 남아 있으면 복원하고 지운다.
      */
     val savedMediaVolume: Int = -1,
+    /**
+     * 차폐를 켠 뒤 이 시간(분)이 지나면 차폐를 풀고 **화면을 실제로 끈다**(잠금). 0 = 사용 안 함.
+     *
+     * 차폐만 풀면 기기의 화면 꺼짐 시간이 이어받는데, 그게 길면 밝은 화면이 켜진 채 남는다 —
+     * 타이머가 없느니만 못하다. 실측상 배터리를 줄이는 유일한 길이 화면을 실제로 끄는 것이다
+     * (차폐 183 mA → 꺼짐 96 mA, `docs/power-measurement.md`). 미디어는 멈추지 않는다.
+     */
+    val autoOffMinutes: Int = 0,
     val sentence: String = "",
     val unlockGesture: Gesture = Gesture.TRIPLE_TAP,
 
@@ -331,3 +339,6 @@ enum class ClockStyle(val skeleton: String) {
         }
     }
 }
+
+/** 자동 끄기 선택지(분). 0 = 사용 안 함. 디버그 빌드는 시험용 1분이 앞에 붙는다(설정 화면). */
+val AUTO_OFF_CHOICES = listOf(0, 15, 30, 60, 120)

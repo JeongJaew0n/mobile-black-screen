@@ -4,7 +4,7 @@
   Korean lives in values-ko/. To add a language, add one values-xx/strings.xml.
 
   ⚠️ Strings that quote OS settings labels: overlay_permission_needed, bubble_permission_note,
-  accessibility_needed, accessibility_open. Use the platform's own wording for each language,
+  accessibility_needed, accessibility_open, restricted_help. Use the platform's own wording for each language,
   not a literal translation, or users cannot find the setting.
 -->
 <resources>
@@ -97,4 +97,36 @@
     <string name="mode_full_desc">Keeps the app you were using and blacks out the whole screen, including the status bar and navigation bar. Needs the accessibility permission.</string>
     <string name="accessibility_needed">Needs the accessibility permission</string>
     <string name="accessibility_open">Open accessibility settings</string>
+    <!-- 해제 안내 · 자동 끄기 · 제한된 설정 (docs/plans/ux-improvements) -->
+    <string name="start_hint_triple_tap">Tap 3 times to unlock</string>
+    <string name="start_hint_double_tap">Tap twice to unlock</string>
+    <string name="start_hint_long_press">Press and hold to unlock</string>
+    <string name="start_hint_fingerprint">Unlock with your fingerprint</string>
+    <string name="start_hint_slide">Slide to unlock</string>
+    <string name="start_hint_swipe">Swipe up to unlock</string>
+    <string name="start_hint_mute">media is muted</string>
+    <string name="start_hint_zero">media volume goes to 0</string>
+    <string name="start_hint_separator">" · "</string>
+    <plurals name="start_hint_timer">
+        <item quantity="one">screen turns off after %1$d minute</item>
+        <item quantity="other">screen turns off after %1$d minutes</item>
+    </plurals>
+    <plurals name="unlock_hint_taps">
+        <item quantity="one">Tap %1$d more time to unlock</item>
+        <item quantity="other">Tap %1$d more times to unlock</item>
+    </plurals>
+    <string name="section_auto_off">Auto off</string>
+    <string name="auto_off_never">Never</string>
+    <plurals name="auto_off_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="auto_off_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="auto_off_desc">When time is up, Screen Off ends and the screen really turns off (locks). Media keeps playing.</string>
+    <string name="restricted_help">If a ‘Restricted setting’ message appears: close it, open App info → ⋮ → ‘Allow restricted settings’, then turn it on again.</string>
+    <string name="open_app_info">Open app info</string>
+    <string name="toast_accessibility_needed">Turn on the accessibility permission to use Screen Off</string>
 </resources>

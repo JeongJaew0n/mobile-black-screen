@@ -33,6 +33,12 @@ import com.jjw.blackscreen.data.Settings
 import kotlin.math.roundToInt
 import com.jjw.blackscreen.ui.theme.Comp
 import com.jjw.blackscreen.ui.theme.Sys
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.jjw.blackscreen.R
+import kotlinx.coroutines.delay
 
 /**
  * Blackout 모드와 Overlay 모드가 공유하는 차폐 화면.
@@ -54,7 +60,18 @@ fun BlackScreenRoot(
     onMediaPlayPause: () -> Unit = {},
     onMediaNext: () -> Unit = {},
     onMediaPrevious: () -> Unit = {},
+    /** 해제 안내가 떠 있는가. 떠 있는 동안 창 밝기를 올려야 읽힌다 — 밝기는 호출부(서비스)가 정한다. */
+    onHintVisibleChange: (Boolean) -> Unit = {},
 ) {
+    var hint by remember { mutableStateOf<UnlockHint?>(null) }
+    var hintTick by remember { mutableIntStateOf(0) }
+    LaunchedEffect(hintTick) {
+        if (hint == null) return@LaunchedEffect
+        onHintVisibleChange(true)
+        delay(Comp.UnlockHint.duration.toLong())
+        hint = null
+        onHintVisibleChange(false)
+    }
     var slideOffset by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableIntStateOf(0) }
     // 재생 바와 제어 버튼이 **같은** 궤도를 타야 한 덩어리로 움직인다. 시계 블록은 자기 궤도다.
@@ -119,6 +136,23 @@ fun BlackScreenRoot(
                 ringColor = settings.textColor,
                 holdMillis = settings.holdMillis,
                 onUnlock = onUnlock,
+                onHint = { h -> hint = h; hintTick++ },
+            )
+        }
+
+        // 안내는 입력을 받지 않는다 — Text 에는 pointerInput 이 없어 탭이 그대로 아래 제스처 레이어로 간다.
+        hint?.let { h ->
+            Text(
+                text = when (h) {
+                    is UnlockHint.Taps -> pluralStringResource(R.plurals.unlock_hint_taps, h.remaining, h.remaining)
+                    UnlockHint.Hold -> stringResource(R.string.start_hint_long_press)
+                },
+                color = settings.textColor,
+                fontSize = Comp.UnlockHint.fontSize,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(BiasAlignment(horizontalBias = 0f, verticalBias = Comp.UnlockHint.verticalBias))
+                    .padding(horizontal = Comp.UnlockHint.inset),
             )
         }
 

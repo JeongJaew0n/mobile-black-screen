@@ -67,9 +67,8 @@ class MainActivity : ComponentActivity() {
                     var canDrawOverlays by remember {
                         mutableStateOf(AndroidSettings.canDrawOverlays(this))
                     }
-                    var accessibilityEnabled by remember {
-                        mutableStateOf(ScreenOffAccessibilityService.isEnabled)
-                    }
+                    // 복귀 때 한 번 읽는 게 아니라 연결을 관찰한다 — 서비스는 앱보다 늦게 붙을 수 있다.
+                    val accessibilityEnabled by ScreenOffAccessibilityService.connected.collectAsStateWithLifecycle()
                     var notificationAccess by remember {
                         mutableStateOf(MediaPermission.isGranted(this@MainActivity))
                     }
@@ -82,7 +81,6 @@ class MainActivity : ComponentActivity() {
                     val nowPlaying by mediaWatcher.nowPlaying.collectAsStateWithLifecycle()
                     LifecycleResumeEffect(Unit) {
                         canDrawOverlays = AndroidSettings.canDrawOverlays(this@MainActivity)
-                        accessibilityEnabled = ScreenOffAccessibilityService.isEnabled
                         notificationAccess = MediaPermission.isGranted(this@MainActivity)
                         onPauseOrDispose { }
                     }
@@ -147,6 +145,8 @@ class MainActivity : ComponentActivity() {
                         notificationAccess = notificationAccess,
                         nowPlaying = nowPlaying,
                         onRequestNotificationAccess = { MediaPermission.openSettings(this) },
+                        mayBeRestricted = remember { InstallSource.mayBeRestricted(this@MainActivity) },
+                        onOpenAppInfo = { InstallSource.openAppInfo(this@MainActivity) },
                         onMediaPlayPause = mediaWatcher::playPause,
                         onMediaNext = mediaWatcher::skipNext,
                         onMediaPrevious = mediaWatcher::skipPrevious,

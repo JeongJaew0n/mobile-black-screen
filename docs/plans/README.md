@@ -19,6 +19,7 @@
 | 5 | [fingerprint-one-touch](./fingerprint-one-touch/) — 지문 한 동작 해제 | **조사만.** 구현 보류, 실험 절차 문서화 |
 | 6 | [media-playback-bar](./media-playback-bar/) — 재생 중 음악·동영상 재생 바 | 구현 완료. 실기기 검증 대기 |
 | 7 | [media-volume-control](./media-volume-control/) — 차폐 중 미디어 소리 끄기 | 완료. 블루투스 경로만 미검증 |
+| 11 | [ux-improvements](./ux-improvements/) — 해제 안내 · 자동 끄기 · 권한 안내 | 구현·실기기 확인 |
 | 10 | [i18n-ja](./i18n-ja/) — 일본어 추가 (en · ko · ja) | 구현 완료. 기기 확인 대기 |
 | 9 | [ink-wash-palette](./ink-wash-palette/) — 수묵화 팔레트 + Material 색 역할 토큰 | 완료. 앱 전체 적용·실기기 확인 |
 | 8 | [design-tokens](./design-tokens/) — 디자인 토큰 추출 (DTCG JSON → Kotlin 생성) | 완료. 값 통합은 후보로만 |

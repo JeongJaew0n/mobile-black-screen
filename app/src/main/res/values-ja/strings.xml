@@ -3,7 +3,7 @@
   日本語.
 
   ⚠️ OS の設定項目名を引用する文字列: overlay_permission_needed, bubble_permission_note,
-  accessibility_needed, accessibility_open, media_permission_needed, show_media_desc.
+  accessibility_needed, accessibility_open, restricted_help, media_permission_needed, show_media_desc.
   直訳せず、日本語版 Android の表記をそのまま使うこと。でないとユーザーが項目を見つけられない。
   いま使っているのは AOSP の表記(他のアプリの上に重ねて表示 / ユーザー補助 / 通知へのアクセス)。
   Samsung One UI の日本語表記と一致するかは未確認 — docs/plans/i18n-ja/checklist.md
@@ -100,4 +100,32 @@
     <string name="mode_full_desc">使っていたアプリはそのままで、ステータスバーとナビゲーションバーを含む画面全体を黒くします。「ユーザー補助」の権限が必要です。</string>
     <string name="accessibility_needed">「ユーザー補助」の権限が必要です</string>
     <string name="accessibility_open">ユーザー補助の設定を開く</string>
+    <!-- 解除の案内 · 自動オフ · 制限付き設定 (docs/plans/ux-improvements) -->
+    <string name="start_hint_triple_tap">3回タップで解除</string>
+    <string name="start_hint_double_tap">2回タップで解除</string>
+    <string name="start_hint_long_press">長押しで解除</string>
+    <string name="start_hint_fingerprint">指紋で解除</string>
+    <string name="start_hint_slide">スライドで解除</string>
+    <string name="start_hint_swipe">上にスワイプで解除</string>
+    <string name="start_hint_mute">メディアはミュートされます</string>
+    <string name="start_hint_zero">メディアの音量を 0 にします</string>
+    <string name="start_hint_separator">" · "</string>
+    <plurals name="start_hint_timer">
+        <item quantity="other">%1$d分後に画面がオフになります</item>
+    </plurals>
+    <plurals name="unlock_hint_taps">
+        <item quantity="other">あと%1$d回タップで解除</item>
+    </plurals>
+    <string name="section_auto_off">自動オフ</string>
+    <string name="auto_off_never">使わない</string>
+    <plurals name="auto_off_minutes">
+        <item quantity="other">%1$d分</item>
+    </plurals>
+    <plurals name="auto_off_hours">
+        <item quantity="other">%1$d時間</item>
+    </plurals>
+    <string name="auto_off_desc">時間になると Screen Off を解除し、画面を実際にオフにします(ロック)。再生中のメディアは続きます。</string>
+    <string name="restricted_help">「制限付き設定」の案内が出たら閉じて、アプリ情報 → ⋮ →「制限付き設定を許可」をタップしてから、もう一度オンにしてください。</string>
+    <string name="open_app_info">アプリ情報を開く</string>
+    <string name="toast_accessibility_needed">Screen Off を使うには「ユーザー補助」の権限をオンにしてください</string>
 </resources>

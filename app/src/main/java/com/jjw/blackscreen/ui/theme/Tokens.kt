@@ -203,6 +203,8 @@ object Ref {
         val ms400: Int = 400
 
         val ms3000: Int = 3000
+
+        val ms5000: Int = 5000
     }
 }
 
@@ -467,6 +469,19 @@ object Comp {
 
         /** 진행률에 곱해 알파를 앞당긴다. 초반에도 링이 보이게. */
         val fadeInBoost = 1.4f
+    }
+
+    /** 차폐 중 해제 제스처의 첫 동작에 잠깐 뜨는 안내('2번 더 탭하면 풀립니다'). 떠 있는 동안만 밝기를 올린다. */
+    object UnlockHint {
+        /** 지문 '잠금 해제' 버튼과 같은 자리 — 시계 블록과 재생 컨트롤 사이. 진행 링 자리(중앙 아래 28%)는 재생 컨트롤과 겹친다. */
+        val verticalBias = 0.25f
+
+        val fontSize = Sys.Typography.title
+
+        val inset = Ref.Dimension.d40
+
+        /** AOD '탭하면 10초 표시' 보다 짧게 — 읽을 문장이 한 줄뿐이다. */
+        val duration = Ref.Duration.ms5000
     }
 
     object SlideDismiss {

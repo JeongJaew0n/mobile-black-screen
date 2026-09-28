@@ -590,6 +590,25 @@ XML 에도 hex 리터럴을 쓰지 않는다. 예외는 `ic_tile.xml` 의 흰색
 13/14/15sp)는 통합하지 않고 `docs/plans/design-tokens/checklist.md` 에 후보로 남겼다 — 통합은
 눈으로 보고 정할 디자인 결정이다.
 
+### 4.12 해제 안내 · 자동 끄기 · 권한 안내 (2026-09-29)
+
+`docs/ux-research.md` 의 우선순위 1·2·3·6. 계획은 `docs/plans/ux-improvements/`.
+
+- **시작 버튼 아래 한 줄** — 지금 고른 해제 방법 + 켜진 부수 효과(`볼륨 0`, 음소거, 자동 끄기)를 " · " 로
+  잇는다. 누르기 직전에 읽히는 자리다. 되돌아오지 않는 `볼륨 0` 을 모르고 누르는 사고를 막는다.
+- **차폐 중 해제 안내** — 해제 제스처의 **첫 동작 자체**가 트리거다(3회 탭의 첫 탭, 꾹 누르기를 일찍 뗌).
+  `UnlockHint` → `BlackScreenRoot` 가 5초 띄운다. 새 제스처가 아니라 해제와 충돌하지 않는다.
+  떠 있는 동안만 밝기를 올린다 — `effectiveBrightness()` 에 `unlockHintVisible` 을 더했다(실측 0.0 → 0.3 → 0.0).
+  자리는 지문 버튼과 같은 세로 62.5%. 진행 링 자리(78%)는 재생 컨트롤과 겹친다.
+- **자동 끄기** — `Settings.autoOffMinutes`(0 = 사용 안 함, 15/30/60/120, 디버그 빌드는 1분 추가). 차폐를 켤 때
+  코루틴 타이머, 풀 때 취소. 끝나면 `hideCover()` → `performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)`.
+  차폐만 풀면 기기 꺼짐 시간이 이어받는데, 길면 밝은 화면이 켜진 채 남는다. 미디어는 멈추지 않는다.
+- **제한된 설정 안내** — `InstallSource.mayBeRestricted()`: API 33+ 이고 설치 출처가 스토어도 adb(`null`)도 아니면
+  권한 카드에 푸는 순서 + [앱 정보 열기]. 제한 여부를 묻는 공개 API 가 없어 추정이고, 막지 않는다.
+- **설정이 열리는 이유** — `ScreenOff.openAccessibilitySettings()` 가 토스트를 먼저 띄운다. 세 진입점 공통.
+- **접근성 연결은 관찰한다** — `ScreenOffAccessibilityService.connected: StateFlow`. 복귀 때 한 번 읽으면
+  서비스가 늦게 붙을 때 "권한이 필요합니다" 가 남을 수 있다. 설정 화면은 이 흐름을 수집한다.
+
 ## 5. 설정 항목
 
 ```kotlin
@@ -612,6 +631,7 @@ data class Settings(
     val bubbleYRatio: Float = 0.5f,
     val mediaVolumeAction: MediaVolumeAction = NONE,  // NONE | MUTE_WHILE_COVERED | SET_TO_ZERO (§4.10)
     val savedMediaVolume: Int = -1,          // 일시 음소거의 보험. 서비스가 죽어도 앱 시작 때 되돌린다
+    val autoOffMinutes: Int = 0,             // 0 = 사용 안 함. 끝나면 차폐를 풀고 화면을 잠근다 (§4.12)
 )
 ```
 
@@ -741,7 +761,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 
 ### 아직 하지 않은 것
 
-자동 종료 타이머, 근접센서 포켓 모드, 문장 여러 개 순환, 홈 화면 위젯,
+근접센서 포켓 모드(뺐다 — `ux-research.md` §4), 문장 여러 개 순환, 홈 화면 위젯,
 제조사별 배터리 최적화 안내, 부팅 후 자동 복원.
 
 Overlay 모드에 미디어 소리 끄기 훅(§4.10) — 그 모드를 되살릴 때 함께 해야 한다.

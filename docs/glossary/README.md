@@ -45,6 +45,8 @@
 | 디자인 토큰 | 색·치수·글자 크기·불투명도·시간처럼 **디자이너가 바꾸는 값**에 이름을 붙인 것. 원본은 `design/tokens/tokens.json`(W3C DTCG 형식), `ui/theme/Tokens.kt` 는 거기서 생성한다 | 제스처 임계값·번인 궤도·패널 밝기는 토큰이 **아니다** — 동작·하드웨어 상수다 |
 | ref / sys / comp | 토큰의 세 층. **ref** 는 원시값(`ink900`, `d8`, `o70`), **sys** 는 의도(`canvas`, `floatingSurface`, `secondary`), **comp** 는 부품(`bubble.surface`, `mediaBar.lift`). sys 는 ref 만, comp 는 sys·ref 만 가리킨다 | Material 의 `md.ref/sys/comp` 와 같은 어법. 다른 제품에 가져가는 것은 ref+sys, comp 는 이 앱 것 |
 | 수묵화 (Ink wash) | 이 앱의 팔레트. Figma 색상 조합의 `#4A4A4A` `#CBCBCB` `#FFFFE3` `#6D8196` 을 스케일로 펼친 것. 토큰 이름 `paper`·`wash*`·`slate*` | 원색 넷은 tokens.json 설명에 "원색" 표시 |
+| 해제 안내 (`UnlockHint`) | 차폐 중 해제 제스처의 첫 동작에 5초 뜨는 문구("2번 더 탭하면 풀립니다"). 떠 있는 동안만 밝기를 올린다 | 시작 버튼 아래 한 줄("3번 탭하면 풀립니다")과 짝 |
+| 자동 끄기 | 차폐를 켠 뒤 정한 시간이 지나면 차폐를 풀고 **화면을 실제로 잠그는** 것 | 수면 타이머가 아니다 — 미디어는 멈추지 않는다 |
 | 캔버스 (canvas) | 차폐 화면의 검정 바탕. `sys.color.canvas`. 그 위의 글자·기호는 `onCanvas` | 설정 화면 배경은 Material `surface` 라 캔버스가 아니다 |
 | 떠 있는 표면 (floating) | 다른 앱 위에 뜨는 UI(버블·겨냥 칩·설정의 버블 견본)의 어두운 반투명 표면과 그 위 테두리·내용. `sys.color.floating*` | 캔버스와 다르다 — 뒤가 살짝 비쳐야 "떠 있다" 로 읽힌다 |
 | 재생 바 (`MediaBar`) | 재생 중인 음악·동영상의 제목·진행을 차폐 하단에 보이는 것. 표시 전용 | 알림 접근 권한 필요. `NowPlaying` 은 시스템이 준 스냅샷이고 위치는 계산한다 |
