@@ -1,8 +1,5 @@
 package com.jjw.blackscreen.data
 
-import androidx.compose.ui.graphics.Color
-import com.jjw.blackscreen.ui.theme.Sys
-
 /**
  * Screen Off 방식.
  *
@@ -238,16 +235,6 @@ data class Settings(
     /** 화면 높이 대비 0..1. 회전·해상도가 바뀌어도 화면 안에 남는다. */
     val bubbleYRatio: Float = 0.5f,
 ) {
-    /**
-     * 글자는 **항상 흰색**이다.
-     *
-     * 보이는 밝기는 프레임버퍼 값 × 패널 밝기다. 어둡게 만드는 손잡이가 둘이면
-     * 둘 다 깎아 놓고 왜 안 보이는지 헤매게 된다 — 실제로 두 번 그랬다.
-     * (`#333333` + 패널 0 → 판독 불가, `#E6E6E6` + 패널 0.08 → 여전히 판독 불가.)
-     *
-     * 그래서 밝기 손잡이는 [screenBrightness] 하나로 통일했다. 여기는 건드리지 말 것.
-     */
-    val textColor: Color get() = Sys.Color.onCanvas
 
     /**
      * 창 밝기 오버라이드(0..1). 이 앱에서 밝기를 조절하는 **유일한** 값이다.
@@ -260,7 +247,6 @@ data class Settings(
      */
     val screenBrightness: Float
         get() = if (hasContent) CONTENT_BRIGHTNESS else 0f
-
 
     /** 표시할 것이 하나도 없으면 텍스트 레이아웃 자체를 건너뛴다. */
     val hasContent: Boolean

@@ -94,6 +94,8 @@ def kotlin_literal(path, ttype, value):
 def kdoc(text, indent):
     if not text:
         return []
+    # 설명에 "*/" 가 있으면 KDoc 이 일찍 닫혀 생성물이 컴파일되지 않는다.
+    text = text.replace("*/", "*\u2215")
     lines = textwrap.wrap(text, width=96 - len(indent) - 3)
     if len(lines) == 1:
         return [f"{indent}/** {lines[0]} */"]
