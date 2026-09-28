@@ -106,9 +106,7 @@
     <string name="start_hint_mute">미디어는 음소거됩니다</string>
     <string name="start_hint_zero">미디어 볼륨을 0 으로 내립니다</string>
     <string name="start_hint_separator">" · "</string>
-    <plurals name="start_hint_timer">
-        <item quantity="other">%1$d분 뒤 화면이 꺼집니다</item>
-    </plurals>
+    <string name="start_hint_timer">%1$s 뒤 화면이 꺼집니다</string>
     <plurals name="unlock_hint_taps">
         <item quantity="other">%1$d번 더 탭하면 풀립니다</item>
     </plurals>

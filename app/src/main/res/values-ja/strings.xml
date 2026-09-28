@@ -110,9 +110,7 @@
     <string name="start_hint_mute">メディアはミュートされます</string>
     <string name="start_hint_zero">メディアの音量を 0 にします</string>
     <string name="start_hint_separator">" · "</string>
-    <plurals name="start_hint_timer">
-        <item quantity="other">%1$d分後に画面がオフになります</item>
-    </plurals>
+    <string name="start_hint_timer">%1$s後に画面がオフになります</string>
     <plurals name="unlock_hint_taps">
         <item quantity="other">あと%1$d回タップで解除</item>
     </plurals>

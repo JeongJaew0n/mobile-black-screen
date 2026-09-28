@@ -536,7 +536,8 @@ private fun startHint(settings: Settings): String {
             MediaVolumeAction.SET_TO_ZERO -> add(stringResource(R.string.start_hint_zero))
         }
         if (settings.autoOffMinutes > 0) {
-            add(pluralStringResource(R.plurals.start_hint_timer, settings.autoOffMinutes, settings.autoOffMinutes))
+            // 라디오와 같은 단위로 — '1시간' 을 골랐는데 '60분 뒤' 라고 하면 다른 설정처럼 읽힌다(실기기).
+            add(stringResource(R.string.start_hint_timer, autoOffLabel(settings.autoOffMinutes)))
         }
     }
     return parts.joinToString(stringResource(R.string.start_hint_separator))
