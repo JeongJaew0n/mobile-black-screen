@@ -609,6 +609,23 @@ XML 에도 hex 리터럴을 쓰지 않는다. 예외는 `ic_tile.xml` 의 흰색
 - **접근성 연결은 관찰한다** — `ScreenOffAccessibilityService.connected: StateFlow`. 복귀 때 한 번 읽으면
   서비스가 늦게 붙을 때 "권한이 필요합니다" 가 남을 수 있다. 설정 화면은 이 흐름을 수집한다.
 
+### 4.13 설정 화면 짜임 (2026-10-01)
+
+`docs/ui-research.md` 1~7. **위는 보는 곳, 아래는 누르는 곳.**
+
+```
+제목 · 권한 카드
+탭 (화면 / 동작)
+[화면 탭] 미리보기 — 고정. 스크롤하면 통째로 55% 까지 축소, 글자 배율만큼 커짐(최대 1.5배)
+목록 — 묶음 카드(surfaceContainer). 구분선 없음
+하단 고정 — 시작 버튼 + "3번 탭하면 풀립니다 · …"
+```
+
+- 행은 전부 **행 전체가 누르는 자리**이고 최소 48dp(`comp.settings.rowMinHeight`). SwitchRow 는 `toggleable`.
+- 짧은 단일 선택(자동 끄기·시계 형식)은 `FilterChip` + `FlowRow`. 설명이 붙는 소리, 슬라이더가 붙는 해제는 라디오.
+- 미리보기의 축소 값은 **레이아웃·그리기 단계에서만** 읽는다(`collapse: () -> Float`). 컴포지션에서 스크롤 값을 읽으면
+  매 프레임 재구성된다(lint `FrequentlyChangingValue`).
+
 ## 5. 설정 항목
 
 ```kotlin

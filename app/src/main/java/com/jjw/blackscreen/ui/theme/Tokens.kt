@@ -154,6 +154,8 @@ object Ref {
 
         val d46 = 46.dp
 
+        val d48 = 48.dp
+
         val d52 = 52.dp
 
         val d56 = 56.dp
@@ -425,8 +427,8 @@ object Sys {
     }
 
     object TouchTarget {
-        /** 접근성 권장 최소 터치 영역. */
-        val min = Ref.Dimension.d44
+        /** Android 권장 최소 터치 영역 48dp(약 9mm). 예전 44 는 iOS 값(44pt)이었다 — docs/ui-research.md §2. */
+        val min = Ref.Dimension.d48
     }
 }
 
@@ -661,6 +663,15 @@ object Comp {
         val radius = Sys.Radius.card
 
         val mediaBottomMargin = Sys.Spacing.lg
+
+        /** 글자 크기 배율을 따라 상자를 키우는 한도. 200% 에서 고정 높이면 배터리 줄이 잘렸다. */
+        val maxFontGrowth = 1.5f
+
+        /** 스크롤하면 미리보기를 이 비율까지 **통째로** 줄인다. 높이만 줄이면 시계(64sp)가 잘려 고장처럼 보인다. */
+        val collapsedScale = 0.55f
+
+        /** 무표시일 때 상자 안 안내 문구. */
+        val emptyOpacity = Sys.Opacity.secondary
     }
 
     /** 런처 아이콘 — 검은 바탕 위 어두운 사각 틀과 가로 막대. 앱 목록에서 '꺼진 화면' 처럼 조용해야 해서 밝은 톤을 쓰지 않는다. */
@@ -683,6 +694,22 @@ object Comp {
     object Settings {
         val screenPadding = Sys.Spacing.xl
 
+        /** 행 전체가 누르는 자리다. 라디오를 onClick=null 로 두면 버튼이 최소 크기를 강제하지 않아 행이 38dp 였다. */
+        val rowMinHeight = Sys.TouchTarget.min
+
+        val groupPaddingHorizontal = Sys.Spacing.lg
+
+        val groupPaddingVertical = Sys.Spacing.sm
+
+        /** 묶음 카드 사이. 구분선 대신 톤 차이와 이 간격으로 가른다(M3 다크 테마). */
+        val groupGap = Sys.Spacing.md
+
+        val groupRadius = Sys.Radius.card
+
+        val chipGap = Sys.Spacing.sm
+
+        val bottomBarPadding = Sys.Spacing.md
+
         /** 라디오·스위치 행의 위아래. */
         val rowPaddingVertical = Ref.Dimension.d6
 
@@ -690,11 +717,15 @@ object Comp {
 
         val fontChipRadius = Sys.Radius.card
 
-        val fontChipPaddingHorizontal = Sys.Spacing.sm
+        /** 칸이 같은 폭으로 나뉘어 좌우 여백은 최소만. 8 이면 카드 안에서 필기체 칸이 두 줄로 깨졌다. */
+        val fontChipPaddingHorizontal = Sys.Spacing.xs
+
+        val fontChipGap = Ref.Dimension.d6
 
         val fontChipPaddingVertical = Ref.Dimension.d10
 
-        val fontChipSample = Sys.Typography.body
+        /** 다섯 칸이 한 줄에 같은 폭으로 들어가야 한다. 18 이면 고정폭 글꼴(콜론 양옆이 넓다)이 잘렸다. */
+        val fontChipSample = Sys.Typography.labelLarge
 
         /** 설명 문구를 위 요소에 붙이는 간격. */
         val captionGap = Ref.Dimension.d6

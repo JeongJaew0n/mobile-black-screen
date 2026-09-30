@@ -39,6 +39,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.jjw.blackscreen.R
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 
 /**
  * Blackout 모드와 Overlay 모드가 공유하는 차폐 화면.
@@ -192,18 +196,54 @@ fun BlackScreenPreview(
     onMediaPlayPause: () -> Unit = {},
     onMediaNext: () -> Unit = {},
     onMediaPrevious: () -> Unit = {},
+    /** 0 = 펼침, 1 = 최대로 접힘. 설정 화면이 스크롤에 맞춰 넘긴다. */
+    collapse: () -> Float = { 0f },
+    /** 표시할 것이 없을 때 상자 안에 띄울 문구. 검은 상자만 덜렁 있으면 고장으로 보인다. */
+    emptyHint: String? = null,
 ) {
     val showBar = settings.showMedia && (nowPlaying != null || mediaPermissionMissing)
     val mediaShift = rememberBurnInShift()
+    // 재생 바까지 보이려면 상자가 더 커야 한다. 시계 아래 여백에 겹치지 않게.
+    // 상자는 dp, 안의 글자는 sp 다. 글자 크기를 키우면 고정 높이 상자에서 아래 줄이 잘렸다(200%, 실기기).
+    // 글자 배율만큼 상자도 키우되 한도를 둔다 — 비선형 배율이라 큰 글자(시계)는 거의 안 커진다.
+    val fontGrowth = LocalDensity.current.fontScale.coerceIn(1f, Comp.Preview.maxFontGrowth)
+    val full = (if (showBar) Comp.Preview.heightWithMedia else Comp.Preview.height) * fontGrowth
+    // 높이만 줄이면 시계가 잘린다. 내용을 원래 크기로 그린 뒤 통째로 축소한다.
+    // collapse 는 **레이아웃·그리기 단계에서만** 읽는다 — 스크롤마다 다시 구성하지 않게.
+    val scaleOf = { 1f - (1f - Comp.Preview.collapsedScale) * collapse().coerceIn(0f, 1f) }
     Box(
         modifier
             .fillMaxWidth()
-            // 재생 바까지 보이려면 상자가 더 커야 한다. 시계 아래 여백에 겹치지 않게.
-            .height(if (showBar) Comp.Preview.heightWithMedia else Comp.Preview.height)
+            .layout { measurable, constraints ->
+                val h = (full.toPx() * scaleOf()).roundToInt()
+                val placeable = measurable.measure(constraints.copy(minHeight = h, maxHeight = h))
+                layout(placeable.width, h) { placeable.place(0, 0) }
+            }
             .clip(RoundedCornerShape(Comp.Preview.radius))
             .background(Sys.Color.canvas),
+        contentAlignment = Alignment.Center,
     ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .requiredHeight(full)
+                .graphicsLayer {
+                    val s = scaleOf()
+                    scaleX = s
+                    scaleY = s
+                },
+        ) {
         BlackScreenContent(settings)
+        if (emptyHint != null && !settings.hasContent && !showBar) {
+            Text(
+                text = emptyHint,
+                color = settings.textColor.copy(alpha = Comp.Preview.emptyOpacity),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = Comp.Content.sentenceInset),
+            )
+        }
         if (showBar) {
             MediaBarLayer(
                 nowPlaying = nowPlaying,
@@ -224,6 +264,7 @@ fun BlackScreenPreview(
                     bottomMargin = Comp.Preview.mediaBottomMargin,
                 )
             }
+        }
         }
     }
 }

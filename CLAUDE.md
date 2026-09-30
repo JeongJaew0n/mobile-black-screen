@@ -260,6 +260,9 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 - **`LayoutParams.y` 는 픽셀이다.** dp 숫자를 그대로 넣는 실수를 이미 한 번 했다.
 - **코루틴 안에서 창을 붙일 때는 동기 플래그로 중복을 막을 것.** `addBubble()` 은
   저장된 위치를 읽느라 코루틴 안에서 `addView` 하는데, 그 사이 재호출되면 창이 두 개 생긴다.
+- **스크롤 값을 컴포지션에서 읽지 말 것.** 미리보기를 스크롤에 맞춰 줄이려고 `scrollState.value` 를 그대로 넘겼다가
+  lint `FrequentlyChangingValue` 가 잡았다 — 매 프레임 화면 전체가 다시 구성된다. 함수(`() -> Float`)로 넘기고
+  `Modifier.layout`·`graphicsLayer` 안에서 읽는다.
 - **`enableEdgeToEdge()` 를 인자 없이 부르지 말 것.** 기본값은 앱 테마가 아니라 기기 다크 모드를 따라, 기기가
   라이트 모드면 항상 어두운 이 앱 위에 어두운 아이콘과 밝은 내비바가 나온다. `SystemBarStyle.dark` 로 고정한다.
 - **`android.builtInKotlin` 을 끄지 말 것.** 외부 `org.jetbrains.kotlin.android`

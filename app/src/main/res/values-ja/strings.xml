@@ -15,7 +15,7 @@
     <string name="tile_label">黒い画面</string>
 
     <string name="tab_display">表示</string>
-    <string name="tab_settings">設定</string>
+    <string name="tab_settings">動作</string>
     <string name="start_blackout">Screen Off を開始</string>
     <string name="show_clock">時計を表示</string>
     <string name="clock_format">時計の形式</string>
@@ -126,4 +126,5 @@
     <string name="restricted_help">「制限付き設定」の案内が出たら閉じて、アプリ情報 → ⋮ →「制限付き設定を許可」をタップしてから、もう一度オンにしてください。</string>
     <string name="open_app_info">アプリ情報を開く</string>
     <string name="toast_accessibility_needed">Screen Off を使うには「ユーザー補助」の権限をオンにしてください</string>
+    <string name="preview_empty">何も表示しません — 完全な黒</string>
 </resources>
