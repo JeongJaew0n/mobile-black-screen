@@ -144,12 +144,12 @@ class com.android.build.gradle.BaseExtension
       · `START ... BlackoutActivity with LAUNCH_SINGLE_TASK from uid 10898` 로그로 확증
       · ⚠️ `cmd statusbar click-tile` 만으로는 `onStartListening` 이 안 돌아 실패한다.
         QS 패널을 먼저 띄워야 서비스가 바인딩된다 — adb 아티팩트이지 앱 버그가 아니다.
-- [ ] 전력 실측 — `adb shell dumpsys batterystats` + Battery Historian
+- [x] 전력 실측 — `adb shell dumpsys batterystats` + Battery Historian — docs/power-measurement.md (2026-09-08)
       **미완.** adb 연결이 USB 충전을 겸하고 있어 방전 데이터를 얻을 수 없다.
       무선 디버깅으로 전환하거나, 충전기를 뽑고 20~30분 방치 후 측정해야 한다.
 
 ## 4. 마무리
 - [x] 커밋 (이 저장소에는 별도 커밋 규약이 없어 Conventional Commits 형식을 따름)
-- [ ] checklist 의 미체크 항목이 남았으면 사유 메모
-- [ ] 다음 세션이 픽업할 수 있도록 spec.md / context.md 의 변경분 반영
+- [x] checklist 의 미체크 항목이 남았으면 사유 메모 — 2026-10-09 정리
+- [x] 다음 세션이 픽업할 수 있도록 spec.md / context.md 의 변경분 반영 — 이후 계획 폴더들이 이어받았다
 - [x] `docs/architecture.md`와 실제 구현이 어긋난 부분 동기화

@@ -87,10 +87,10 @@
 - [x] 창 누수 — 버블·차폐·✕ 타겟 모두 제거 후 `dumpsys window` 0
 
 ## 9. 마무리
-- [ ] 커밋 (Conventional Commits)
-- [ ] `CLAUDE.md` 갱신 — 서비스 구조 변경, 버블 관련 함정 추가
-- [ ] `docs/architecture.md` 에 버블 구조 반영
-- [ ] 미체크 항목이 남았으면 사유 메모
+- [x] 커밋 (Conventional Commits) — 당시 커밋됨
+- [x] `CLAUDE.md` 갱신 — 서비스 구조 변경, 버블 관련 함정 추가 — 반영됨(서비스 구조·버블 함정)
+- [x] `docs/architecture.md` 에 버블 구조 반영 — §4.8
+- [x] 미체크 항목이 남았으면 사유 메모 — 2026-10-09 정리
 
 
 ---

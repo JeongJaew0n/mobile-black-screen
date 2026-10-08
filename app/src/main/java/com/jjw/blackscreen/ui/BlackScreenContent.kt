@@ -80,6 +80,8 @@ fun BlackScreenRoot(
     var containerHeight by remember { mutableIntStateOf(0) }
     // 재생 바와 제어 버튼이 **같은** 궤도를 타야 한 덩어리로 움직인다. 시계 블록은 자기 궤도다.
     val mediaShift = rememberBurnInShift()
+    var mediaBarHeight by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
 
     Box(
         modifier
@@ -102,6 +104,7 @@ fun BlackScreenRoot(
                     tint = settings.textColor,
                     fontFamily = settings.clockFont.family,
                     shift = mediaShift,
+                    onHeightChange = { mediaBarHeight = it },
                 )
             }
         }
@@ -170,6 +173,7 @@ fun BlackScreenRoot(
                 onNext = onMediaNext,
                 onPrevious = onMediaPrevious,
                 shift = mediaShift,
+                    barHeight = with(density) { mediaBarHeight.toDp() },
             )
         }
     }
@@ -203,6 +207,8 @@ fun BlackScreenPreview(
 ) {
     val showBar = settings.showMedia && (nowPlaying != null || mediaPermissionMissing)
     val mediaShift = rememberBurnInShift()
+    var mediaBarHeight by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
     // 재생 바까지 보이려면 상자가 더 커야 한다. 시계 아래 여백에 겹치지 않게.
     // 상자는 dp, 안의 글자는 sp 다. 글자 크기를 키우면 고정 높이 상자에서 아래 줄이 잘렸다(200%, 실기기).
     // 글자 배율만큼 상자도 키우되 한도를 둔다 — 비선형 배율이라 큰 글자(시계)는 거의 안 커진다.
@@ -251,6 +257,7 @@ fun BlackScreenPreview(
                 tint = settings.textColor,
                 fontFamily = settings.clockFont.family,
                 shift = mediaShift,
+                    onHeightChange = { mediaBarHeight = it },
                 bottomMargin = Comp.Preview.mediaBottomMargin,
             )
             if (nowPlaying != null) {
@@ -261,6 +268,7 @@ fun BlackScreenPreview(
                     onNext = onMediaNext,
                     onPrevious = onMediaPrevious,
                     shift = mediaShift,
+                    barHeight = with(density) { mediaBarHeight.toDp() },
                     bottomMargin = Comp.Preview.mediaBottomMargin,
                 )
             }

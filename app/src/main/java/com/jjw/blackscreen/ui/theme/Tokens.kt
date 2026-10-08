@@ -582,6 +582,9 @@ object Comp {
 
         val gap = Ref.Dimension.d28
 
+        /** 잰 재생 바 높이 위에 띄우는 간격. lift 는 평소 크기 바의 하한으로만 쓴다. */
+        val barGap = Sys.Spacing.md
+
         val buttonSize = Sys.TouchTarget.min
 
         val disabledOpacity = Sys.Opacity.disabled

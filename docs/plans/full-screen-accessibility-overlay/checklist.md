@@ -27,5 +27,5 @@
       `ForegroundServiceStartNotAllowedException` 으로 죽던 문제
 
 ## 남은 것
-- [ ] 접근성 서비스가 꺼져 있을 때 앱 안에서 배너로 안내
+- [x] 접근성 서비스가 꺼져 있을 때 앱 안에서 배너로 안내 — 설정 화면 PermissionCard. 제한된 설정 안내·토스트까지(ux-improvements)
       (재설치마다 꺼지므로 실사용에서 걸릴 가능성이 있다)

@@ -144,17 +144,21 @@ class MediaWatcher(private val context: Context) {
     private fun toNowPlaying(c: MediaController): NowPlaying? {
         val state = c.playbackState ?: return null
         val meta = c.metadata
-        val appLabel = runCatching {
+        // Android 11+ 패키지 가시성: 매니페스트 <queries> 에 걸리지 않는 앱은 이름을 못 읽는다.
+        // 예전엔 실패하면 패키지 이름을 대신 띄워 "com.google.android.yo…" 가 나왔다(실기기). 이제는 뺀다.
+        val appLabel: String? = runCatching {
             val pm = context.packageManager
             pm.getApplicationLabel(pm.getApplicationInfo(c.packageName, 0)).toString()
-        }.getOrDefault(c.packageName)
+        }.getOrNull()
         val title = meta?.getString(MediaMetadata.METADATA_KEY_TITLE)
             ?: meta?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
             ?: appLabel
+            ?: ""
         val artist = meta?.getString(MediaMetadata.METADATA_KEY_ARTIST)
             ?: meta?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
             ?: meta?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
-        val subtitle = if (artist.isNullOrBlank() || artist == title) appLabel else "$artist · $appLabel"
+        val subtitle = listOfNotNull(artist?.takeIf { it.isNotBlank() && it != title }, appLabel)
+            .joinToString(" · ")
         return NowPlaying(
             title = title,
             subtitle = subtitle,

@@ -11,7 +11,7 @@
 - [x] `ClockStyle(skeleton) { H24("HHmm"), H12("hmm") }` 도입, `ClockFormats` 제거
 - [x] `android.icu.text.DateTimePatternGenerator.getBestPattern(skeleton, MATCH_HOUR_FIELD_LENGTH)` 로 패턴 파생
 - [x] 서식은 `android.icu.text.SimpleDateFormat` — `java.time` 을 쓰지 않는다 (`B` 문자)
-- [ ] **ko / en-US / ja × HHmm / hmm 여섯 값을 찍어 spec §2a 표를 실측값으로 교체.** ko `HH:mm` 앞자리 0 확인
+- [x] **ko / en-US / ja × HHmm / hmm 여섯 값을 찍어 spec §2a 표를 실측값으로 교체.** ko `HH:mm` 앞자리 0 확인 — 2026-10-09 실기기: ko 09:05 / 오전 9:05, en 09:05 / 9:05 AM, ja 09:05 / 午前9:05. ko 앞자리 0 유지
 - [x] DataStore 마이그레이션 `clock_format`(패턴) → `clock_style`(열거형)
 - [x] `rememberClockText` 가 로케일 변경을 따라오는지 (`LocalConfiguration`)
 - [x] 설정 라디오 예시를 고정 시각 서식으로 생성
@@ -41,8 +41,8 @@
 - [x] `set-app-locales ko-KR` — 동일. **`09:05` 앞자리 0 확인**
 - [x] 12시간제: ko `오전 9:05`, en `9:05 AM`, ja `午後1:05` — spec §2a 실측표
 - [x] `en-XA` — 감싸이지 않은 텍스트 0 (첫 회차 1건 → 수정 후 0). 잘림은 스크린샷 육안 미확인
-- [ ] ~~`ar-XB`~~ — **아랍어 불필요(사용자 결정).** 코드의 Ltr 핀은 남겨 둔다
-- [ ] 언어 바꾼 뒤 서비스 재시작 → 알림 채널 이름 갱신 (미확인)
+- [x] ~~`ar-XB`~~ — **아랍어 불필요(사용자 결정).** 코드의 Ltr 핀은 남겨 둔다 — 사용자 결정으로 뺐다
+- [x] 언어 바꾼 뒤 서비스 재시작 → 알림 채널 이름 갱신 (미확인) — 2026-10-09 실기기: 'Screen Off 상태' → 'Screen Off の状態' → 원복. 서비스 재시작 없이 앱을 열면 갱신
 - [x] grep 하드코딩 0건
 - [x] 로케일 원복 (`--locales ""`), 시계 표시 스위치 원복
 

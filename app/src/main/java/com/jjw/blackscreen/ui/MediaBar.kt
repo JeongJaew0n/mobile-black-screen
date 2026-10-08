@@ -42,6 +42,8 @@ import com.jjw.blackscreen.R
 import com.jjw.blackscreen.media.NowPlaying
 import kotlinx.coroutines.delay
 import com.jjw.blackscreen.ui.theme.Comp
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.dp
 
 /**
  * 진행 막대를 다시 그리는 주기. 시계를 분 단위로만 갱신하는 것과 같은 이유 — 초마다 그리면
@@ -69,13 +71,16 @@ fun BoxScope.MediaBarLayer(
      */
     shift: IntOffset,
     bottomMargin: Dp = Comp.MediaBar.bottomMargin,
+    /** 실제 높이(px). 제어 버튼이 이 위에 앉는다 — 글자 크기를 키우면 바가 커진다. */
+    onHeightChange: (Int) -> Unit = {},
 ) {
     Column(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { shift }
             .padding(bottom = bottomMargin)
-            .fillMaxWidth(Comp.MediaBar.widthFraction),
+            .fillMaxWidth(Comp.MediaBar.widthFraction)
+            .onSizeChanged { onHeightChange(it.height) },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (nowPlaying == null) {
@@ -188,13 +193,17 @@ fun BoxScope.MediaControlsLayer(
     /** 재생 바와 **같은** 궤도값. [MediaBarLayer] 참조. */
     shift: IntOffset,
     bottomMargin: Dp = Comp.MediaBar.bottomMargin,
+    /** 재생 바의 실제 높이. 0 이면 아직 안 쟀다 — 토큰 값(평소 크기의 바)을 쓴다. */
+    barHeight: Dp = 0.dp,
 ) {
+    // 고정 높이(84dp)만 띄우면 글자 200% 에서 커진 제목·부제가 버튼과 겹쳤다(실기기). 잰 높이 위에 앉힌다.
+    val lift = maxOf(Comp.MediaControls.lift, barHeight + Comp.MediaControls.barGap)
     Row(
         Modifier
             .align(Alignment.BottomCenter)
             .offset { shift }
             // 재생 바(제목·부제·막대) 위에 얹는다. 막대 높이만큼 더 띄운다.
-            .padding(bottom = bottomMargin + Comp.MediaControls.lift)
+            .padding(bottom = bottomMargin + lift)
             // 컨트롤 영역의 탭은 여기서 끝낸다. 비활성 버튼과 버튼 사이 간격은 자식이 소비하지
             // 않아 그대로 아래 해제 제스처 레이어로 내려간다 — 그러면 흐린 이전/다음 버튼을
             // 세 번 누르는 것만으로 3회 탭 해제가 발동한다. 자식이 소비한 탭은
