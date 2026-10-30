@@ -56,6 +56,7 @@ echo "sdk.dir=/opt/homebrew/share/android-commandlinetools" > local.properties
                              # (네트워크가 되면 의존성 최신 버전 경고가 몇 건 더 붙는다 — 코드와 무관)
 python3 design/tokens/build.py --check   # Tokens.kt 가 tokens.json 과 일치하는지. 커밋 전에
 python3 design/tokens/build.py           # JSON 을 고쳤으면 다시 생성
+python3 design/mascot/build.py --check   # 모락 그림(res/drawable/morak_*·ic_launcher_*·ic_tile)이 생성기와 일치하는지
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -300,6 +301,9 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
   하드웨어 상수라 코드에 남긴다. (2026-09-13 의 "두 곳 이상 반복되는 값만" 규칙은 이걸로 대체됐다 —
   "값만 고쳐 다른 디자인" 이 되려면 한 곳에서 쓰는 값도 토큰이어야 한다.)
 - **기본값은 아무것도 표시하지 않는 완전한 검정이다.** 시계와 문장은 옵션이다.
+- **마스코트 모락은 차폐 화면·미리보기·해제 안내에 넣지 않는다.** 설정 화면과 아이콘에만 산다 — 그리는 순간
+  패널 밝기가 0 에서 올라간다. 그림 XML(`morak_*`·`ic_launcher_foreground/monochrome`·`ic_tile`)은 생성물이라
+  `design/mascot/build.py` 를 고치고 다시 생성한다. 색은 `comp.mascot`(tokens.json).
 - **밝기는 상수 하나다 (`CONTENT_BRIGHTNESS = 0.30`).** 조절 슬라이더는 없앴다 — 실측에서
   패널 0.30 과 0.00 의 소모가 눈금 하나도 차이 나지 않아 조절할 이유가 없었다
   (`docs/power-measurement.md`). 글자는 항상 거의 흰색(수묵화 `paper` `#FFFFE3`, 흑백 대비 20.7:1)이고 밝기는 창의 `screenBrightness` 로만 정한다.

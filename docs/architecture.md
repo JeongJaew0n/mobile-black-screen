@@ -112,7 +112,7 @@ app/src/main/java/.../blackscreen/
 ├─ bubble/
 │   ├─ BubbleWindow.kt          버블 창 LayoutParams + 가장자리 좌표 계산
 │   ├─ BubbleContent.kt         원형 버블 (탭/드래그/겨냥/유휴 페이드)
-│   ├─ BubbleGlyph.kt           버블 안 기호 5종 — 실제 버블과 설정 미리보기가 공유
+│   ├─ BubbleGlyph.kt           버블 안 기호 6종 — 실제 버블과 설정 미리보기가 공유. 머그만 그림 리소스(모락)
 │   └─ AimTargets.kt            꾹 누른 동안 뜨는 위/아래 목표
 ├─ ui/
 │   ├─ BlackScreenContent.kt    ★ 세 모드 공유 Composable
@@ -581,7 +581,14 @@ primary, outline…)가 있고, `ui/theme/Theme.kt` 의 `BlackScreenTheme` 이 �
 
 Compose 밖의 색 — 창 배경·시스템 바(`themes.xml`), 런처 아이콘, 알림 강조색 — 은 생성기가 함께 내는
 `res/values/tokens_colors.xml` 을 쓴다. sys·comp 색만, alias 를 풀어 `sys_color_canvas` 식 이름으로 낸다.
-XML 에도 hex 리터럴을 쓰지 않는다. 예외는 `ic_tile.xml` 의 흰색 — 시스템이 `tint` 로 덮어 칠하는 마스크다.
+XML 에도 hex 리터럴을 쓰지 않는다. 예외는 `ic_tile.xml` 과 `ic_launcher_monochrome.xml` 의 흰색 — 시스템이
+덮어 칠하는 마스크다.
+
+**마스코트 모락**(김 나는 머그, 2026-10-30 — `docs/plans/morak-mascot/`)은 그림 XML 7개
+(`morak_base/happy/sad/mug`, 런처 전경·단색, `ic_tile`)가 **생성물**이다. 원본은 `design/mascot/build.py`(도형)와
+`comp.mascot`(색 — 전부 기존 ref 별칭). 원본 SVG 의 흔들림 필터·빗금 패턴이 VectorDrawable 에 없어 생성기가
+경로에 굽는다. 자리는 설정 화면 제목 옆·권한 카드·'준비됐어요' 안내·버블 기호(머그)·타일/알림(김 한 가닥)·
+런처 아이콘. **차폐 화면·미리보기·해제 안내에는 두지 않는다** — 그리는 순간 패널 밝기가 0 에서 올라간다.
 
 **토큰이 아닌 것** — 제스처 임계값(44dp·400ms·0.28·0.92), 번인 궤도, 패널 밝기 0.30, 기호 내부
 비율, 사용자 설정 기본값. 디자이너가 바꾸는 값이 아니라 동작·하드웨어·설정이다. 코드에 남아 있다.
@@ -643,7 +650,7 @@ data class Settings(
     val bubbleEnabled: Boolean = true,     // 앱을 열면 바로 떠 있어야 한다
     val bubbleHidden: Boolean = false,       // 켜면 앱을 열어도 안 뜸. 닫기(겨냥 아래)는 일시적
     val bubbleEdge: Edge = Edge.RIGHT,
-    val bubbleIcon: BubbleIcon = BAR,       // BAR / DOT / RING / MOON / POWER
+    val bubbleIcon: BubbleIcon = BAR,       // BAR / DOT / RING / MOON / POWER / MUG
     val bubbleSizeDp: Int = 52,              // 16~96dp, 2dp 단위
     val bubbleYRatio: Float = 0.5f,
     val mediaVolumeAction: MediaVolumeAction = NONE,  // NONE | MUTE_WHILE_COVERED | SET_TO_ZERO (§4.10)
@@ -773,6 +780,7 @@ res/resources.properties     unqualifiedResLocale=en-US (AGP 가 localeConfig �
 20. **재생 바** — 알림 접근 권한(`MediaListenerService`, 콜백 비움) + `MediaSessionManager`. 차폐 하단 고정, 표시 전용, 10초 재그림. 관찰은 차폐 수명에만. 밝기는 `effectiveBrightness()` 가 설정·재생·프롬프트를 합쳐 결정
 21. **재생 제어** — 이전·재생/일시정지·다음. 해제 레이어 위에서 탭 소비로 제스처와 분리. `transportControls`
 16. **배터리 잔량 표시** — 도형 배터리 + `78%`. `ACTION_BATTERY_CHANGED` sticky 수신, 폴링 없음. 충전 중이면 번개
+22. **마스코트 모락** — 수묵 모락(선 paper, 면 먹). 제목 옆·권한 카드(식음)·권한 켜고 돌아오면 2초 '준비됐어요'(따끈)·버블 기호 머그·타일/알림 김·런처. 그림은 `design/mascot/build.py` 생성물
 
 작업별 배경과 결정 근거는 `docs/plans/` 의 각 폴더에 있습니다.
 

@@ -52,7 +52,20 @@
     <color name="comp_aim_chip_content_active">#FFFFFFE3</color>
     <color name="comp_aim_chip_content_idle">#FFCBCBCB</color>
     <color name="comp_launcher_icon_background">#FF000000</color>
-    <color name="comp_launcher_icon_frame">#FF2A2A2A</color>
-    <color name="comp_launcher_icon_mark">#FF616161</color>
+    <color name="comp_mascot_line">#FFFFFFE3</color>
+    <color name="comp_mascot_body">#FF2A2A2A</color>
+    <color name="comp_mascot_body_hatch">#FF363636</color>
+    <color name="comp_mascot_heart">#FF5C1A12</color>
+    <color name="comp_mascot_heart_hatch">#FF7A2419</color>
+    <color name="comp_mascot_band">#FF4C5D70</color>
+    <color name="comp_mascot_rim">#FF363636</color>
+    <color name="comp_mascot_coffee">#FF0E0E0E</color>
+    <color name="comp_mascot_coffee_cold">#FF1E2630</color>
+    <color name="comp_mascot_blush">#FFC0392B</color>
+    <color name="comp_mascot_shade">#FFA7B6C6</color>
+    <color name="comp_mascot_tear">#FFC9D3DE</color>
+    <color name="comp_mascot_steam">#FF4A4A4A</color>
+    <color name="comp_mascot_steam_cold">#FF7C7C7C</color>
+    <color name="comp_mascot_toast_surface">#FF2A2A2A</color>
     <color name="comp_notification_accent">#FFA7B6C6</color>
 </resources>

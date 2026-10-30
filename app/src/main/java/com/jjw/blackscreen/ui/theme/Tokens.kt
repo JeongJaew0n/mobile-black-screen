@@ -204,6 +204,8 @@ object Ref {
 
         val ms400: Int = 400
 
+        val ms2000: Int = 2000
+
         val ms3000: Int = 3000
 
         val ms5000: Int = 5000
@@ -616,6 +618,9 @@ object Comp {
         /** 기호는 버블 지름의 절반 안에. 가장자리까지 차면 테두리와 붙어 답답하다. */
         val glyphFraction = 0.5f
 
+        /** 모락 머그는 몸통이 넓은 그림이라 선 기호(0.5)와 같은 칸에 넣으면 작아 보인다. 테두리에 붙지 않는 한도까지. */
+        val mugFraction = 0.7f
+
         /** 버블 크기에 비례시키지 않는다 — 16dp 에서도 2dp 는 보이고, 96dp 에서 8dp 는 둔하다. */
         val glyphStroke = Ref.Dimension.d2
 
@@ -677,15 +682,71 @@ object Comp {
         val emptyOpacity = Sys.Opacity.secondary
     }
 
-    /** 런처 아이콘 — 검은 바탕 위 어두운 사각 틀과 가로 막대. 앱 목록에서 '꺼진 화면' 처럼 조용해야 해서 밝은 톤을 쓰지 않는다. */
+    /** 런처 아이콘 — 검은 바탕 위 수묵 모락(2026-10-30, 사각 틀·막대를 대체). 그림 색은 mascot 을 따른다. */
     object LauncherIcon {
         val background = Sys.Color.canvas
+    }
 
-        /** 예전 #2E2E2E 에 가장 가까운 먹 톤. */
-        val frame = Ref.Palette.wash800
+    /**
+     * 마스코트 모락(김 나는 머그). 원본은 밝은 종이 위 진한 선이라 어두운 앱에서 외곽선이 묻힌다 — 선을 paper 로, 면을 먹으로 뒤집은 '수묵 모락'.
+     * 전부 기존 팔레트라 팔레트를 바꾸면 모락도 따라 바뀐다. 그림 XML 은 design/mascot/build.py 가 만든다. 차폐 화면·미리보기에는 두지
+     * 않는다 — 그리는 순간 패널 밝기가 0 에서 올라간다.
+     */
+    object Mascot {
+        /** 외곽선·눈. 원본 #2b2326 을 뒤집은 것. */
+        val line = Ref.Palette.paper
 
-        /** 예전 #5A5A5A 에 가장 가까운 먹 톤. */
-        val mark = Ref.Palette.wash600
+        /** 머그 몸통. 원본 민트. */
+        val body = Ref.Palette.wash800
+
+        /** 몸통 빗금. 한 톤 위라 가까이서만 보인다 — 손그림 질감이지 무늬가 아니다. */
+        val bodyHatch = Ref.Palette.wash750
+
+        /** 따끈할 때 피어오르는 하트 김. */
+        val heart = Ref.Palette.red900
+
+        val heartHatch = Ref.Palette.red800
+
+        /** 머그 띠. 원본 코랄 대신 강조 계열. */
+        val band = Ref.Palette.slate700
+
+        /** 잔 입구 테. */
+        val rim = Ref.Palette.wash750
+
+        val coffee = Ref.Palette.wash950
+
+        /** 식은 커피. 푸른 기로 '식음' 을 말한다. */
+        val coffeeCold = Ref.Palette.slate900
+
+        /** 볼터치. 수묵 모락에서 따뜻한 색은 이것과 하트뿐 — 낙관 도장처럼 한 점으로 읽힌다. */
+        val blush = Ref.Palette.red500
+
+        /** 식었을 때 이마의 세로 그늘선. */
+        val shade = Ref.Palette.slate300
+
+        val tear = Ref.Palette.slate200
+
+        /** 김 아래 깔리는 번진 먹(리소 어긋남). */
+        val steam = Ref.Palette.wash700
+
+        /** 식어서 가늘어진 김. */
+        val steamCold = Ref.Palette.wash500
+
+        /** 앱 제목 옆. 제목 글자(28sp)보다 살짝 크게 — 그림은 여백이 있어 같은 크기면 작아 보인다. */
+        val titleSize = Ref.Dimension.d32
+
+        /** 권한 안내 카드 왼쪽. */
+        val cardSize = Ref.Dimension.d48
+
+        /** '준비됐어요' 안내. */
+        val toastSize = Ref.Dimension.d64
+
+        /** 권한 카드가 말없이 사라지면 '됐나?' 싶은 틈이 생긴다. 그 틈만 메우고 사라진다. */
+        val toastDuration = Ref.Duration.ms2000
+
+        val toastSurface = Sys.Color.surfaceContainerHigh
+
+        val toastRadius = Ref.Dimension.d16
     }
 
     object Notification {

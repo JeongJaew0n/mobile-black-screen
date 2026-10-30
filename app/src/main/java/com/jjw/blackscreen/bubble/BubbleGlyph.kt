@@ -1,6 +1,7 @@
 package com.jjw.blackscreen.bubble
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,7 +13,9 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.jjw.blackscreen.R
 import com.jjw.blackscreen.data.BubbleIcon
 import com.jjw.blackscreen.ui.theme.Comp
 
@@ -22,6 +25,9 @@ import com.jjw.blackscreen.ui.theme.Comp
  * 크기는 [sizeDp] 에 비례한다 — 고정하면 큰 버블에서 초라하고 작은 버블에서 넘친다.
  * 달은 흰 원에서 작은 원을 지워 만든다. `BlendMode.Clear` 는 오프스크린 레이어에서만
  * 동작하므로 `CompositingStrategy.Offscreen` 을 건다.
+ *
+ * 머그(모락)만 그림 리소스다 — 색이 정해진 그림이라 [tint] 를 따르지 않는다.
+ * 원본은 `design/mascot/build.py` 가 만든 `morak_mug.xml`.
  */
 @Composable
 fun BubbleGlyph(
@@ -30,6 +36,14 @@ fun BubbleGlyph(
     modifier: Modifier = Modifier,
     tint: Color = Comp.Bubble.content,
 ) {
+    if (icon == BubbleIcon.MUG) {
+        Image(
+            painter = painterResource(R.drawable.morak_mug),
+            contentDescription = null,
+            modifier = modifier.size((sizeDp * Comp.Bubble.mugFraction).dp),
+        )
+        return
+    }
     Canvas(
         modifier
             .size((sizeDp * Comp.Bubble.glyphFraction).dp)
@@ -81,6 +95,8 @@ fun BubbleGlyph(
                     cap = StrokeCap.Round,
                 )
             }
+
+            BubbleIcon.MUG -> Unit // 위에서 그림으로 그렸다
         }
     }
 }

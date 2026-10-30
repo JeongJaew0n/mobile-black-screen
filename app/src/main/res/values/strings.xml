@@ -81,6 +81,7 @@
     <string name="bubble_icon_ring">Ring</string>
     <string name="bubble_icon_moon">Moon</string>
     <string name="bubble_icon_power">Power</string>
+    <string name="bubble_icon_mug">Mug</string>
     <string name="bubble_enabled_desc">A small button that turns Screen Off on while you use other apps. Press and hold, then slide up to open these settings or down to close the bubble (it comes back when you open the app). Drag to move it. It stays after you close the app.</string>
     <string name="bubble_hidden">Hide bubble</string>
     <string name="bubble_hidden_desc">The bubble stays away even when you open the app — for when you want it out of the way for a while. Closing the bubble by holding and sliding down is temporary; it comes back when you open the app.</string>
@@ -97,6 +98,7 @@
     <string name="mode_full_desc">Keeps the app you were using and blacks out the whole screen, including the status bar and navigation bar. Needs the accessibility permission.</string>
     <string name="accessibility_needed">Needs the accessibility permission</string>
     <string name="accessibility_open">Open accessibility settings</string>
+    <string name="permission_ready">Ready</string>
     <!-- 해제 안내 · 자동 끄기 · 제한된 설정 (docs/plans/ux-improvements) -->
     <string name="start_hint_triple_tap">Tap 3 times to unlock</string>
     <string name="start_hint_double_tap">Tap twice to unlock</string>

@@ -27,6 +27,7 @@
 |---|---|---|
 | Screen Off | 화면을 검게 덮어 꺼진 것처럼 보이게 하는 이 앱의 핵심 동작. **사용자에게 보이는 이름** | 화면을 실제로 끄지 않는다 — Android 에 그 API 가 없고, 끄면 시계도 못 띄운다 |
 | 차폐 (cover) | Screen Off 와 **같은 것**의 코드·문서 이름. `ScreenCoverService`, `coverView`, "차폐 창" | UI 문자열에는 쓰지 않는다 |
+| 모락 (Morak) | 이 앱의 마스코트. 김 나는 머그잔이고 결점이 "금방 식는다" — 화면을 식히는 앱의 얼굴. 표정은 기본·따끈(happy)·식음(sad) | 그림은 `design/mascot/build.py` 생성물(`morak_*.xml`). 차폐 화면에는 나오지 않는다 |
 | 차폐 창 | 화면을 덮는 창 자체. 창 종류가 모드를 결정한다 | 버블 창과 다름 — 버블 창은 덮지 않고 떠 있다 |
 | FULL | 접근성 오버레이(`TYPE_ACCESSIBILITY_OVERLAY`)로 상태바·내비바까지 덮는 모드. **기본이자 유일하게 제공되는 모드** | 쓰던 앱이 그대로 남는다 |
 | Overlay | `TYPE_APPLICATION_OVERLAY` 창으로 덮는 모드. 시스템 바는 못 덮는다 | `Mode.available = false` 로 미제공. 코드는 남음 |

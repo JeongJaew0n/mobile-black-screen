@@ -84,6 +84,7 @@
     <string name="bubble_icon_ring">円</string>
     <string name="bubble_icon_moon">月</string>
     <string name="bubble_icon_power">電源</string>
+    <string name="bubble_icon_mug">マグ</string>
     <string name="bubble_enabled_desc">他のアプリを使っている間も、押すとすぐに Screen Off にできる小さなボタンです。長押ししたまま上にスライドするとこの設定画面が開き、下にスライドするとバブルが閉じます(アプリを開くと戻ります)。ドラッグすると移動できます。アプリを閉じても残ります。</string>
     <string name="bubble_hidden">バブルを隠す</string>
     <string name="bubble_hidden_desc">オンにすると、アプリを開いてもバブルは表示されません。しばらく片付けておきたいときに使います。長押しして下にスライドで閉じるのは一時的で、アプリを開くと戻ります。</string>
@@ -100,6 +101,7 @@
     <string name="mode_full_desc">使っていたアプリはそのままで、ステータスバーとナビゲーションバーを含む画面全体を黒くします。「ユーザー補助」の権限が必要です。</string>
     <string name="accessibility_needed">「ユーザー補助」の権限が必要です</string>
     <string name="accessibility_open">ユーザー補助の設定を開く</string>
+    <string name="permission_ready">準備できました</string>
     <!-- 解除の案内 · 自動オフ · 制限付き設定 (docs/plans/ux-improvements) -->
     <string name="start_hint_triple_tap">3回タップで解除</string>
     <string name="start_hint_double_tap">2回タップで解除</string>

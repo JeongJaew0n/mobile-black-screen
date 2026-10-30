@@ -1,3 +1,6 @@
+<!-- ⚠️ 생성된 파일이다. 손으로 고치지 말 것.
+     원본: design/mascot/build.py (도형) · design/tokens/tokens.json (색)
+     생성: python3 design/mascot/build.py -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
@@ -5,9 +8,8 @@
     android:viewportHeight="24"
     android:tint="?android:attr/colorControlNormal">
     <path
-        android:fillColor="@android:color/white"
-        android:pathData="M5,3h14a2,2 0,0 1,2 2v14a2,2 0,0 1,-2 2h-14a2,2 0,0 1,-2 -2v-14a2,2 0,0 1,2 -2zM5,5v14h14v-14z" />
-    <path
-        android:fillColor="@android:color/white"
-        android:pathData="M8,11h8v2h-8z" />
+        android:pathData="M11,22 C7,18.5 15,16 11.5,12 C8.5,9 12,4.5 16,3"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round" />
 </vector>
