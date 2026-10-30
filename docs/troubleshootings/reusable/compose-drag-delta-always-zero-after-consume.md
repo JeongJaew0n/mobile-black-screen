@@ -1,5 +1,7 @@
 # Compose 드래그 루프에서 positionChange() 가 항상 Zero
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/compose-drag-delta-always-zero-after-consume.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Jetpack Compose UI 1.12 (BOM 2026.08). `awaitEachGesture` + `drag()` 직접 루프.
 

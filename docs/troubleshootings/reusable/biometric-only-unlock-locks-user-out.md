@@ -1,5 +1,7 @@
 # 생체 인증만 허용하면 전체 화면 오버레이에서 빠져나올 수 없다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/biometric-only-unlock-locks-user-out.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android `android.hardware.biometrics.BiometricPrompt` (API 28+). 화면 전체를 덮는 오버레이
 (`TYPE_ACCESSIBILITY_OVERLAY` 또는 `TYPE_APPLICATION_OVERLAY`)를 해제하는 수단으로 생체 인증을

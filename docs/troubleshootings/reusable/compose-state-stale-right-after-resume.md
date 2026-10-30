@@ -1,5 +1,7 @@
 # LifecycleResumeEffect 가 옛 설정값으로 동작한다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/compose-state-stale-right-after-resume.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Compose + `collectAsStateWithLifecycle`.
 

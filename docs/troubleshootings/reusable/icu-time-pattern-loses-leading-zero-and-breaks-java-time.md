@@ -1,5 +1,7 @@
 # 로케일 시계 패턴: 앞자리 0 이 사라지고 java.time 이 예외를 낸다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/icu-time-pattern-loses-leading-zero-and-breaks-java-time.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 `android.text.format.DateFormat.getBestDateTimePattern` / `java.time.DateTimeFormatter` /
 `android.icu.text.DateTimePatternGenerator`. Android 16.

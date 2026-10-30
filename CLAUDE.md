@@ -63,6 +63,10 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## 실기기 검증 레시피
 
+> **범용 절차·스크립트는 전역 스킬 `android-device-test` 에 있다** (`~/.claude/skills/android-device-test/`).
+> 탭 전 가드(`tap --package`), 설정 스냅샷·원복, 스크린샷 픽셀 판정, DataStore 디코드를 스크립트로 한다.
+> 아래는 이 앱 고유의 값과 명령이다.
+
 이 앱은 "화면이 검게 덮였는가"가 핵심이라 UI 테스트로 잡기 어렵다. 아래 방법이 실제로
 동작함이 확인되었다.
 

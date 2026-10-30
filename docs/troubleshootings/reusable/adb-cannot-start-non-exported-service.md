@@ -1,5 +1,7 @@
 # adb 로 앱의 비공개 서비스를 시작하면 권한 거부
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/adb-cannot-start-non-exported-service.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android 16, adb 37.0.1.
 

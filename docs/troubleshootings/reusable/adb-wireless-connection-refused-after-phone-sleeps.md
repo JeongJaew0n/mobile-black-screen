@@ -1,5 +1,7 @@
 # 무선 adb 가 Connection refused — 폰이 잠든 뒤 5555 리스너가 사라진다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/adb-wireless-connection-refused-after-phone-sleeps.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 `adb tcpip 5555` 방식(페어링 코드 방식 아님). Galaxy S23+ / Android 16.
 

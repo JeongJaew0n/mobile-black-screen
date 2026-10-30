@@ -1,5 +1,7 @@
 # lifecycleScope.launch { 저장 } 직후 stopSelf() 하면 저장이 실행되지 않는다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/datastore-write-lost-when-service-stops-right-after-launch.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 `androidx.lifecycle:lifecycle-service` 의 `LifecycleService` + DataStore Preferences.
 

@@ -1,5 +1,7 @@
 # transportControls.pause() 가 무시된다 — 미디어 버튼 이벤트를 써라
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/media-pause-ignored-use-media-button.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android `MediaController` / `MediaSessionManager`. 실측: Galaxy S23+ / Android 16, 곰오디오.
 

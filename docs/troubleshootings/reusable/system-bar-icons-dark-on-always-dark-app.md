@@ -1,5 +1,7 @@
 # 항상 어두운 앱에서 상태바 아이콘이 어둡고 내비바가 밝게 나온다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/system-bar-icons-dark-on-always-dark-app.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 androidx.activity `enableEdgeToEdge()` (activity-compose, Compose BOM 2026.08.00) · Galaxy S23+ / Android 16 / One UI.
 앱은 Compose `MaterialTheme(darkColorScheme)` 로 테마를 고정.

@@ -1,5 +1,7 @@
 # 재설치·force-stop 뒤 접근성 서비스가 조용히 꺼진다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/accessibility-service-silently-disabled-by-reinstall.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android 16 (Galaxy S23+). 다른 버전도 같다.
 

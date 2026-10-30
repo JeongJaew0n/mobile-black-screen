@@ -1,5 +1,7 @@
 # 재생 바에 앱 이름 대신 패키지 이름이 나온다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/media-app-name-shows-package-name.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android 11+ (targetSdk 36) · Galaxy S23+ / Android 16 · `MediaSessionManager.getActiveSessions()` 로 얻은 `MediaController`.
 

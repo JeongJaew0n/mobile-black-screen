@@ -1,5 +1,7 @@
 # TYPE_APPLICATION_OVERLAY 창이 상태바·내비게이션 바를 덮지 못한다
 
+> 범용 정본: 전역 스킬 `android-device-test` 의 `references/platform/overlay-window-cannot-cover-status-bar.md`. 이 파일은 이 앱에서 겪은 원문 기록이다.
+
 ## 환경
 Android 8(O) 이상 전부. 실측: Galaxy S23+ / Android 16.
 
