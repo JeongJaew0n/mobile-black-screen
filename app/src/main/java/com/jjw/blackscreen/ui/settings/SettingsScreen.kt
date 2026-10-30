@@ -134,7 +134,8 @@ fun SettingsScreen(
     // 권한을 켜고 돌아오면 카드가 말없이 사라져 "됐나?" 싶은 틈이 있다. 그 틈에만 따끈한 모락을 띄운다.
     // **권한이 없는 채로 앱을 떠났다가** 돌아와서 풀렸을 때만이다. 접근성 서비스는 앱을 막 열 때도
     // 늦게 붙어 false → true 로 바뀌는데, 그건 사용자가 한 일이 아니다 — 그때 뜨면 앱을 열 때마다 뜬다.
-    var leftWhileMissing by remember { mutableStateOf(false) }
+    // rememberSaveable: 설정 앱에 가 있는 동안 회전·메모리 부족으로 화면이 다시 만들어져도 "떠났다" 를 잊지 않게.
+    var leftWhileMissing by rememberSaveable { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         if (topPermissionMissing) leftWhileMissing = true
     }
@@ -143,8 +144,13 @@ fun SettingsScreen(
         if (!topPermissionMissing && leftWhileMissing) {
             leftWhileMissing = false
             showReady = true
-            delay(Comp.Mascot.toastDuration.toLong())
-            showReady = false
+            // finally: 2초 안에 권한이 다시 꺼지면(서비스 재연결 등) 키가 바뀌어 이 코루틴이 취소된다.
+            // 끄는 줄이 거기서 안 돌면 안내가 화면 가운데에 계속 남는다.
+            try {
+                delay(Comp.Mascot.toastDuration.toLong())
+            } finally {
+                showReady = false
+            }
         }
     }
 
