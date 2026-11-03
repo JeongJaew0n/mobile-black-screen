@@ -39,8 +39,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.jjw.blackscreen.R
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 
@@ -221,7 +219,9 @@ fun BlackScreenPreview(
         modifier
             .fillMaxWidth()
             .layout { measurable, constraints ->
-                val h = (full.toPx() * scaleOf()).roundToInt()
+                // 받은 높이를 넘지 않는다. 글자 200% 에 권한 카드까지 뜨면 자리가 모자란데, 받은 높이를 무시하면
+                // 넘친 만큼이 위아래로 삐져나와 탭과 시작 버튼을 덮었다(실기기). 모자라면 접을 때처럼 더 줄인다.
+                val h = (full.toPx() * scaleOf()).roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
                 val placeable = measurable.measure(constraints.copy(minHeight = h, maxHeight = h))
                 layout(placeable.width, h) { placeable.place(0, 0) }
             }
@@ -232,11 +232,18 @@ fun BlackScreenPreview(
         Box(
             Modifier
                 .fillMaxWidth()
-                .requiredHeight(full)
-                .graphicsLayer {
-                    val s = scaleOf()
-                    scaleX = s
-                    scaleY = s
+                // 내용은 언제나 원래 높이(full)로 재고, 바깥 상자가 실제로 얻은 높이에 맞춰 통째로 줄인다.
+                // 배율을 그 높이에서 뽑으니 접힘과 자리 부족이 한 값으로 맞물린다.
+                .layout { measurable, constraints ->
+                    val fullPx = full.roundToPx()
+                    val placeable = measurable.measure(constraints.copy(minHeight = fullPx, maxHeight = fullPx))
+                    val s = constraints.maxHeight.toFloat() / fullPx
+                    layout(placeable.width, constraints.maxHeight) {
+                        placeable.placeWithLayer(0, (constraints.maxHeight - fullPx) / 2) {
+                            scaleX = s
+                            scaleY = s
+                        }
+                    }
                 },
         ) {
         BlackScreenContent(settings)

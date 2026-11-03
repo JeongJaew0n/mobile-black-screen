@@ -274,6 +274,10 @@ Android 8(O)부터 의도적으로 금지되었다. 어떤 플래그 조합으�
 - **스크롤 값을 컴포지션에서 읽지 말 것.** 미리보기를 스크롤에 맞춰 줄이려고 `scrollState.value` 를 그대로 넘겼다가
   lint `FrequentlyChangingValue` 가 잡았다 — 매 프레임 화면 전체가 다시 구성된다. 함수(`() -> Float`)로 넘기고
   `Modifier.layout`·`graphicsLayer` 안에서 읽는다.
+- **미리보기는 받은 높이를 넘지 않게 그린다.** `layout {}` 으로 제 키를 정하는 자식이 받은 높이를 무시하면 Column 이 넘친
+  만큼을 위아래로 삐져나오게 놓아 이웃을 덮는다 — 글자 200% 에 권한 카드까지 뜨자 미리보기가 탭과 시작 버튼을 덮었다.
+  미리보기와 목록은 `weight(1f)` 영역에 두어 **시작 버튼이 먼저** 자리를 잡게 하고, 목록 한 줄(`rowMinHeight`)은 남긴다 —
+  목록을 밀어야 미리보기가 접히는데 목록이 0 이면 밀 데가 없다.
 - **`enableEdgeToEdge()` 를 인자 없이 부르지 말 것.** 기본값은 앱 테마가 아니라 기기 다크 모드를 따라, 기기가
   라이트 모드면 항상 어두운 이 앱 위에 어두운 아이콘과 밝은 내비바가 나온다. `SystemBarStyle.dark` 로 고정한다.
 - **`android.builtInKotlin` 을 끄지 말 것.** 외부 `org.jetbrains.kotlin.android`

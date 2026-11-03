@@ -98,6 +98,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.FilterChip
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.role
 import androidx.compose.material3.FilterChipDefaults
 
@@ -235,324 +236,335 @@ fun SettingsScreen(
             val displayScroll = rememberScrollState()
             val behaviorScroll = rememberScrollState()
 
-            // 화면 탭은 그 자체가 차폐 화면 편집기다. 미리보기는 **맨 위에 고정**하고, 바꾸는 즉시 결과가 보인다.
-            // 예전엔 목록 맨 끝이라 시계를 켜면 결과가 화면 밖에 생겼다(docs/ui-research.md §1).
-            // 스크롤하면 통째로 줄어 아래 옵션에 자리를 내준다.
-            if (tab == 0) {
-                val density = LocalDensity.current
-                val range = with(density) { Comp.Preview.height.toPx() }
-                val mediaPreview = settings.showMedia && (nowPlaying != null || !notificationAccess)
+            // 미리보기와 목록은 시작 버튼이 자리를 잡고 **남은** 높이를 나눠 쓴다. 미리보기를 바깥 Column 에 바로 두면
+            // 시작 버튼보다 먼저 재어져, 글자 200% 에 권한 카드까지 뜨면 버튼 자리까지 먹고 위아래로 넘쳤다(실기기).
+            Column(Modifier.weight(1f).fillMaxWidth()) {
+                // 화면 탭은 그 자체가 차폐 화면 편집기다. 미리보기는 **맨 위에 고정**하고, 바꾸는 즉시 결과가 보인다.
+                // 예전엔 목록 맨 끝이라 시계를 켜면 결과가 화면 밖에 생겼다(docs/ui-research.md §1).
+                // 스크롤하면 통째로 줄어 아래 옵션에 자리를 내준다.
+                if (tab == 0) {
+                    val density = LocalDensity.current
+                    val range = with(density) { Comp.Preview.height.toPx() }
+                    val mediaPreview = settings.showMedia && (nowPlaying != null || !notificationAccess)
+                    Column(
+                        Modifier
+                            // 목록 한 줄 높이는 남긴다. 목록을 밀어야 미리보기가 접히는데, 목록이 0 이면 밀 데가 없다.
+                            .layout { measurable, constraints ->
+                                val reserve = Comp.Settings.rowMinHeight.roundToPx()
+                                val max = (constraints.maxHeight - reserve).coerceAtLeast(constraints.minHeight)
+                                val placeable = measurable.measure(constraints.copy(maxHeight = max))
+                                layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                            }
+                            .padding(horizontal = Comp.Settings.screenPadding)
+                            .padding(top = Sys.Spacing.md),
+                    ) {
+                        BlackScreenPreview(
+                            settings,
+                            nowPlaying = if (mediaPreview) nowPlaying else null,
+                            mediaPermissionMissing = settings.showMedia && !notificationAccess,
+                            onMediaPlayPause = onMediaPlayPause,
+                            onMediaNext = onMediaNext,
+                            onMediaPrevious = onMediaPrevious,
+                            // 값이 아니라 읽는 함수를 넘긴다. 컴포지션에서 스크롤 값을 읽으면 매 프레임 화면 전체가
+                            // 다시 구성된다(lint FrequentlyChangingValue). 미리보기는 레이아웃·그리기 단계에서 읽는다.
+                            collapse = { if (range > 0f) displayScroll.value / range else 0f },
+                            emptyHint = stringResource(R.string.preview_empty),
+                        )
+                        Text(
+                            text = stringResource(R.string.content_preview_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = Comp.Settings.captionGap),
+                        )
+                    }
+                }
+
                 Column(
                     Modifier
-                        .padding(horizontal = Comp.Settings.screenPadding)
-                        .padding(top = Sys.Spacing.md),
+                        .weight(1f)
+                        .verticalScroll(if (tab == 0) displayScroll else behaviorScroll)
+                        .padding(horizontal = Comp.Settings.screenPadding),
                 ) {
-                    BlackScreenPreview(
-                        settings,
-                        nowPlaying = if (mediaPreview) nowPlaying else null,
-                        mediaPermissionMissing = settings.showMedia && !notificationAccess,
-                        onMediaPlayPause = onMediaPlayPause,
-                        onMediaNext = onMediaNext,
-                        onMediaPrevious = onMediaPrevious,
-                        // 값이 아니라 읽는 함수를 넘긴다. 컴포지션에서 스크롤 값을 읽으면 매 프레임 화면 전체가
-                        // 다시 구성된다(lint FrequentlyChangingValue). 미리보기는 레이아웃·그리기 단계에서 읽는다.
-                        collapse = { if (range > 0f) displayScroll.value / range else 0f },
-                        emptyHint = stringResource(R.string.preview_empty),
-                    )
-                    Text(
-                        text = stringResource(R.string.content_preview_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = Comp.Settings.captionGap),
-                    )
-                }
-            }
+                    if (tab == 0) {
 
-            Column(
-                Modifier
-                    .weight(1f)
-                    .verticalScroll(if (tab == 0) displayScroll else behaviorScroll)
-                    .padding(horizontal = Comp.Settings.screenPadding),
-            ) {
-                if (tab == 0) {
-
-                SettingsGroup {
-                    SwitchRow(
-                        label = stringResource(R.string.show_clock),
-                        checked = settings.showClock,
-                        onCheckedChange = { on -> onChange { s -> s.copy(showClock = on) } },
-                    )
-
-                    if (settings.showClock) {
-                        GroupLabel(stringResource(R.string.clock_format))
-                        // 두 개뿐인 단일 선택 — 칩 한 줄. 예시는 리소스에 박지 않고 현재 로케일로 서식한다.
-                        ChoiceChips(
-                            options = ClockStyle.entries,
-                            selected = settings.clockStyle,
-                            label = { style ->
-                                stringResource(
-                                    R.string.clock_style_label,
-                                    stringResource(style.labelRes),
-                                    rememberClockSample(style),
-                                )
-                            },
-                            onSelect = { style -> onChange { s -> s.copy(clockStyle = style) } },
+                    SettingsGroup {
+                        SwitchRow(
+                            label = stringResource(R.string.show_clock),
+                            checked = settings.showClock,
+                            onCheckedChange = { on -> onChange { s -> s.copy(showClock = on) } },
                         )
 
-                        GroupLabel(stringResource(R.string.clock_font))
-                        // 글꼴 이름이 아니라 그 글꼴로 찍은 숫자를 보여준다. 이름을 읽고 상상하게 하면
-                        // 고르고 나서 실망한다. 위 미리보기가 고른 글꼴로 즉시 바뀐다.
-                        val digits = rememberClockSample(settings.clockStyle)
-                            .let { Regex("\\d{1,2}:\\d{2}").find(it)?.value ?: it }
-                        // 다섯 칸을 같은 폭으로 — 카드 안쪽 여백만큼 좁아지자 필기체 칸이 두 줄로 깨졌다(실기기).
+                        if (settings.showClock) {
+                            GroupLabel(stringResource(R.string.clock_format))
+                            // 두 개뿐인 단일 선택 — 칩 한 줄. 예시는 리소스에 박지 않고 현재 로케일로 서식한다.
+                            ChoiceChips(
+                                options = ClockStyle.entries,
+                                selected = settings.clockStyle,
+                                label = { style ->
+                                    stringResource(
+                                        R.string.clock_style_label,
+                                        stringResource(style.labelRes),
+                                        rememberClockSample(style),
+                                    )
+                                },
+                                onSelect = { style -> onChange { s -> s.copy(clockStyle = style) } },
+                            )
+
+                            GroupLabel(stringResource(R.string.clock_font))
+                            // 글꼴 이름이 아니라 그 글꼴로 찍은 숫자를 보여준다. 이름을 읽고 상상하게 하면
+                            // 고르고 나서 실망한다. 위 미리보기가 고른 글꼴로 즉시 바뀐다.
+                            val digits = rememberClockSample(settings.clockStyle)
+                                .let { Regex("\\d{1,2}:\\d{2}").find(it)?.value ?: it }
+                            // 다섯 칸을 같은 폭으로 — 카드 안쪽 여백만큼 좁아지자 필기체 칸이 두 줄로 깨졌다(실기기).
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Sys.Spacing.sm),
+                                horizontalArrangement = Arrangement.spacedBy(Comp.Settings.fontChipGap),
+                            ) {
+                                ClockFont.entries.forEach { font ->
+                                    val selected = settings.clockFont == font
+                                    val name = stringResource(font.labelRes)
+                                    Box(
+                                        Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(Comp.Settings.fontChipRadius))
+                                            .selectable(selected = selected, role = Role.RadioButton) {
+                                                onChange { s -> s.copy(clockFont = font) }
+                                            }
+                                            .background(Sys.Color.canvas)
+                                            .border(
+                                                width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
+                                                color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
+                                                shape = RoundedCornerShape(Comp.Settings.fontChipRadius),
+                                            )
+                                            .heightIn(min = Comp.Settings.rowMinHeight)
+                                            .padding(
+                                                horizontal = Comp.Settings.fontChipPaddingHorizontal,
+                                                vertical = Comp.Settings.fontChipPaddingVertical,
+                                            )
+                                            .semantics { contentDescription = name },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(
+                                            text = digits,
+                                            color = Sys.Color.onCanvas,
+                                            fontSize = Comp.Settings.fontChipSample,
+                                            fontFamily = font.family,
+                                            fontWeight = font.weight,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    SettingsGroup {
+                        SwitchRow(
+                            label = stringResource(R.string.show_date),
+                            checked = settings.showDate,
+                            onCheckedChange = { on -> onChange { s -> s.copy(showDate = on) } },
+                        )
+                        if (settings.showDate) {
+                            // 형식은 여섯 가지라 펼치면 길어진다. 한 줄(현재 형식의 오늘 날짜)만 보이고, 누르면 모달에서 고른다.
+                            var dateDialog by rememberSaveable { mutableStateOf(false) }
+                            ValueRow(
+                                label = stringResource(R.string.date_format),
+                                value = rememberDateSample(settings.dateStyle),
+                                onClick = { dateDialog = true },
+                            )
+                            if (dateDialog) {
+                                DateStyleDialog(
+                                    current = settings.dateStyle,
+                                    onSelect = { style ->
+                                        onChange { s -> s.copy(dateStyle = style) }
+                                        dateDialog = false
+                                    },
+                                    onDismiss = { dateDialog = false },
+                                )
+                            }
+                        }
+                    }
+
+                    SettingsGroup {
+                        SwitchRow(
+                            label = stringResource(R.string.show_battery),
+                            checked = settings.showBattery,
+                            onCheckedChange = { on -> onChange { s -> s.copy(showBattery = on) } },
+                        )
+                        SwitchRow(
+                            label = stringResource(R.string.show_media),
+                            description = stringResource(R.string.show_media_desc),
+                            checked = settings.showMedia,
+                            onCheckedChange = { on -> onChange { s -> s.copy(showMedia = on) } },
+                        )
+                        // 권한을 처음부터 안 줬거나 나중에 꺼 버린 경우. 문구는 차폐 화면 안내와 같다.
+                        if (settings.showMedia && !notificationAccess) {
+                            PermissionCard(
+                                message = stringResource(R.string.media_permission_needed),
+                                action = stringResource(R.string.grant_permission),
+                                onClick = onRequestNotificationAccess,
+                                restrictedHelp = mayBeRestricted,
+                                onOpenAppInfo = onOpenAppInfo,
+                            )
+                        }
+                        OutlinedTextField(
+                            value = settings.sentence,
+                            onValueChange = { text -> onChange { s -> s.copy(sentence = text) } },
+                            label = { Text(stringResource(R.string.sentence)) },
+                            placeholder = { Text(stringResource(R.string.sentence_hint)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Sys.Spacing.sm),
+                        )
+                    }
+
+                    } else {
+
+                    SettingsGroup(stringResource(R.string.section_bubble)) {
+                        SwitchRow(
+                            label = stringResource(R.string.bubble_enabled),
+                            description = stringResource(R.string.bubble_enabled_desc),
+                            checked = settings.bubbleEnabled,
+                            onCheckedChange = { on -> onChange { s -> s.copy(bubbleEnabled = on) } },
+                        )
+                        // 기본값이 켜짐이라 첫 실행에서 여기 걸린다. 스위치는 켜져 있는데 화면에는
+                        // 아무것도 없는 상태를 설명하지 않으면 고장으로 보인다.
+                        if (settings.bubbleEnabled && !canDrawOverlays) {
+                            PermissionCard(
+                                message = stringResource(R.string.overlay_permission_needed),
+                                action = stringResource(R.string.grant_permission),
+                                onClick = onRequestOverlayPermission,
+                            )
+                        }
+                        if (settings.bubbleEnabled) {
+                            SwitchRow(
+                                label = stringResource(R.string.bubble_hidden),
+                                description = stringResource(R.string.bubble_hidden_desc),
+                                checked = settings.bubbleHidden,
+                                onCheckedChange = { on -> onChange { s -> s.copy(bubbleHidden = on) } },
+                            )
+                            GroupLabel(stringResource(R.string.bubble_size_value, settings.bubbleSizeDp))
+                            Slider(
+                                value = settings.bubbleSizeDp.toFloat(),
+                                onValueChange = { v ->
+                                    // 꾹 눌러 해제 시간과 같은 방식 — 눈금 없이 움직이되 값은 2dp 에 떨군다.
+                                    val snapped = (v / BUBBLE_STEP_DP).roundToInt() * BUBBLE_STEP_DP
+                                    // 같은 값이면 넘기지 않는다. 여기 저장은 떠 있는 버블 창의
+                                    // updateViewLayout 까지 부르므로, 한 칸 안에서 끄는 동안
+                                    // 같은 값을 계속 쓰면 창을 헛되이 다시 재운다.
+                                    if (snapped != settings.bubbleSizeDp) {
+                                        onChange { s -> s.copy(bubbleSizeDp = snapped) }
+                                    }
+                                },
+                                valueRange = MIN_BUBBLE_DP.toFloat()..MAX_BUBBLE_DP.toFloat(),
+                                steps = 0,
+                            )
+                        }
+
+                        GroupLabel(stringResource(R.string.bubble_icon))
+                        // 버블을 꺼 둔 상태에서도 고를 수 있게 스위치 밖에 둔다 — 켰을 때 어떤 모양이 뜰지
+                        // 미리 정해 두는 용도다. 미리보기는 실제 버블과 같은 BubbleGlyph 를 같은 배경 위에 그린다.
+                        // 이름표는 없다. 기호가 곧 이름이고, 글자가 붙으면 한 줄에 안 들어간다.
+                        // 대신 contentDescription 으로 스크린리더에는 이름을 준다.
+                        // 칸은 똑같이 나눠 갖고 원은 견본 크기까지만 큰다. 고정 크기로는 머그를 더해 여섯이 되자
+                        // 411dp 폭에서도 넘쳤다(64dp × 6 > 339dp). 좁은 화면에서는 원과 기호가 같이 줄어든다.
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = Sys.Spacing.sm),
-                            horizontalArrangement = Arrangement.spacedBy(Comp.Settings.fontChipGap),
+                                .padding(top = Sys.Spacing.xs),
                         ) {
-                            ClockFont.entries.forEach { font ->
-                                val selected = settings.clockFont == font
-                                val name = stringResource(font.labelRes)
-                                Box(
-                                    Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(Comp.Settings.fontChipRadius))
-                                        .selectable(selected = selected, role = Role.RadioButton) {
-                                            onChange { s -> s.copy(clockFont = font) }
-                                        }
-                                        .background(Sys.Color.canvas)
-                                        .border(
-                                            width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
-                                            color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
-                                            shape = RoundedCornerShape(Comp.Settings.fontChipRadius),
-                                        )
-                                        .heightIn(min = Comp.Settings.rowMinHeight)
-                                        .padding(
-                                            horizontal = Comp.Settings.fontChipPaddingHorizontal,
-                                            vertical = Comp.Settings.fontChipPaddingVertical,
-                                        )
-                                        .semantics { contentDescription = name },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = digits,
-                                        color = Sys.Color.onCanvas,
-                                        fontSize = Comp.Settings.fontChipSample,
-                                        fontFamily = font.family,
-                                        fontWeight = font.weight,
-                                        maxLines = 1,
-                                        softWrap = false,
-                                    )
+                            BubbleIcon.entries.forEach { icon ->
+                                val selected = settings.bubbleIcon == icon
+                                val name = stringResource(icon.labelRes)
+                                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                    BoxWithConstraints(
+                                        Modifier
+                                            .widthIn(max = Comp.Settings.swatchSize.dp + Comp.Settings.swatchPadding * 2)
+                                            .aspectRatio(1f)
+                                            .clip(CircleShape)
+                                            // clickable + 수동 selected 시맨틱은 접근성 트리에 안 실렸다(실측).
+                                            // selectable 이 선택 상태와 라디오 역할을 함께 실어 준다.
+                                            .selectable(selected = selected, role = Role.RadioButton) {
+                                                onChange { s -> s.copy(bubbleIcon = icon) }
+                                            }
+                                            .padding(Comp.Settings.swatchPadding)
+                                            .clip(CircleShape)
+                                            .background(Sys.Color.floatingSurface)
+                                            .border(
+                                                width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
+                                                color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
+                                                shape = CircleShape,
+                                            )
+                                            .semantics { contentDescription = name },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        BubbleGlyph(icon = icon, sizeDp = maxWidth.value.roundToInt())
+                                    }
                                 }
                             }
                         }
+                        GroupNote(stringResource(R.string.bubble_permission_note))
                     }
-                }
 
-                SettingsGroup {
-                    SwitchRow(
-                        label = stringResource(R.string.show_date),
-                        checked = settings.showDate,
-                        onCheckedChange = { on -> onChange { s -> s.copy(showDate = on) } },
-                    )
-                    if (settings.showDate) {
-                        // 형식은 여섯 가지라 펼치면 길어진다. 한 줄(현재 형식의 오늘 날짜)만 보이고, 누르면 모달에서 고른다.
-                        var dateDialog by rememberSaveable { mutableStateOf(false) }
-                        ValueRow(
-                            label = stringResource(R.string.date_format),
-                            value = rememberDateSample(settings.dateStyle),
-                            onClick = { dateDialog = true },
-                        )
-                        if (dateDialog) {
-                            DateStyleDialog(
-                                current = settings.dateStyle,
-                                onSelect = { style ->
-                                    onChange { s -> s.copy(dateStyle = style) }
-                                    dateDialog = false
+                    SettingsGroup(stringResource(R.string.section_sound)) {
+                        // 선택지마다 설명이 붙어 칩으로 줄이지 않는다 — 되돌아오는가를 읽어야 고를 수 있다.
+                        MediaVolumeAction.entries.forEach { action ->
+                            ModeRow(
+                                label = stringResource(action.labelRes),
+                                description = stringResource(action.descriptionRes),
+                                selected = settings.mediaVolumeAction == action,
+                                onSelect = { onChange { s -> s.copy(mediaVolumeAction = action) } },
+                            )
+                        }
+                        GroupNote(stringResource(R.string.media_volume_note))
+                    }
+
+                    SettingsGroup(stringResource(R.string.section_unlock)) {
+                        // 미제공 제스처(available = false)는 목록에서 빠진다. 코드는 남아 있다.
+                        // 고르면 아래에 누르는 시간 슬라이더가 붙어 라디오로 둔다.
+                        Gesture.available.forEach { gesture ->
+                            RadioRow(
+                                label = stringResource(gesture.labelRes),
+                                selected = settings.unlockGesture == gesture,
+                                onSelect = { onChange { s -> s.copy(unlockGesture = gesture) } },
+                            )
+                        }
+                        // 누르는 시간은 꾹 눌러 해제에서만 의미가 있다.
+                        if (settings.unlockGesture == Gesture.LONG_PRESS) {
+                            // 숫자 서식과 단위 어순은 리소스가 정한다 (독일어는 1,5 / 한국어는 뒤에 '초').
+                            GroupLabel(stringResource(R.string.hold_duration_value, settings.holdMillis / 1000f))
+                            Slider(
+                                value = settings.holdMillis.toFloat(),
+                                onValueChange = { v ->
+                                    // 눈금은 그리지 않지만 값은 0.1초에 떨어뜨린다.
+                                    // 안 그러면 1,437ms 같은 값이 저장돼 표시가 지저분해진다.
+                                    val snapped = (v / HOLD_STEP_MILLIS).roundToInt() * HOLD_STEP_MILLIS
+                                    onChange { s -> s.copy(holdMillis = snapped) }
                                 },
-                                onDismiss = { dateDialog = false },
+                                valueRange = MIN_HOLD_MILLIS.toFloat()..MAX_HOLD_MILLIS.toFloat(),
+                                // steps = 0 이라 눈금 없이 매끄럽게 움직인다.
+                                steps = 0,
                             )
                         }
                     }
-                }
 
-                SettingsGroup {
-                    SwitchRow(
-                        label = stringResource(R.string.show_battery),
-                        checked = settings.showBattery,
-                        onCheckedChange = { on -> onChange { s -> s.copy(showBattery = on) } },
-                    )
-                    SwitchRow(
-                        label = stringResource(R.string.show_media),
-                        description = stringResource(R.string.show_media_desc),
-                        checked = settings.showMedia,
-                        onCheckedChange = { on -> onChange { s -> s.copy(showMedia = on) } },
-                    )
-                    // 권한을 처음부터 안 줬거나 나중에 꺼 버린 경우. 문구는 차폐 화면 안내와 같다.
-                    if (settings.showMedia && !notificationAccess) {
-                        PermissionCard(
-                            message = stringResource(R.string.media_permission_needed),
-                            action = stringResource(R.string.grant_permission),
-                            onClick = onRequestNotificationAccess,
-                            restrictedHelp = mayBeRestricted,
-                            onOpenAppInfo = onOpenAppInfo,
+                    SettingsGroup(stringResource(R.string.section_auto_off)) {
+                        // 여섯 개의 단일 선택 — 라디오는 다섯 개까지가 권장이라 세로로 너무 길었다. 칩 한 줄.
+                        ChoiceChips(
+                            options = autoOffChoices(),
+                            selected = settings.autoOffMinutes,
+                            label = { minutes -> autoOffLabel(minutes) },
+                            onSelect = { minutes -> onChange { s -> s.copy(autoOffMinutes = minutes) } },
                         )
+                        GroupNote(stringResource(R.string.auto_off_desc))
                     }
-                    OutlinedTextField(
-                        value = settings.sentence,
-                        onValueChange = { text -> onChange { s -> s.copy(sentence = text) } },
-                        label = { Text(stringResource(R.string.sentence)) },
-                        placeholder = { Text(stringResource(R.string.sentence_hint)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = Sys.Spacing.sm),
-                    )
-                }
-
-                } else {
-
-                SettingsGroup(stringResource(R.string.section_bubble)) {
-                    SwitchRow(
-                        label = stringResource(R.string.bubble_enabled),
-                        description = stringResource(R.string.bubble_enabled_desc),
-                        checked = settings.bubbleEnabled,
-                        onCheckedChange = { on -> onChange { s -> s.copy(bubbleEnabled = on) } },
-                    )
-                    // 기본값이 켜짐이라 첫 실행에서 여기 걸린다. 스위치는 켜져 있는데 화면에는
-                    // 아무것도 없는 상태를 설명하지 않으면 고장으로 보인다.
-                    if (settings.bubbleEnabled && !canDrawOverlays) {
-                        PermissionCard(
-                            message = stringResource(R.string.overlay_permission_needed),
-                            action = stringResource(R.string.grant_permission),
-                            onClick = onRequestOverlayPermission,
-                        )
-                    }
-                    if (settings.bubbleEnabled) {
-                        SwitchRow(
-                            label = stringResource(R.string.bubble_hidden),
-                            description = stringResource(R.string.bubble_hidden_desc),
-                            checked = settings.bubbleHidden,
-                            onCheckedChange = { on -> onChange { s -> s.copy(bubbleHidden = on) } },
-                        )
-                        GroupLabel(stringResource(R.string.bubble_size_value, settings.bubbleSizeDp))
-                        Slider(
-                            value = settings.bubbleSizeDp.toFloat(),
-                            onValueChange = { v ->
-                                // 꾹 눌러 해제 시간과 같은 방식 — 눈금 없이 움직이되 값은 2dp 에 떨군다.
-                                val snapped = (v / BUBBLE_STEP_DP).roundToInt() * BUBBLE_STEP_DP
-                                // 같은 값이면 넘기지 않는다. 여기 저장은 떠 있는 버블 창의
-                                // updateViewLayout 까지 부르므로, 한 칸 안에서 끄는 동안
-                                // 같은 값을 계속 쓰면 창을 헛되이 다시 재운다.
-                                if (snapped != settings.bubbleSizeDp) {
-                                    onChange { s -> s.copy(bubbleSizeDp = snapped) }
-                                }
-                            },
-                            valueRange = MIN_BUBBLE_DP.toFloat()..MAX_BUBBLE_DP.toFloat(),
-                            steps = 0,
-                        )
                     }
 
-                    GroupLabel(stringResource(R.string.bubble_icon))
-                    // 버블을 꺼 둔 상태에서도 고를 수 있게 스위치 밖에 둔다 — 켰을 때 어떤 모양이 뜰지
-                    // 미리 정해 두는 용도다. 미리보기는 실제 버블과 같은 BubbleGlyph 를 같은 배경 위에 그린다.
-                    // 이름표는 없다. 기호가 곧 이름이고, 글자가 붙으면 한 줄에 안 들어간다.
-                    // 대신 contentDescription 으로 스크린리더에는 이름을 준다.
-                    // 칸은 똑같이 나눠 갖고 원은 견본 크기까지만 큰다. 고정 크기로는 머그를 더해 여섯이 되자
-                    // 411dp 폭에서도 넘쳤다(64dp × 6 > 339dp). 좁은 화면에서는 원과 기호가 같이 줄어든다.
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = Sys.Spacing.xs),
-                    ) {
-                        BubbleIcon.entries.forEach { icon ->
-                            val selected = settings.bubbleIcon == icon
-                            val name = stringResource(icon.labelRes)
-                            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                                BoxWithConstraints(
-                                    Modifier
-                                        .widthIn(max = Comp.Settings.swatchSize.dp + Comp.Settings.swatchPadding * 2)
-                                        .aspectRatio(1f)
-                                        .clip(CircleShape)
-                                        // clickable + 수동 selected 시맨틱은 접근성 트리에 안 실렸다(실측).
-                                        // selectable 이 선택 상태와 라디오 역할을 함께 실어 준다.
-                                        .selectable(selected = selected, role = Role.RadioButton) {
-                                            onChange { s -> s.copy(bubbleIcon = icon) }
-                                        }
-                                        .padding(Comp.Settings.swatchPadding)
-                                        .clip(CircleShape)
-                                        .background(Sys.Color.floatingSurface)
-                                        .border(
-                                            width = if (selected) Comp.Settings.selectedBorder else Comp.Settings.idleBorder,
-                                            color = if (selected) MaterialTheme.colorScheme.primary else Sys.Color.floatingBorder,
-                                            shape = CircleShape,
-                                        )
-                                        .semantics { contentDescription = name },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    BubbleGlyph(icon = icon, sizeDp = maxWidth.value.roundToInt())
-                                }
-                            }
-                        }
-                    }
-                    GroupNote(stringResource(R.string.bubble_permission_note))
+                    Spacer(Modifier.height(Sys.Spacing.lg))
                 }
-
-                SettingsGroup(stringResource(R.string.section_sound)) {
-                    // 선택지마다 설명이 붙어 칩으로 줄이지 않는다 — 되돌아오는가를 읽어야 고를 수 있다.
-                    MediaVolumeAction.entries.forEach { action ->
-                        ModeRow(
-                            label = stringResource(action.labelRes),
-                            description = stringResource(action.descriptionRes),
-                            selected = settings.mediaVolumeAction == action,
-                            onSelect = { onChange { s -> s.copy(mediaVolumeAction = action) } },
-                        )
-                    }
-                    GroupNote(stringResource(R.string.media_volume_note))
-                }
-
-                SettingsGroup(stringResource(R.string.section_unlock)) {
-                    // 미제공 제스처(available = false)는 목록에서 빠진다. 코드는 남아 있다.
-                    // 고르면 아래에 누르는 시간 슬라이더가 붙어 라디오로 둔다.
-                    Gesture.available.forEach { gesture ->
-                        RadioRow(
-                            label = stringResource(gesture.labelRes),
-                            selected = settings.unlockGesture == gesture,
-                            onSelect = { onChange { s -> s.copy(unlockGesture = gesture) } },
-                        )
-                    }
-                    // 누르는 시간은 꾹 눌러 해제에서만 의미가 있다.
-                    if (settings.unlockGesture == Gesture.LONG_PRESS) {
-                        // 숫자 서식과 단위 어순은 리소스가 정한다 (독일어는 1,5 / 한국어는 뒤에 '초').
-                        GroupLabel(stringResource(R.string.hold_duration_value, settings.holdMillis / 1000f))
-                        Slider(
-                            value = settings.holdMillis.toFloat(),
-                            onValueChange = { v ->
-                                // 눈금은 그리지 않지만 값은 0.1초에 떨어뜨린다.
-                                // 안 그러면 1,437ms 같은 값이 저장돼 표시가 지저분해진다.
-                                val snapped = (v / HOLD_STEP_MILLIS).roundToInt() * HOLD_STEP_MILLIS
-                                onChange { s -> s.copy(holdMillis = snapped) }
-                            },
-                            valueRange = MIN_HOLD_MILLIS.toFloat()..MAX_HOLD_MILLIS.toFloat(),
-                            // steps = 0 이라 눈금 없이 매끄럽게 움직인다.
-                            steps = 0,
-                        )
-                    }
-                }
-
-                SettingsGroup(stringResource(R.string.section_auto_off)) {
-                    // 여섯 개의 단일 선택 — 라디오는 다섯 개까지가 권장이라 세로로 너무 길었다. 칩 한 줄.
-                    ChoiceChips(
-                        options = autoOffChoices(),
-                        selected = settings.autoOffMinutes,
-                        label = { minutes -> autoOffLabel(minutes) },
-                        onSelect = { minutes -> onChange { s -> s.copy(autoOffMinutes = minutes) } },
-                    )
-                    GroupNote(stringResource(R.string.auto_off_desc))
-                }
-                }
-
-                Spacer(Modifier.height(Sys.Spacing.lg))
             }
 
             // 누르는 곳. 목록을 어디까지 내려도 해제 방법·부수 효과 안내와 함께 늘 보인다.
