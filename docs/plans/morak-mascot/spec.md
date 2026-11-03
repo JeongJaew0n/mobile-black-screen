@@ -30,5 +30,5 @@
 ## 완료 조건
 
 - `assembleDebug`, `lintDebug` 0 errors, `build.py --check` 둘 다 통과.
-- 접근성: 그림은 전부 장식(`contentDescription = null`). ③ 문구는 liveRegion 으로 읽힌다.
+- 접근성: 그림은 전부 장식(`contentDescription = null`). ③ 문구는 `paneTitle` 로 읽힌다. (처음엔 liveRegion 이었다 — 리뷰에서 Compose 가 새로 나타난 노드의 liveRegion 에는 이벤트를 안 보낸다는 것을 소스로 확인해 바꿨다.)
 - 실기기 확인은 지시가 있을 때.

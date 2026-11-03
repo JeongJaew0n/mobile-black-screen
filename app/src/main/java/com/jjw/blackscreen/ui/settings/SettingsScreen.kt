@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import kotlinx.coroutines.delay
@@ -589,13 +588,20 @@ fun SettingsScreen(
     }
 }
 
-/** 권한이 막 켜졌을 때 2초. 글자는 liveRegion 이라 스크린리더도 읽는다 — 카드가 사라진 것은 소리가 안 난다. */
+/**
+ * 권한이 막 켜졌을 때 2초. 카드가 사라진 것은 소리가 안 나서 스크린리더에도 알린다.
+ * liveRegion 이 아니라 paneTitle 이다 — Compose 는 **새로 나타난 노드**의 liveRegion 에는 이벤트를 따로
+ * 보내지 않는다(이미 있던 노드의 글자가 바뀔 때만). paneTitle 은 나타나는 순간 제목을 담은
+ * PANE_APPEARED 를 보낸다(Compose 1.12 AndroidComposeViewAccessibilityDelegateCompat 소스로 확인).
+ */
 @Composable
 private fun ReadyToast(visible: Boolean, modifier: Modifier = Modifier) {
+    val ready = stringResource(R.string.permission_ready)
     AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut(), modifier = modifier) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
+                .semantics { paneTitle = ready }
                 .clip(RoundedCornerShape(Comp.Mascot.toastRadius))
                 .background(Comp.Mascot.toastSurface)
                 .padding(horizontal = Sys.Spacing.xl, vertical = Sys.Spacing.md),
@@ -605,11 +611,7 @@ private fun ReadyToast(visible: Boolean, modifier: Modifier = Modifier) {
                 contentDescription = null,
                 modifier = Modifier.size(Comp.Mascot.toastSize),
             )
-            Text(
-                text = stringResource(R.string.permission_ready),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
+            Text(text = ready, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -844,6 +846,7 @@ private fun SwitchRow(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PermissionCard(
     message: String,
@@ -883,7 +886,13 @@ private fun PermissionCard(
                     )
                 }
                 Spacer(Modifier.height(Sys.Spacing.sm))
-                Row(horizontalArrangement = Arrangement.spacedBy(Sys.Spacing.sm)) {
+                // FlowRow: 버튼 둘이 한 줄에 안 들어가면 Row 는 둘째 버튼을 남은 폭으로 짓눌러 글자가 한 자씩 세로로
+                // 섰다(영어·일본어, 실기기). 모락(48dp)이 옆에 서며 줄이 60dp 좁아져 한국어도 글자 1.1 에서 1.5dp 남기고
+                // 겨우 들어간다. 넘치면 다음 줄로 내린다.
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Sys.Spacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(Sys.Spacing.sm),
+                ) {
                     Button(onClick = onClick) { Text(action) }
                     if (restrictedHelp) {
                         OutlinedButton(onClick = onOpenAppInfo) { Text(stringResource(R.string.open_app_info)) }
